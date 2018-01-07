@@ -45,7 +45,16 @@ public class mainClass {
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));
 			System.out.println(Currency.CURRENCYSTATE);
-			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(2.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(200.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(202.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(150.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(175.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(190.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(210.0f, 0, LocalDateTime.now()) );
+			
+			
 			System.out.println(Currency.CURRENCYSTATE);
 			//			sanchit.trade(t);
 			ObjectMapper m = new ObjectMapper();
