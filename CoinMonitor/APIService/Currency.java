@@ -2,16 +2,26 @@ package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.cglib.core.Local;
+import org.springframework.context.annotation.Scope;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@Scope("prototype")
 public class Currency{
 	String name;
 	String currencyCode;
 	CurrencySnapShot Value;
-	List<CurrencySnapShot> History; 
+	public static HashMap<LocalDateTime,CurrencySnapShot> History; 
+	
+	@JsonIgnore
 	public static HashMap<String,Currency> CURRENCYSTATE;
 	
+	@JsonIgnore
 	public Currency getCurrencyState(){
 		return CURRENCYSTATE.get(this.currencyCode);
 	}
@@ -93,7 +103,15 @@ public class Currency{
 	}
 	
 	
-	
+	public static void updateHistory(CurrencySnapShot s){
+		if(Currency.History != null){
+			Currency.History.put(LocalDateTime.now(),s);
+			}
+		else{
+			Currency.History = new HashMap<LocalDateTime,CurrencySnapShot>();
+			Currency.History.put(LocalDateTime.now(),s);
+		}
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -123,9 +141,61 @@ public class Currency{
 		return true;
 	}
 	public static void makeNewCurrency(Currency newCurrency){
+		if(CURRENCYSTATE == null )
+			CURRENCYSTATE = new HashMap<String,Currency>();
 		CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
 	}
 	public static void deleteCurrency(Currency currency){
 		CURRENCYSTATE.remove(currency.currencyCode);
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getCurrencyCode() {
+		return currencyCode;
+	}
+	public void setCurrencyCode(String currencyCode) {
+		this.currencyCode = currencyCode;
+	}
+	public CurrencySnapShot getValue() {
+		return Value;
+	}
+	public void setValue(CurrencySnapShot value) {
+		this.Value = value;
+	}
+	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
+		return History;
+	}
+	
+	public void setHistory(HashMap<LocalDateTime,CurrencySnapShot> history) {
+		Currency.History = history;
+	}
+	
+	@JsonIgnore
+	public static void updateCurrencyValue(String currencyCode, CurrencySnapShot newValue) throws Exception
+	{
+		if(CURRENCYSTATE == null)
+			throw new Exception("Currency Map null, define a new currency first");
+		else if (!CURRENCYSTATE.containsKey(currencyCode)){
+			throw new Exception("Currency not found. Create the currency first");
+		}
+			else{
+				Currency c = CURRENCYSTATE.get(currencyCode);
+				c.setValue(newValue);
+				Currency.History.put(LocalDateTime.now(),newValue);
+			}
+	}
+	
+	@JsonIgnore
+	public static HashMap<String, Currency> getCURRENCYSTATE() {
+		return CURRENCYSTATE;
+	}
+	
+	@JsonIgnore
+	public static void setCURRENCYSTATE(HashMap<String, Currency> cURRENCYSTATE) {
+		CURRENCYSTATE = cURRENCYSTATE;
 	}
 }

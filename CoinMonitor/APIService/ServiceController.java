@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -33,6 +32,22 @@ public class ServiceController {
 	private static MongoClient mongoClient;
 	private static MongoDatabase database;
 	
+	public static MongoClient getMongoClient() {
+		return mongoClient;
+	}
+
+	public static void setMongoClient(MongoClient mongoClient) {
+		ServiceController.mongoClient = mongoClient;
+	}
+
+	public static MongoDatabase getDatabase() {
+		return database;
+	}
+
+	public static Logger getLogger() {
+		return logger;
+	}
+
 	public static void setDataBase()
 	{
 		if(ServiceController.mongoClient == null)
@@ -118,7 +133,7 @@ public class ServiceController {
 	
 	private void updateUser(User user) throws Exception {
 		try{
-		MongoCollection<Document> collection = this.database.getCollection("Users");
+		MongoCollection<Document> collection = ServiceController.getDatabase().getCollection("Users");
 		Document myDoc = collection.find(eq("userID", user.USERID)).first();
 		if(myDoc==null) {
 			System.out.println("User not registered");
@@ -144,7 +159,7 @@ public class ServiceController {
 
 	private User getUser(String userID) throws Exception {
 		try {
-			MongoCollection<Document> collection = this.database.getCollection("Users");
+			MongoCollection<Document> collection = ServiceController.getDatabase().getCollection("Users");
 			Document myDoc = collection.find(eq("userID", userID)).first();
 			if(myDoc==null) {
 				System.out.println("User not registered");

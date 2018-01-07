@@ -7,10 +7,48 @@ public class User {
 	CoinWallet wallet;
 	String phoneNumber; 
 	String emailID;
-	List<WalletSection> previousHoldings;
-	
 	float LiquidCashInWallet;
 	
+	public int getUSERID() {
+		return USERID;
+	}
+
+	public void setUSERID(int uSERID) {
+		USERID = uSERID;
+	}
+
+	public CoinWallet getWallet() {
+		return wallet;
+	}
+
+	public void setWallet(CoinWallet wallet) {
+		this.wallet = wallet;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getEmailID() {
+		return emailID;
+	}
+
+	public void setEmailID(String emailID) {
+		this.emailID = emailID;
+	}
+
+	public float getLiquidCashInWallet() {
+		return LiquidCashInWallet;
+	}
+
+	public void setLiquidCashInWallet(float liquidCashInWallet) {
+		LiquidCashInWallet = liquidCashInWallet;
+	}
+
 	public User(){
 		super();
 	}

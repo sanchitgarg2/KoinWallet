@@ -2,6 +2,9 @@ package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
 
+import org.springframework.context.annotation.Scope;
+
+@Scope("prototype")
 public class Transaction {
 	Currency outgoingCurrency;
 	Currency incomingCurrency;

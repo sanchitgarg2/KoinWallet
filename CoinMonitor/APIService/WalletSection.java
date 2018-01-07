@@ -1,8 +1,6 @@
 package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 
 public class WalletSection {
@@ -10,19 +8,43 @@ public class WalletSection {
 	float currentBalance;
 	float cashInvested;
 	float cashRedeemed;
+	public Currency getCurrency() {
+		return currency;
+	}
 
-	LocalDateTime purchaseDate;
-	CurrencySnapShot purchasePrice;
-	CurrencySnapShot sellPrice;
-	LocalDateTime sellDate;
+	public void setCurrency(Currency currency) {
+		this.currency = currency;
+	}
+
+	public float getCurrentBalance() {
+		return currentBalance;
+	}
+
+	public void setCurrentBalance(float currentBalance) {
+		this.currentBalance = currentBalance;
+	}
+
+	public float getCashInvested() {
+		return cashInvested;
+	}
+
+	public void setCashInvested(float cashInvested) {
+		this.cashInvested = cashInvested;
+	}
+
+	public float getCashRedeemed() {
+		return cashRedeemed;
+	}
+
+	public void setCashRedeemed(float cashRedeemed) {
+		this.cashRedeemed = cashRedeemed;
+	}
+
 	public WalletSection(Currency currency, float numberOfCoins, LocalDateTime purchaseDate, CurrencySnapShot purchasePrice) {
 		super();
 		this.currency = currency;
 		this.currentBalance = numberOfCoins;
-		if(purchaseDate!= null)
-		this.purchaseDate = purchaseDate;
-		else this.purchaseDate = LocalDateTime.now();
-		this.purchasePrice = purchasePrice;
+		this.cashInvested = numberOfCoins * purchasePrice.valueInINR;
 	}
 	
 	public void buy(Transaction transaction){
@@ -34,8 +56,8 @@ public class WalletSection {
 		this.currentBalance -= transaction.purchaseQuantity * transaction.pricePerIncoming;
 	};
 	
-	public WalletSection() throws InvalidHoldingException {
-		super();throw new InvalidHoldingException("Can not initialize an invalid Holding");
+	public WalletSection(){
+		super();
 	}
 	
 	
