@@ -13,19 +13,15 @@ import java.util.HashMap;
 
 @Scope("prototype")
 public class Currency{
+	
 	String name;
 	String currencyCode;
-	CurrencySnapShot Value;
-	public static HashMap<LocalDateTime,CurrencySnapShot> History; 
-	
-	@JsonIgnore
+	public CurrencySnapShot value;
+	public HashMap<LocalDateTime,CurrencySnapShot> history; 
 	public static HashMap<String,Currency> CURRENCYSTATE;
 	
-	@JsonIgnore
-	public Currency getCurrencyState(){
-		return CURRENCYSTATE.get(this.currencyCode);
-	}
 	
+	//Define Supporting classes.
 	class ConversionRate{
 		Currency currency1;
 		Currency currency2;
@@ -52,6 +48,11 @@ public class Currency{
 	}
 	
 	static class CurrencySnapShot{
+		@Override
+		public String toString() {
+			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
+					+ refreshTime+" ";
+		}
 		float valueInINR;
 		float valueInUSD;
 		LocalDateTime refreshTime;
@@ -97,27 +98,47 @@ public class Currency{
 		}
 		public float getvalueInINR() {
 			if(this.valueInINR == 0)
-				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").Value.getvalueInINR();
+				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getvalueInINR();
 			return this.valueInINR;
 		}
 	}
 	
 	
-	public static void updateHistory(CurrencySnapShot s){
-		if(Currency.History != null){
-			Currency.History.put(LocalDateTime.now(),s);
+	
+	@Override
+	public String toString() {
+		return "Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + ", history=" + history
+				+ "]";
+	}
+
+
+	@JsonIgnore
+	public Currency getCurrencyState(){
+		return CURRENCYSTATE.get(this.currencyCode);
+	}
+	
+
+	@JsonIgnore
+	public void updateHistory(CurrencySnapShot s){
+		
+		if(Currency.CURRENCYSTATE != null){
+			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.getCurrencyCode());
+			if(thisCurrency.history != null){
+				thisCurrency.history.put(LocalDateTime.now(),s);
+				}
+			else{
+				thisCurrency.history = new HashMap<LocalDateTime,CurrencySnapShot>();
+				thisCurrency.history.put(LocalDateTime.now(),s);
 			}
-		else{
-			Currency.History = new HashMap<LocalDateTime,CurrencySnapShot>();
-			Currency.History.put(LocalDateTime.now(),s);
+			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 		}
 	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((History == null) ? 0 : History.hashCode());
-		result = prime * result + ((Value == null) ? 0 : Value.hashCode());
+		result = prime * result + ((history == null) ? 0 : history.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		result = prime * result + ((currencyCode == null) ? 0 : currencyCode.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
@@ -160,18 +181,56 @@ public class Currency{
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
-	public CurrencySnapShot getValue() {
-		return Value;
-	}
-	public void setValue(CurrencySnapShot value) {
-		this.Value = value;
-	}
-	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
-		return History;
+	
+	@JsonIgnore
+	public CurrencySnapShot getValue() throws Exception {
+		if(Currency.CURRENCYSTATE != null){
+			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
+			if(thisCurrency != null) {
+				return thisCurrency.value;
+			} else
+				throw new Exception("Stated Currency does not have a value");
+		}
+		else{
+			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
+			Currency.CURRENCYSTATE.put(this.currencyCode,this);
+			throw new Exception("Stated Currency does not have a value");
+		}
 	}
 	
+	@JsonIgnore
+	public void setValue(CurrencySnapShot value) throws Exception {
+		if(Currency.CURRENCYSTATE != null){
+			if(Currency.CURRENCYSTATE.containsKey(this.currencyCode)) {
+				Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
+				thisCurrency.value = value;
+				Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
+			} else
+			{
+				Currency.CURRENCYSTATE.put(this.currencyCode, this);
+				Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
+				thisCurrency.value = value;
+				Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
+			}
+				
+		}
+		else{
+			Currency.CURRENCYSTATE = new HashMap<String,Currency>();
+			Currency.CURRENCYSTATE.put(this.currencyCode, this);
+			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
+			thisCurrency.value = value;
+			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
+		}
+	}
+	
+	@JsonIgnore
+	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
+		return history;
+	}
+	
+	@JsonIgnore
 	public void setHistory(HashMap<LocalDateTime,CurrencySnapShot> history) {
-		Currency.History = history;
+		Currency.CURRENCYSTATE.get(this.currencyCode).history = history;
 	}
 	
 	@JsonIgnore
@@ -185,7 +244,7 @@ public class Currency{
 			else{
 				Currency c = CURRENCYSTATE.get(currencyCode);
 				c.setValue(newValue);
-				Currency.History.put(LocalDateTime.now(),newValue);
+				Currency.CURRENCYSTATE.get(currencyCode).history.put(LocalDateTime.now(),newValue);
 			}
 	}
 	

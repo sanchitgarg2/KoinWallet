@@ -44,7 +44,7 @@ public class mainClass {
 			sanchit.setWallet(wallet);
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));
-			
+			System.out.println(Currency.CURRENCYSTATE);
 //			sanchit.trade(t);
 			ObjectMapper m = new ObjectMapper();
 			String s = m.writeValueAsString(sanchit);

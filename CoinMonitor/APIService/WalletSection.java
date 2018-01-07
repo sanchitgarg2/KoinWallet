@@ -49,10 +49,10 @@ public class WalletSection {
 	
 	public void buy(Transaction transaction){
 		this.currentBalance += transaction.purchaseQuantity;
-		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.Value.valueInINR;
+		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.value.valueInINR;
 	};
 	public void sell(Transaction transaction){
-		this.cashRedeemed += transaction.purchaseQuantity*transaction.incomingCurrency.Value.valueInINR;
+		this.cashRedeemed += transaction.purchaseQuantity*transaction.incomingCurrency.value.valueInINR;
 		this.currentBalance -= transaction.purchaseQuantity * transaction.pricePerIncoming;
 	};
 	

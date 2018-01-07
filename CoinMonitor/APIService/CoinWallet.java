@@ -61,7 +61,7 @@ public class CoinWallet {
 	private float getCurrentValueinINR(){
 		float currentValue = 0;
 		for(WalletSection h:this.sections.values()){
-			currentValue += h.currentBalance *((Currency)Currency.CURRENCYSTATE.get(h.currency.currencyCode)).Value.getvalueInINR();
+			currentValue += h.currentBalance *((Currency)Currency.CURRENCYSTATE.get(h.currency.currencyCode)).value.getvalueInINR();
 		}
 		return currentValue;
 	}

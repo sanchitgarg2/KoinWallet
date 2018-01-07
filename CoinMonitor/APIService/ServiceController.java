@@ -118,8 +118,8 @@ public class ServiceController {
 		float totalValue = 0;
 		for(String s:HoldingsbyCurrency.keySet())
 		{
-			float coinValue = HoldingsbyCurrency.get(s)*((Currency)Currency.CURRENCYSTATE.get(s)).Value.valueInUSD;
-			output +=  HoldingsbyCurrency.get(s) + " of " + s + " currently valued at " + ((Currency)Currency.CURRENCYSTATE.get(s)).Value.valueInUSD + " making your investment worth " + coinValue +"\n" ;
+			float coinValue = HoldingsbyCurrency.get(s)*((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD;
+			output +=  HoldingsbyCurrency.get(s) + " of " + s + " currently valued at " + ((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD + " making your investment worth " + coinValue +"\n" ;
 			totalValue += coinValue;
 		}
 			output += " Your total investments are worth "+totalValue;
