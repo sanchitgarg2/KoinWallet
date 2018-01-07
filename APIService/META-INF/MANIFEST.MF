@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: APIServer
+Bundle-SymbolicName: APIService
+Bundle-Version: 1.0.0.qualifier
+Export-Package: CoinMonitor.APIServer
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
