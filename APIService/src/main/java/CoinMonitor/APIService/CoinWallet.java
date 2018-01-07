@@ -75,4 +75,12 @@ public class CoinWallet {
 		((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode)).buy(transaction);
 		((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
 	}
+
+	@Override
+	public String toString() {
+		return "CoinWallet [sections=" + sections + ", TransactionList=" + TransactionList + ", currentValue="
+				+ currentValue + "]";
+	}
+	
+	
 }

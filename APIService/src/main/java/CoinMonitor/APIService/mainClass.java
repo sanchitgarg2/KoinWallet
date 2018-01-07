@@ -44,7 +44,7 @@ public class mainClass {
 			sanchit.setWallet(wallet);
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));
-			System.out.println(Currency.CURRENCYSTATE);
+//			System.out.println(Currency.CURRENCYSTATE);
 			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(200.0f, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(202.0f, 0, LocalDateTime.now()) );
@@ -55,11 +55,20 @@ public class mainClass {
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(210.0f, 0, LocalDateTime.now()) );
 			
 			
-			System.out.println(Currency.CURRENCYSTATE);
+//			System.out.println(Currency.CURRENCYSTATE);
+			System.out.println("Currency State");
+			for(Currency c: Currency.CURRENCYSTATE.values()){
+				System.out.println(c);
+			}
 			//			sanchit.trade(t);
 			ObjectMapper m = new ObjectMapper();
+			System.out.println("\nClass toString");
+			System.out.println(sanchit);
 			String s = m.writeValueAsString(sanchit);
+			System.out.println("\nUser Class JSON");
 			System.out.println(s);
+			System.out.println("\n Currency Class JSON");
+			System.out.println(m.writeValueAsString(XRP));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

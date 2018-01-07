@@ -59,6 +59,12 @@ public class WalletSection {
 	public WalletSection(){
 		super();
 	}
+
+	@Override
+	public String toString() {
+		return "[currency=" + currency + ", currentBalance=" + currentBalance + ", cashInvested=" + cashInvested + ", cashRedeemed=" + cashRedeemed + "]\n";
+	}
+	
 	
 	
 }

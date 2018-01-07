@@ -66,5 +66,13 @@ public class User {
 	public void trade(Transaction transaction) {
 		this.wallet.trade(transaction);		
 	}
+
+	@Override
+	public String toString() {
+		return "User [USERID=" + USERID + ", wallet=" + wallet + ", phoneNumber=" + phoneNumber + ", emailID=" + emailID
+				+ ", LiquidCashInWallet=" + LiquidCashInWallet + "]";
+	}
+	
+	
 	
 }
