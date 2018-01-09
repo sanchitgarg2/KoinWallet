@@ -11,12 +11,19 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.concurrent.ExecutionException;
 
+import Coinclasses.User;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -25,10 +32,10 @@ public class MainActivity extends AppCompatActivity {
 
     public String bitcoinURL ="https://api.cryptonator.com/api/full/btc-usd";
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        new getCurrentValue().execute(bitcoinURL);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -44,6 +51,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         */
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        User sanchit= new User();
+        String user=null;
+        try {
+           user =new getCurrentValue().execute(bitcoinURL).get().toString();
+            sanchit = mapper.readValue(user, User.class);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        EditText email = (EditText) findViewById(R.id.editText1);
+        EditText cash =(EditText) findViewById(R.id.editText2);
+        EditText phone = (EditText) findViewById(R.id.editText3);
+        EditText wallet = (EditText) findViewById(R.id.editText4);
+
+        email.setText(sanchit.getEmailID());
+        cash.setText(String.valueOf(sanchit.getLiquidCashInWallet()));
+        phone.setText(sanchit.getPhoneNumber());
+        //email.setText(sanchit.);
+
+
     }
 
     @Override
@@ -81,10 +120,7 @@ public class MainActivity extends AppCompatActivity {
         private ProgressDialog Dialog = new ProgressDialog(MainActivity.this);
         String data ="";
         int sizeData = 0;
-        EditText basecurrency = (EditText) findViewById(R.id.editText1);
-        EditText targetcurrency = (EditText) findViewById(R.id.editText2);
-        EditText price = (EditText) findViewById(R.id.editText3);
-        EditText volume = (EditText) findViewById(R.id.editText4);
+
 
 
       /*
@@ -110,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Call after onPreExecute method
         protected String doInBackground(String... urls) {
-
+            String user="{\"wallet\":{\"sections\":{\"XRP\":{\"currency\":{\"name\":\"Ripple\",\"currencyCode\":\"XRP\"},\"currentBalance\":75.0,\"cashInvested\":15000.0,\"cashRedeemed\":0.0},\"INR\":{\"currency\":{\"name\":\"Rupee\",\"currencyCode\":\"INR\"},\"currentBalance\":75.0,\"cashInvested\":75.0,\"cashRedeemed\":0.0}},\"transactionList\":null},\"phoneNumber\":\"8147325346\",\"emailID\":\"sanchitgarg2@gmail.com\",\"liquidCashInWallet\":10.0,\"userid\":10}\n";
             Request.Builder builder = new Request.Builder();
             builder.url(urls[0]);
             Request request = builder.build();
@@ -123,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 String message=response.body().string();
 
-                return message;
+                return user;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -140,10 +176,12 @@ public class MainActivity extends AppCompatActivity {
                 try {
 
                     JSONObject json = new JSONObject(s);
-                    basecurrency.setText(json.getJSONObject("ticker").getString("base"));
+
+                    //basecurrency.setText(json.getJSONObject("ticker").getString("base"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
             }
 
         }

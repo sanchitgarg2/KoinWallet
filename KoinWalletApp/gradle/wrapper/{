@@ -1,0 +1,24 @@
+{
+XRP=Currency 
+[name=Ripple, 
+currencyCode=XRP, 
+value=valueInINR=200.0, valueInUSD=0.0, refreshTime=2018-01-08T03:27:56.387 , 
+history={2018-01-08T03:27:56.388=valueInINR=200.0, valueInUSD=0.0, refreshTime=2018-01-08T03:27:56.388 }], 
+
+
+INR=Currency 
+[name=Rupee, 
+currencyCode=INR,
+ value=valueInINR=1.0, valueInUSD=0.0, refreshTime=2018-01-08T03:27:56.388 , 
+ history={2018-01-08T03:27:56.388=valueInINR=1.0, valueInUSD=0.0, refreshTime=2018-01-08T03:27:56.388 }]}
+
+
+{"wallet":
+{"sections":
+	{"XRP":{"currency":{"name":"Ripple","currencyCode":"XRP"},"currentBalance":75.0,"cashInvested":15000.0,"cashRedeemed":0.0},
+	"INR":{"currency":{"name":"Rupee","currencyCode":"INR"},"currentBalance":75.0,"cashInvested":75.0,"cashRedeemed":0.0}},
+	"transactionList":null},
+	"phoneNumber":"8147325346",
+	"emailID":"sanchitgarg2@gmail.com",
+	"liquidCashInWallet":10.0,
+	"userid":10}
