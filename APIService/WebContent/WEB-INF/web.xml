@@ -4,12 +4,12 @@
     <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
   </listener>
   <servlet>
-    <servlet-name>CoinMonitor</servlet-name>
+    <servlet-name>KoinWallet</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
-    <servlet-name>CoinMonitor</servlet-name>
+    <servlet-name>KoinWallet</servlet-name>
     <url-pattern>/APIService/*</url-pattern>
   </servlet-mapping>
   </web-app>
