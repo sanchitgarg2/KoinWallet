@@ -22,7 +22,7 @@ public class Currency{
 	
 	
 	//Define Supporting classes.
-	class ConversionRate{
+	public class ConversionRate{
 		Currency currency1;
 		Currency currency2;
 		private float buyCurrency2At;
@@ -47,7 +47,7 @@ public class Currency{
 		}
 	}
 	
-	static class CurrencySnapShot{
+	public class CurrencySnapShot{
 		@Override
 		public String toString() {
 			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="

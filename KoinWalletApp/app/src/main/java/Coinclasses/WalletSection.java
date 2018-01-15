@@ -1,10 +1,8 @@
+
 package Coinclasses;
-
 import org.threeten.bp.LocalDateTime;
-
-//import java.time.*;
-
 import Coinclasses.Currency.CurrencySnapShot;
+import Coinclasses.Transaction;
 
 public class WalletSection {
 	Currency currency;
@@ -49,7 +47,7 @@ public class WalletSection {
 		this.currentBalance = numberOfCoins;
 		this.cashInvested = numberOfCoins * purchasePrice.valueInINR;
 	}
-	
+
 	public void buy(Transaction transaction){
 		this.currentBalance += transaction.purchaseQuantity;
 		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.value.valueInINR;
@@ -58,10 +56,16 @@ public class WalletSection {
 		this.cashRedeemed += transaction.purchaseQuantity*transaction.incomingCurrency.value.valueInINR;
 		this.currentBalance -= transaction.purchaseQuantity * transaction.pricePerIncoming;
 	};
-	
+
 	public WalletSection(){
 		super();
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "[currency=" + currency + ", currentBalance=" + currentBalance + ", cashInvested=" + cashInvested + ", cashRedeemed=" + cashRedeemed + "]\n";
+	}
+
+
+
 }

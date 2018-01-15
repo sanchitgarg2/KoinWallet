@@ -29,6 +29,61 @@ public class mainClass {
 			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
 			XRP.setHistory(XRPHistory);
 			Currency.makeNewCurrency(XRP);
+			
+			//SUB
+			XRP = new Currency();
+			XRP.setCurrencyCode("SUB");
+			XRP.setName("Substratum");
+			XRP.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now()));
+			XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now()));
+			XRP.setHistory(XRPHistory);
+			Currency.makeNewCurrency(XRP);
+			
+			//ETH
+			
+			XRP = new Currency();
+			XRP.setCurrencyCode("ETH");
+			XRP.setName("Etherium");
+			XRP.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now()));
+			XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now()));
+			XRP.setHistory(XRPHistory);
+			Currency.makeNewCurrency(XRP);
+			
+			//TRX
+			
+			XRP = new Currency();
+			XRP.setCurrencyCode("TRX");
+			XRP.setName("Tron");
+			XRP.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now()));
+			XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now()));
+			XRP.setHistory(XRPHistory);
+			Currency.makeNewCurrency(XRP);
+			
+			//XLM
+			
+			XRP = new Currency();
+			XRP.setCurrencyCode("XLM");
+			XRP.setName("Stellar Lumens");
+			XRP.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now()));
+			XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+			XRP.setHistory(XRPHistory);
+			Currency.makeNewCurrency(XRP);
+			
+			//XVG
+			
+			XRP = new Currency();
+			XRP.setCurrencyCode("XVG");
+			XRP.setName("Verge");
+			XRP.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+			XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+			XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now()));
+			XRP.setHistory(XRPHistory);
+			Currency.makeNewCurrency(XRP);
+			
 			Currency INR = new Currency();
 			INR.setCurrencyCode("INR");
 			INR.setName("Rupee");
@@ -37,10 +92,17 @@ public class mainClass {
 			INRHistory.put(LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
 			INR.setHistory(INRHistory);
 			Currency.makeNewCurrency(INR);			
-			WalletSection section = new WalletSection(XRP,75.0f,LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
-			WalletSection sectionINR = new WalletSection(INR,75.0f,LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
-			wallet.addNewSection(section);
-			wallet.addNewSection(sectionINR);
+//			WalletSection section = new WalletSection(XRP,75.0f,LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
+//			WalletSection sectionINR = new WalletSection(INR,75.0f,LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+			WalletSection section;
+			for(Currency c: Currency.CURRENCYSTATE.values())
+			{
+				 section = new WalletSection(c,c.getValue().valueInINR,LocalDateTime.now(),c.getValue());
+				 wallet.addNewSection(section);
+			}
+			
+//			wallet.addNewSection(section);
+//			wallet.addNewSection(sectionINR);
 			sanchit.setWallet(wallet);
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));

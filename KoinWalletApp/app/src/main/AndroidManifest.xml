@@ -3,6 +3,8 @@
     package="sharetest.com.coinwallet" >
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SectionDisplay"/>
+        <activity android:name=".Watchlist"/>
+        <activity android:name=".Settings"/>
+        <activity android:name=".CurrencyExchange"/>
+
+
     </application>
 
 </manifest>
