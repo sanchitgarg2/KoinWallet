@@ -5,14 +5,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+@Configuration
+@EnableScheduling
 public class mainClass {
 
-	public static void main(String[] args) {
+//	@Autowired mainClass classA;
+//	@Bean
+	@Scheduled(fixedDelay = 10000)
+	public void trial_method() {
 		try {
 			Transaction t = new Transaction();
 			User sanchit = new User();
@@ -87,7 +99,10 @@ public class mainClass {
 			Currency INR = new Currency();
 			INR.setCurrencyCode("INR");
 			INR.setName("Rupee");
-			INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+			if(Currency.CURRENCYSTATE.containsKey("INR"))
+				INR.setValue(new CurrencySnapShot(Currency.getCURRENCYSTATE().get("INR").getValue().valueInINR+1.0f, 0, LocalDateTime.now()));
+			else
+				INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
 			HashMap<LocalDateTime,CurrencySnapShot> INRHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
 			INRHistory.put(LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
 			INR.setHistory(INRHistory);
@@ -107,7 +122,7 @@ public class mainClass {
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));
 //			System.out.println(Currency.CURRENCYSTATE);
-			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(200.0f, 0, LocalDateTime.now()) );
+			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(Currency.getCURRENCYSTATE().get("INR").getValue().valueInINR+20, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(202.0f, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
@@ -116,6 +131,7 @@ public class mainClass {
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(190.0f, 0, LocalDateTime.now()) );
 			Currency.updateCurrencyValue(XRP.currencyCode, new CurrencySnapShot(210.0f, 0, LocalDateTime.now()) );
 			
+			System.out.println(Currency.CURRENCYSTATE.get("INR"));
 			
 //			System.out.println(Currency.CURRENCYSTATE);
 			System.out.println("Currency State");
@@ -131,6 +147,11 @@ public class mainClass {
 			System.out.println(s);
 			System.out.println("\n Currency Class JSON");
 			System.out.println(m.writeValueAsString(XRP));
+			
+//			for(int i=0;i<20;i++){
+//				Thread.sleep(4000);
+//				System.out.println("Sleeping for the " + i +"th time");
+//			}
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

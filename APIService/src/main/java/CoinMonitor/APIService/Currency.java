@@ -163,7 +163,11 @@ public class Currency{
 	public static void makeNewCurrency(Currency newCurrency){
 		if(CURRENCYSTATE == null )
 			CURRENCYSTATE = new HashMap<String,Currency>();
-		CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
+		if(!CURRENCYSTATE.keySet().contains(newCurrency.currencyCode))
+			CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
+		else{
+			System.out.println("Currency Already Exists");
+		}
 	}
 	public static void deleteCurrency(Currency currency){
 		CURRENCYSTATE.remove(currency.currencyCode);
@@ -243,7 +247,8 @@ public class Currency{
 			else{
 				Currency c = CURRENCYSTATE.get(currencyCode);
 				c.setValue(newValue);
-				Currency.CURRENCYSTATE.get(currencyCode).history.put(LocalDateTime.now(),newValue);
+				c.history.put(LocalDateTime.now(),newValue);
+				Currency.CURRENCYSTATE.put(currencyCode,c);
 			}
 	}
 	

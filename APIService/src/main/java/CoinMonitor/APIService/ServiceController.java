@@ -4,13 +4,16 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.Document;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,9 +29,9 @@ import com.mongodb.client.MongoDatabase;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 
-
+@Controller
 public class ServiceController {
-	public final static Logger logger = Logger.getLogger(ServiceController.class);
+	public final static Logger logger = LogManager.getLogger(ServiceController.class);
 	private static MongoClient mongoClient;
 	private static MongoDatabase database;
 	
@@ -68,6 +71,15 @@ public class ServiceController {
 		catch(Exception e){
 			return false;
 		}
+	}
+	
+	@RequestMapping(path="/getUpdate" , method = RequestMethod.GET)
+	public @ResponseBody String getCurrencyState() throws Exception{
+		String s = "";
+		for (Currency c : Currency.getCURRENCYSTATE().values()){
+			s += c.getValue().toString();
+		}
+		return s;
 	}
 	@RequestMapping(path="/SellCurrency",params = {"userID", "PIN"})
 	public @ResponseBody String SellCurrency(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userID,@RequestParam(value = "PIN") String PIN){
