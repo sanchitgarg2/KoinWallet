@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Coinwallet</string>
     <string name="action_settings">Settings</string>
+    <string name="sell">SELL</string>
+    <string name="buy">BUY</string>
+    <string name="add">ADD</string>
+    <string name="exchnage">EXCHANGE</string>
+    <string name="settings">SETTINGS</string>
+    <string name="home">HOME</string>
+    <string name="wallet">WALLET</string>
+    <string name="watchlist">WATCHLIST</string>
 </resources>
