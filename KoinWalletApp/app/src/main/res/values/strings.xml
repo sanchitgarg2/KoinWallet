@@ -9,4 +9,6 @@
     <string name="home">HOME</string>
     <string name="wallet">WALLET</string>
     <string name="watchlist">WATCHLIST</string>
+    <string name="action_search">Search</string>
+    <string name="model_clicked_pattern">You clicked on the rank %1$d word: %2$s!</string>
 </resources>

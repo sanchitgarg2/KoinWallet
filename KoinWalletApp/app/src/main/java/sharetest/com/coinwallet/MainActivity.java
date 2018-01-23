@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -39,10 +40,14 @@ import Coinclasses.Currency;
 import Coinclasses.User;
 import Coinclasses.WalletSection;
 import AdapterClasses.CoinAdapter;
+import SupportingClasses.BottomNavigationViewBehavior;
 
 public class MainActivity extends AppCompatActivity {
 
     public String bitcoinURL ="https://api.cryptonator.com/api/full/btc-usd";
+            //"http://192.168.0.109:8080/Koinwallet/KoinWallet/getUser?userID=10";
+            //"http://192.168.43.122:8080/Koinwallet/KoinWallet/getUser?userID=10";
+    //
 
     private TextView headerText;
     private ListView listView;
@@ -83,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /*
     Handler h = new Handler();
     int delay = 10000; //10 seconds
     Runnable runnable;
@@ -108,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         h.removeCallbacks(runnable); //stop handler when activity not visible
         super.onPause();
     }
+    */
 
 
 
@@ -119,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
          User sanchit= new User();
          String user=null;
          try {
-             user =new getJSONValue(this).execute(bitcoinURL).get().toString();
+             user =new getJSONValue(this).execute(bitcoinURL).get();
              sanchit = mapper.readValue(user, User.class);
          } catch (InterruptedException e) {
              e.printStackTrace();
@@ -157,6 +164,8 @@ public class MainActivity extends AppCompatActivity {
     private void setBottomView() {
         BottomNavigationView bottomNavigationView = (BottomNavigationView)
                 findViewById(R.id.bottom_navigation);
+        CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) bottomNavigationView .getLayoutParams();
+        layoutParams.setBehavior(new BottomNavigationViewBehavior());
 
         bottomNavigationView.setSelectedItemId(R.id.action_wallet);
         bottomNavigationView.setOnNavigationItemSelectedListener(
