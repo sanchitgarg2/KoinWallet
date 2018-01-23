@@ -44,7 +44,9 @@ public class ServiceController {
 	}
 
 	public static MongoDatabase getDatabase() {
-		return database;
+		if(database == null)
+			setDataBase();
+		return ServiceController.database;
 	}
 
 	public static Logger getLogger() {
@@ -60,8 +62,9 @@ public class ServiceController {
 	}
 
 	@RequestMapping(path="/Trade",params = {"userID"}, method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody Transaction transcaction ,@RequestParam(value = "userID") String userID){
+	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody Transaction transcaction ,@RequestParam(value = "userID") String userIDString){
 		try{
+			int userID = Integer.parseInt(userIDString);
 			User user = getUser(userID);
 			Transaction transaction = new Transaction();
 			user.trade(transaction);
@@ -81,9 +84,27 @@ public class ServiceController {
 		}
 		return s;
 	}
+	
+	
+	@RequestMapping(path="/getUser",params = {"userID"})
+	public @ResponseBody String getUser(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString) throws Exception{
+		
+		ObjectMapper m = new ObjectMapper();
+		int userID = Integer.parseInt(userIDString);
+//		System.out.println("\nClass toString");
+//		System.out.println(sanchit);
+		try {
+			String s = m.writeValueAsString(getUser(userID));
+			return s;
+		} catch (JsonProcessingException e) {
+			return "INVALID_USER";
+		}
+	}
+	
 	@RequestMapping(path="/SellCurrency",params = {"userID", "PIN"})
-	public @ResponseBody String SellCurrency(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userID,@RequestParam(value = "PIN") String PIN){
-		try{
+	public @ResponseBody String SellCurrency(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){
+		int userID = Integer.parseInt(userIDString);
+		try{			
 		User user = getUser(userID);
 		String currencyCode = null ;
 		CurrencySnapShot purchasePrice = new CurrencySnapShot(0, 0, null);
@@ -103,7 +124,8 @@ public class ServiceController {
 		}
 	}
 	@RequestMapping(path="/getBalance",params = {"userID", "PIN"})
-	public @ResponseBody String getBalance(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userID,@RequestParam(value = "PIN") String PIN){
+	public @ResponseBody String getBalance(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){
+		int userID = Integer.parseInt(userIDString);
 		try{
 			User user = getUser(userID);
 			float balance = user.wallet.getCurrentValue();
@@ -115,7 +137,8 @@ public class ServiceController {
 		
 	}
 	@RequestMapping(path="/getCurrentState",params = {"userID", "PIN"})
-	public @ResponseBody User getCurrentState(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userID,@RequestParam(value = "PIN") String PIN){
+	public @ResponseBody User getCurrentState(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){
+		int userID = Integer.parseInt(userIDString);
 		try{
 			User user = getUser(userID);
 		HashMap<String,Float> HoldingsbyCurrency = new HashMap<>();
@@ -169,10 +192,10 @@ public class ServiceController {
 		}		
 	}
 
-	private User getUser(String userID) throws Exception {
+	private User getUser(int userID) throws Exception {
 		try {
-			MongoCollection<Document> collection = ServiceController.getDatabase().getCollection("Users");
-			Document myDoc = collection.find(eq("userID", userID)).first();
+			MongoCollection collection = ServiceController.getDatabase().getCollection("Users");
+			Document myDoc = (Document) collection.find(eq("userid", userID)).first();
 			if(myDoc==null) {
 				System.out.println("User not registered");
 				return null;
@@ -180,6 +203,7 @@ public class ServiceController {
 			logger.info("User with ID " + userID +" present");
 			User user = new User();
 			ObjectMapper mapper = new ObjectMapper();
+			System.out.println(myDoc.toJson());
 			user = (User)mapper.readValue(myDoc.toJson(),User.class);
 			return user;
 			}
@@ -196,6 +220,107 @@ public class ServiceController {
 			}
 		return null;
 	}
+	
+private User getabc() throws Exception{
+	User user1 = new User();
+	
+//	if(initUser)
+	{
+		
+		user1.setEmailID("sanchitgarg2@gmail.com");
+		user1.setLiquidCashInWallet(10f);
+		user1.setPhoneNumber("8147325346");
+		user1.setUSERID(10);
+		
+		
+		CoinWallet wallet = new CoinWallet();
+		Currency currency1 = new Currency();
+		
+		//XRP
+		currency1.setCurrencyCode("XRP");
+		currency1.setName("Ripple");
+		currency1.setValue(new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
+		HashMap<LocalDateTime,CurrencySnapShot> XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		//SUB
+		currency1 = new Currency();
+		currency1.setCurrencyCode("SUB");
+		currency1.setName("Substratum");
+		currency1.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now()));
+		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		//ETH
+		
+		currency1 = new Currency();
+		currency1.setCurrencyCode("ETH");
+		currency1.setName("Etherium");
+		currency1.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now()));
+		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		//TRX
+		
+		currency1 = new Currency();
+		currency1.setCurrencyCode("TRX");
+		currency1.setName("Tron");
+		currency1.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now()));
+		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		//XLM
+		
+		currency1 = new Currency();
+		currency1.setCurrencyCode("XLM");
+		currency1.setName("Stellar Lumens");
+		currency1.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now()));
+		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		//XVG
+		
+		currency1 = new Currency();
+		currency1.setCurrencyCode("XVG");
+		currency1.setName("Verge");
+		currency1.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now()));
+		currency1.setHistory(XRPHistory);
+		Currency.makeNewCurrency(currency1);
+		
+		Currency INR = new Currency();
+		INR.setCurrencyCode("INR");
+		INR.setName("Rupee");
+		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+		HashMap<LocalDateTime,CurrencySnapShot> INRHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
+		INRHistory.put(LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+		INR.setHistory(INRHistory);
+		Currency.makeNewCurrency(INR);	
+		
+		WalletSection section;
+		for(Currency c: Currency.CURRENCYSTATE.values())
+		{
+			 section = new WalletSection(c,c.getValue().valueInINR,LocalDateTime.now(),c.getValue());
+			 wallet.addNewSection(section);
+		}
+		
+		user1.setWallet(wallet);
+		
+	}
+	return user1;
+}
 	
 
 }

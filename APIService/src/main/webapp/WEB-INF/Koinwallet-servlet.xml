@@ -18,10 +18,10 @@
 	</bean>
 <!-- 	<bean id="otpScheduler" class="ivr.OTPcleanjob"></bean> -->
 	<bean id="main Class" class="CoinMonitor.APIService.ServiceController"></bean>
-	<bean id="ValueRefresher" class="CoinMonitor.APIService.mainClass"></bean>
+	<bean id="ValueRefresher" class="CoinMonitor.APIService.RefreshRate"></bean>
 	<bean id="jsonView"
 		class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
-	<bean
+<!-- 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
 		<property name="messageConverters">
 			<util:list id="beanList">
@@ -29,14 +29,14 @@
 				<ref bean="marshallingHttpMessageConverter" />
 			</util:list>
 		</property>
-	</bean>
+	</bean> -->
 
 	<bean id="jsonConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
 		<property name="supportedMediaTypes" value="application/json" />
 		<!-- <property name="objectMapper" value="jacksonObjectMapper" /> -->
 	</bean>
 
-	<bean
+	<!-- <bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
 		<property name="messageConverters">
 			<list>
@@ -44,6 +44,6 @@
 				<ref bean="marshallingHttpMessageConverter" />
 			</list>
 		</property>
-	</bean>
+	</bean> -->
 </beans>
 
