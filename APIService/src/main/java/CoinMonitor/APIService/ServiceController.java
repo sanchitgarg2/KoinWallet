@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -90,6 +91,30 @@ public class ServiceController {
 		}
 		catch(Exception e){
 			return ""+false;
+		}
+	}
+	
+	@RequestMapping(path="/getWatchList" , method = RequestMethod.POST)
+	public @ResponseBody String getWatchList(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		try{
+			JSONParser parser = new JSONParser();
+			JSONObject bufferJSONObject = null;
+			bufferJSONObject = (JSONObject) parser.parse(jsonString);
+			int userID = Integer.parseInt("" + bufferJSONObject.get("userID"));
+//			ObjectMapper mapper = new ObjectMapper();
+//			User user = getUser(userID);
+			List<Currency> watchList = getUser(userID).getWatchList();
+			bufferJSONObject = new JSONObject();
+			String s;
+			for(Currency c:watchList)
+			{
+				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
+				bufferJSONObject.put(c.currencyCode, s);
+			}
+			return bufferJSONObject.toJSONString();
+		}
+		catch(Exception e){
+			return null;
 		}
 	}
 	
@@ -250,7 +275,7 @@ public class ServiceController {
 			ObjectMapper mapper = new ObjectMapper();
 			myDoc.remove("_id");
 			System.out.println(myDoc.toJson());
-			user = (User)mapper.readValue(myDoc.toJson(),User.class);
+			user = mapper.readValue(myDoc.toJson(),User.class);
 			return user;
 			}
 			catch(com.mongodb.MongoSocketOpenException|com.mongodb.MongoTimeoutException e)

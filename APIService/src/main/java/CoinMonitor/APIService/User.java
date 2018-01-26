@@ -1,14 +1,32 @@
 package CoinMonitor.APIService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
 	int USERID;
 	CoinWallet wallet;
+	List<Currency> watchList;
 	String phoneNumber; 
 	String emailID;
 	float LiquidCashInWallet;
 	
+	public List<Currency> getWatchList() {
+		if(this.watchList == null)
+		{
+			ArrayList<Currency> tempList = new ArrayList<>();
+			for(WalletSection w: this.wallet.sections.values()){
+				tempList.add(w.getCurrency());
+			}
+			this.watchList = tempList;
+		}
+		return watchList;
+	}
+
+	public void setWatchList(List<Currency> watchList) {
+		this.watchList = watchList;
+	}
+
 	public int getUSERID() {
 		return USERID;
 	}
