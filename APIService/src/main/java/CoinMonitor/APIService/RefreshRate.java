@@ -56,9 +56,9 @@ public class RefreshRate {
 				//XRP
 				currency1.setCurrencyCode("XRP");
 				currency1.setName("Ripple");
-				currency1.setValue(new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
-				HashMap<LocalDateTime,CurrencySnapShot> XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(200.0f, 0, LocalDateTime.now().toString()));
+				HashMap<String,CurrencySnapShot> XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
@@ -66,9 +66,9 @@ public class RefreshRate {
 				currency1 = new Currency();
 				currency1.setCurrencyCode("SUB");
 				currency1.setName("Substratum");
-				currency1.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now()));
-				XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now().toString()));
+				XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
@@ -77,9 +77,9 @@ public class RefreshRate {
 				currency1 = new Currency();
 				currency1.setCurrencyCode("ETH");
 				currency1.setName("Etherium");
-				currency1.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now()));
-				XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now().toString()));
+				XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
@@ -88,9 +88,9 @@ public class RefreshRate {
 				currency1 = new Currency();
 				currency1.setCurrencyCode("TRX");
 				currency1.setName("Tron");
-				currency1.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now()));
-				XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now().toString()));
+				XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
@@ -99,9 +99,9 @@ public class RefreshRate {
 				currency1 = new Currency();
 				currency1.setCurrencyCode("XLM");
 				currency1.setName("Stellar Lumens");
-				currency1.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now()));
-				XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now().toString()));
+				XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
@@ -110,19 +110,19 @@ public class RefreshRate {
 				currency1 = new Currency();
 				currency1.setCurrencyCode("XVG");
 				currency1.setName("Verge");
-				currency1.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
-				XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now()));
+				currency1.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now().toString()));
+				XRPHistory = new HashMap<String,CurrencySnapShot>();
+				XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now().toString()));
 				currency1.setHistory(XRPHistory);
 				Currency.makeNewCurrency(currency1);
 				
 				Currency INR = new Currency();
 				INR.setCurrencyCode("INR");
 				INR.setName("Rupee");
-				INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
-				INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
-				HashMap<LocalDateTime,CurrencySnapShot> INRHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-				INRHistory.put(LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+				INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
+				INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
+				HashMap<String,CurrencySnapShot> INRHistory = new HashMap<String,CurrencySnapShot>();
+				INRHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
 				INR.setHistory(INRHistory);
 				Currency.makeNewCurrency(INR);	
 				
@@ -139,8 +139,8 @@ public class RefreshRate {
 			}
 			
 			
-//			WalletSection section = new WalletSection(XRP,75.0f,LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
-//			WalletSection sectionINR = new WalletSection(INR,75.0f,LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+//			WalletSection section = new WalletSection(XRP,75.0f,LocalDateTime.now().toString(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now().toString()));
+//			WalletSection sectionINR = new WalletSection(INR,75.0f,LocalDateTime.now().toString(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
 			
 			
 //			wallet.addNewSection(section);
@@ -149,20 +149,20 @@ public class RefreshRate {
 			
 			t.setIncomingCurrency(Currency.CURRENCYSTATE.get("XRP"));
 //			System.out.println(Currency.CURRENCYSTATE);
-//			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(20.0f, 0, LocalDateTime.now()) );
+//			Currency.updateCurrencyValue(INR.currencyCode, new CurrencySnapShot(20.0f, 0, LocalDateTime.now().toString()) );
 			
 			for(Currency c: Currency.CURRENCYSTATE.values())
 			{
-				Currency.updateCurrencyValue(c.currencyCode, new CurrencySnapShot(c.getValue().getvalueInINR() * 1.1f , 0, LocalDateTime.now()) );
+				Currency.updateCurrencyValue(c.currencyCode, new CurrencySnapShot(c.getValue().getvalueInINR() * 1.1f , 0, LocalDateTime.now().toString()) );
 			}
 			
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(202.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(150.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(175.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(190.0f, 0, LocalDateTime.now()) );
-//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(210.0f, 0, LocalDateTime.now()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(202.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(201.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(150.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(175.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(190.0f, 0, LocalDateTime.now().toString()) );
+//			Currency.updateCurrencyValue(currency1.currencyCode, new CurrencySnapShot(210.0f, 0, LocalDateTime.now().toString()) );
 			
 			System.out.println(Currency.CURRENCYSTATE.get("XRP"));
 			

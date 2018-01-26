@@ -68,7 +68,7 @@ public class ServiceController {
 	}
 
 	@RequestMapping(path="/Trade",method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+	public @ResponseBody String Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
 		try{
 			JSONParser parser = new JSONParser();
 			JSONObject newJObject = null;
@@ -86,15 +86,16 @@ public class ServiceController {
 				transaction = new Transaction(Currency.getCURRENCYSTATE().get(currencyCode), Currency.getCURRENCYSTATE().get("INR"), 1/price, quantity*price);
 			user.trade(transaction);
 			updateUser(user);
-			return true;
+			return ""+true;
 		}
 		catch(Exception e){
-			return false;
+			return ""+false;
 		}
 	}
 	
 	@RequestMapping(path="/getUpdate" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyState() throws Exception{
+		JSONObject JsonObject = new JSONObject();
 		String s = "";
 		for (Currency c : Currency.getCURRENCYSTATE().values()){
 			s += c.getValue().toString();
@@ -283,9 +284,9 @@ private User getabc() throws Exception{
 		//XRP
 		currency1.setCurrencyCode("XRP");
 		currency1.setName("Ripple");
-		currency1.setValue(new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
-		HashMap<LocalDateTime,CurrencySnapShot> XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(200.0f, 0, LocalDateTime.now().toString()));
+		HashMap<String,CurrencySnapShot> XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(200.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
@@ -293,9 +294,9 @@ private User getabc() throws Exception{
 		currency1 = new Currency();
 		currency1.setCurrencyCode("SUB");
 		currency1.setName("Substratum");
-		currency1.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now()));
-		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(40.0f, 0, LocalDateTime.now().toString()));
+		XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(38.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
@@ -304,9 +305,9 @@ private User getabc() throws Exception{
 		currency1 = new Currency();
 		currency1.setCurrencyCode("ETH");
 		currency1.setName("Etherium");
-		currency1.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now()));
-		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(100000.0f, 0, LocalDateTime.now().toString()));
+		XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(92000.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
@@ -315,9 +316,9 @@ private User getabc() throws Exception{
 		currency1 = new Currency();
 		currency1.setCurrencyCode("TRX");
 		currency1.setName("Tron");
-		currency1.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now()));
-		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(6.0f, 0, LocalDateTime.now().toString()));
+		XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
@@ -326,9 +327,9 @@ private User getabc() throws Exception{
 		currency1 = new Currency();
 		currency1.setCurrencyCode("XLM");
 		currency1.setName("Stellar Lumens");
-		currency1.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now()));
-		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(15.0f, 0, LocalDateTime.now().toString()));
+		XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(26.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
@@ -337,19 +338,19 @@ private User getabc() throws Exception{
 		currency1 = new Currency();
 		currency1.setCurrencyCode("XVG");
 		currency1.setName("Verge");
-		currency1.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now()));
-		XRPHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		XRPHistory.put(LocalDateTime.now(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now()));
+		currency1.setValue(new CurrencySnapShot(26.0f, 0, LocalDateTime.now().toString()));
+		XRPHistory = new HashMap<String,CurrencySnapShot>();
+		XRPHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(31.0f, 0, LocalDateTime.now().toString()));
 		currency1.setHistory(XRPHistory);
 		Currency.makeNewCurrency(currency1);
 		
 		Currency INR = new Currency();
 		INR.setCurrencyCode("INR");
 		INR.setName("Rupee");
-		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
-		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
-		HashMap<LocalDateTime,CurrencySnapShot> INRHistory = new HashMap<LocalDateTime,CurrencySnapShot>();
-		INRHistory.put(LocalDateTime.now(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now()));
+		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
+		INR.setValue(new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
+		HashMap<String,CurrencySnapShot> INRHistory = new HashMap<String,CurrencySnapShot>();
+		INRHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(1.0f, 0, LocalDateTime.now().toString()));
 		INR.setHistory(INRHistory);
 		Currency.makeNewCurrency(INR);	
 		

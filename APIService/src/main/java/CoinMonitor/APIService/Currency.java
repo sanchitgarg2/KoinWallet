@@ -21,7 +21,7 @@ public class Currency{
 	String name;
 	String currencyCode;
 	public CurrencySnapShot value;
-	public HashMap<LocalDateTime,CurrencySnapShot> history; 
+	public HashMap<String, CurrencySnapShot> history; 
 	public static HashMap<String,Currency> CURRENCYSTATE;
 	public static Logger logger = LogManager.getLogger(Currency.class);
 	
@@ -60,9 +60,9 @@ public class Currency{
 		}
 		float valueInINR;
 		float valueInUSD;
-		LocalDateTime refreshTime;
+		String refreshTime;
 		
-		public CurrencySnapShot(float valueInINR, float valueInUSD, LocalDateTime refreshTime) {
+		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime) {
 			super();
 			this.valueInINR = valueInINR;
 			this.valueInUSD = valueInUSD;
@@ -128,11 +128,11 @@ public class Currency{
 		if(Currency.CURRENCYSTATE != null){
 			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.getCurrencyCode());
 			if(thisCurrency.history != null){
-				thisCurrency.history.put(LocalDateTime.now(),s);
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
 				}
 			else{
-				thisCurrency.history = new HashMap<LocalDateTime,CurrencySnapShot>();
-				thisCurrency.history.put(LocalDateTime.now(),s);
+				thisCurrency.history = new HashMap<String,CurrencySnapShot>();
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
 			}
 			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 		}
@@ -234,12 +234,12 @@ public class Currency{
 	}
 	
 	@JsonIgnore
-	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
+	public HashMap<String,CurrencySnapShot> getHistory() {
 		return history;
 	}
 	
 	@JsonIgnore
-	public void setHistory(HashMap<LocalDateTime,CurrencySnapShot> history) {
+	public void setHistory(HashMap<String,CurrencySnapShot> history) {
 		Currency.CURRENCYSTATE.get(this.currencyCode).history = history;
 	}
 	
@@ -254,7 +254,7 @@ public class Currency{
 			else{
 				Currency c = CURRENCYSTATE.get(currencyCode);
 				c.setValue(newValue);
-				c.history.put(LocalDateTime.now(),newValue);
+				c.history.put(LocalDateTime.now().toString(),newValue);
 				Currency.CURRENCYSTATE.put(currencyCode,c);
 			}
 	}
