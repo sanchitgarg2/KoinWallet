@@ -65,12 +65,23 @@ public class ServiceController {
 		
 	}
 
-	@RequestMapping(path="/Trade",params = {"userID"}, method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody Transaction transcaction ,@RequestParam(value = "userID") String userIDString){
+	@RequestMapping(path="/Trade",method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
 		try{
-			int userID = Integer.parseInt(userIDString);
+			JSONParser parser = new JSONParser();
+			JSONObject newJObject = null;
+			newJObject = (JSONObject) parser.parse(jsonString);
+			int userID = (int) newJObject.get("userID");
+			ObjectMapper mapper = new ObjectMapper();
 			User user = getUser(userID);
-			Transaction transaction = new Transaction();
+			String currencyCode = (String) newJObject.get("currencyCode");
+			float quantity = (float) newJObject.get("quantity");
+			float price = (float) newJObject.get("price");
+			Transaction transaction;
+			if(quantity > 0)
+				transaction = new Transaction(Currency.getCURRENCYSTATE().get("INR"), Currency.getCURRENCYSTATE().get(currencyCode), price, quantity);
+			else
+				transaction = new Transaction(Currency.getCURRENCYSTATE().get(currencyCode), Currency.getCURRENCYSTATE().get("INR"), 1/price, quantity*price);
 			user.trade(transaction);
 			updateUser(user);
 			return true;
@@ -107,9 +118,8 @@ public class ServiceController {
 	
 	@RequestMapping(path="/add",method={RequestMethod.POST,RequestMethod.GET}, produces = "application/json", consumes = "application/json")
 	public @ResponseBody String add(HttpServletRequest Request, HttpServletResponse response,@RequestBody String jsonString) throws Exception{
-		System.out.println(jsonString);
 
-	
+		System.out.println(jsonString);
 		JSONParser parser = new JSONParser();
 		
 		//convert from JSON string to JSONObject
@@ -147,11 +157,11 @@ public class ServiceController {
 		Transaction transaction = new Transaction();
 		user.trade(transaction);
 		updateUser(user);
-		return null;
 		}
 		catch(Exception e){
 			return null;
 		}
+		return PIN;
 	}
 	@RequestMapping(path="/getBalance",params = {"userID", "PIN"})
 	public @ResponseBody String getBalance(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){

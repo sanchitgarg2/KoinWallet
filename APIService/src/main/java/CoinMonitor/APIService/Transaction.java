@@ -12,6 +12,21 @@ public class Transaction {
 	float purchaseQuantity;
 	LocalDateTime time;
 	
+	
+	
+	
+	
+	public Transaction(Currency outgoingCurrency, Currency incomingCurrency, float pricePerIncoming,
+			float purchaseQuantity) {
+		super();
+		this.outgoingCurrency = outgoingCurrency;
+		this.incomingCurrency = incomingCurrency;
+		this.pricePerIncoming = pricePerIncoming;
+		this.purchaseQuantity = purchaseQuantity;
+		this.time = LocalDateTime.now();
+	}
+	public Transaction() {
+	}
 	public Currency getOutgoingCurrency() {
 		return outgoingCurrency;
 	}
