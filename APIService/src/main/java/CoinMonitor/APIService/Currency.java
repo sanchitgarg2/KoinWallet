@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.db.jpa.converter.LevelAttributeConverter;
+import org.json.simple.JSONObject;
 import org.springframework.cglib.core.Local;
 import org.springframework.context.annotation.Scope;
 
@@ -57,6 +58,13 @@ public class Currency{
 		public String toString() {
 			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
+		}
+		public String toJSONString() {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("valueInINR", valueInINR);
+			jsonObject.put("valueInUSD", valueInUSD);
+			jsonObject.put("refreshTime",refreshTime);
+			return jsonObject.toJSONString();
 		}
 		float valueInINR;
 		float valueInUSD;

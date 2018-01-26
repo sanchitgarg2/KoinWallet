@@ -98,9 +98,10 @@ public class ServiceController {
 		JSONObject JsonObject = new JSONObject();
 		String s = "";
 		for (Currency c : Currency.getCURRENCYSTATE().values()){
-			s += c.getValue().toString();
+			s = c.getValue().toJSONString();
+			JsonObject.put(c.currencyCode, s);
 		}
-		return s;
+		return JsonObject.toJSONString();
 	}
 	
 	
