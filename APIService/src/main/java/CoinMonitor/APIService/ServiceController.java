@@ -24,6 +24,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -65,18 +67,18 @@ public class ServiceController {
 		
 	}
 
-	@RequestMapping(path="/Trade",method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	@RequestMapping(path="/Trade",method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody Boolean Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
 		try{
 			JSONParser parser = new JSONParser();
 			JSONObject newJObject = null;
 			newJObject = (JSONObject) parser.parse(jsonString);
-			int userID = (int) newJObject.get("userID");
+			int userID = Integer.parseInt("" + newJObject.get("userID"));
 			ObjectMapper mapper = new ObjectMapper();
 			User user = getUser(userID);
 			String currencyCode = (String) newJObject.get("currencyCode");
-			float quantity = (float) newJObject.get("quantity");
-			float price = (float) newJObject.get("price");
+			float quantity = Float.parseFloat("" + newJObject.get("quantity"));
+			float price = Float.parseFloat("" + newJObject.get("price"));
 			Transaction transaction;
 			if(quantity > 0)
 				transaction = new Transaction(Currency.getCURRENCYSTATE().get("INR"), Currency.getCURRENCYSTATE().get(currencyCode), price, quantity);
@@ -209,7 +211,7 @@ public class ServiceController {
 	private void updateUser(User user) throws Exception {
 		try{
 		MongoCollection<Document> collection = ServiceController.getDatabase().getCollection("Users");
-		Document myDoc = collection.find(eq("userID", user.USERID)).first();
+		Document myDoc = collection.find(eq("userid", user.USERID)).first();
 		if(myDoc==null) {
 			System.out.println("User not registered");
 		}
@@ -217,7 +219,7 @@ public class ServiceController {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(user);
 		logger.info("Updating User " + user.USERID);
-		collection.insertOne(Document.parse(jsonInString));
+		collection.replaceOne(new Document().append("userid", user.USERID), Document.parse(jsonInString) );
 		}
 		catch(com.mongodb.MongoSocketOpenException|com.mongodb.MongoTimeoutException e)
 		{
