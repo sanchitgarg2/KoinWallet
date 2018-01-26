@@ -21,11 +21,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 
@@ -99,6 +103,32 @@ public class ServiceController {
 		} catch (JsonProcessingException e) {
 			return "INVALID_USER";
 		}
+	}
+	
+	@RequestMapping(path="/add",method={RequestMethod.POST,RequestMethod.GET}, produces = "application/json", consumes = "application/json")
+	public @ResponseBody String add(HttpServletRequest Request, HttpServletResponse response,@RequestBody String jsonString) throws Exception{
+		System.out.println(jsonString);
+
+	
+		JSONParser parser = new JSONParser();
+		
+		//convert from JSON string to JSONObject
+		JSONObject newJObject = null;
+		try {
+			newJObject = (JSONObject) parser.parse(jsonString);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println(newJObject.get("walletsection"));
+		ObjectMapper mapper = new ObjectMapper();
+		WalletSection wallet = mapper.readValue(newJObject.get("walletsection").toString(), WalletSection.class);
+		
+		System.out.println(newJObject.get("userID"));
+		System.out.println(newJObject.get("price"));
+		System.out.println(newJObject.get("volume"));
+		System.out.println(newJObject.get("total"));
+		return "baba";
 	}
 	
 	@RequestMapping(path="/SellCurrency",params = {"userID", "PIN"})
@@ -196,6 +226,7 @@ public class ServiceController {
 		try {
 			MongoCollection collection = ServiceController.getDatabase().getCollection("Users");
 			Document myDoc = (Document) collection.find(eq("userid", userID)).first();
+			
 			if(myDoc==null) {
 				System.out.println("User not registered");
 				return null;
@@ -203,6 +234,7 @@ public class ServiceController {
 			logger.info("User with ID " + userID +" present");
 			User user = new User();
 			ObjectMapper mapper = new ObjectMapper();
+			myDoc.remove("_id");
 			System.out.println(myDoc.toJson());
 			user = (User)mapper.readValue(myDoc.toJson(),User.class);
 			return user;
