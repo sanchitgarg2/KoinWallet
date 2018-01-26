@@ -2,7 +2,11 @@ package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.apache.logging.log4j.Level;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.db.jpa.converter.LevelAttributeConverter;
 import org.springframework.cglib.core.Local;
 import org.springframework.context.annotation.Scope;
 
@@ -19,6 +23,7 @@ public class Currency{
 	public CurrencySnapShot value;
 	public HashMap<LocalDateTime,CurrencySnapShot> history; 
 	public static HashMap<String,Currency> CURRENCYSTATE;
+	public static Logger logger = LogManager.getLogger(Currency.class);
 	
 	
 	//Define Supporting classes.
@@ -166,7 +171,7 @@ public class Currency{
 		if(!CURRENCYSTATE.keySet().contains(newCurrency.currencyCode))
 			CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
 		else{
-			System.out.println("Currency Already Exists");
+			logger.log(Level.WARN,"Currency Already Exists");
 		}
 	}
 	public static void deleteCurrency(Currency currency){
@@ -191,12 +196,14 @@ public class Currency{
 			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
 			if(thisCurrency != null) {
 				return thisCurrency.value;
-			} else
-				throw new Exception("Stated Currency does not have a value");
+			} else{
+				logger.log(Level.FATAL,"Currency Value being asked for is not defined." , thisCurrency);
+				throw new Exception("Stated Currency does not have a value");}
 		}
 		else{
 			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 			Currency.CURRENCYSTATE.put(this.currencyCode,this);
+			logger.log(Level.FATAL,"Currency Value being asked for is not defined." , this);
 			throw new Exception("Stated Currency does not have a value");
 		}
 	}

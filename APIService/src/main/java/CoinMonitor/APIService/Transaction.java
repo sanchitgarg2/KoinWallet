@@ -10,7 +10,7 @@ public class Transaction {
 	Currency incomingCurrency;
 	float pricePerIncoming;
 	float purchaseQuantity;
-	LocalDateTime time;
+	String time;
 	
 	
 	
@@ -23,7 +23,7 @@ public class Transaction {
 		this.incomingCurrency = incomingCurrency;
 		this.pricePerIncoming = pricePerIncoming;
 		this.purchaseQuantity = purchaseQuantity;
-		this.time = LocalDateTime.now();
+		this.time = LocalDateTime.now().toString();
 	}
 	public Transaction() {
 	}
@@ -51,10 +51,10 @@ public class Transaction {
 	public void setPurchaseQuantity(float purchaseQuantity) {
 		this.purchaseQuantity = purchaseQuantity;
 	}
-	public LocalDateTime getTime() {
+	public String getTime() {
 		return time;
 	}
-	public void setTime(LocalDateTime time) {
+	public void setTime(String time) {
 		this.time = time;
 	}
 }

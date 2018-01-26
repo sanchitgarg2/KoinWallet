@@ -63,7 +63,7 @@ public class ServiceController {
 	{
 		if(ServiceController.mongoClient == null)
 			ServiceController.mongoClient = new MongoClient();
-		ServiceController.database = mongoClient.getDatabase("CoinMonitor");
+		ServiceController.database = mongoClient.getDatabase(ApplicationConstants.DATABASE);
 		
 	}
 
@@ -236,8 +236,8 @@ public class ServiceController {
 
 	private User getUser(int userID) throws Exception {
 		try {
-			MongoCollection collection = ServiceController.getDatabase().getCollection("Users");
-			Document myDoc = (Document) collection.find(eq("userid", userID)).first();
+			MongoCollection collection = ServiceController.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
+			Document myDoc = (Document) collection.find(eq(ApplicationConstants.USER_ID_COLUMN_NAME, userID)).first();
 			
 			if(myDoc==null) {
 				System.out.println("User not registered");
