@@ -16,7 +16,8 @@ public class User {
 		{
 			ArrayList<Currency> tempList = new ArrayList<>();
 			for(WalletSection w: this.wallet.sections.values()){
-				tempList.add(w.getCurrency());
+				Currency c = w.getCurrency();
+				tempList.add(c);
 			}
 			this.watchList = tempList;
 		}

@@ -118,6 +118,41 @@ public class ServiceController {
 		}
 	}
 	
+	@RequestMapping(path="/updateWatchList" , method = RequestMethod.POST)
+	public @ResponseBody String updateWatchList(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		try{
+			JSONParser parser = new JSONParser();
+			JSONObject bufferJSONObject = null;
+			bufferJSONObject = (JSONObject) parser.parse(jsonString);
+			int userID = Integer.parseInt("" + bufferJSONObject.get("userID"));
+			String currencyCode = bufferJSONObject.get("currencyCode").toString();
+//			ObjectMapper mapper = new ObjectMapper();
+			User user = getUser(userID);
+			List<Currency> watchList = user.getWatchList();
+			if(watchList.contains(Currency.getCURRENCYSTATE().get(currencyCode))){
+				watchList.remove(Currency.getCURRENCYSTATE().get(currencyCode));
+			}
+			else{
+				watchList.add(Currency.getCURRENCYSTATE().get(currencyCode));
+			}
+			
+			user.setWatchList(watchList);
+			updateUser(user);
+			
+//			bufferJSONObject = new JSONObject();
+//			String s;
+//			for(Currency c:watchList)
+//			{
+//				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
+//				bufferJSONObject.put(c.currencyCode, s);
+//			}
+			return ""+true;
+		}
+		catch(Exception e){
+			return ""+false;
+		}
+	}
+	
 	@RequestMapping(path="/getUpdate" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyState() throws Exception{
 		JSONObject JsonObject = new JSONObject();
