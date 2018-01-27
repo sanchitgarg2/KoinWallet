@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Scope;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import CoinMonitor.APIService.Currency.CurrencySnapShot;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -268,7 +270,22 @@ public class Currency{
 	}
 	
 	@JsonIgnore
+	public static Currency getCurrency(String currencyCode){
+		if(!Currency.CURRENCYSTATE.keySet().contains(currencyCode))
+		{
+			Currency newCurrency = new Currency();
+			newCurrency.setCurrencyCode(currencyCode);
+			Currency.makeNewCurrency(newCurrency);
+		}
+		return Currency.getCURRENCYSTATE().get(currencyCode);
+
+	}
+	
+	
+	@JsonIgnore
 	public static HashMap<String, Currency> getCURRENCYSTATE() {
+		if(Currency.CURRENCYSTATE == null)
+			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 		return CURRENCYSTATE;
 	}
 	

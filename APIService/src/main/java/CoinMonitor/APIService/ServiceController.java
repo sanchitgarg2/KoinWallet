@@ -110,8 +110,14 @@ public class ServiceController {
 			String s;
 			for(Currency c:watchList)
 			{
-				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
-				bufferJSONObject.put(c.currencyCode, s);
+				try{
+					s = (Currency.getCurrency(c.currencyCode)).getValue().toJSONString();
+					bufferJSONObject.put(c.currencyCode, s);
+				}
+				catch(Exception e){
+					logger.error("Currency "+ c +"in WatchList, but does not exist.");
+				}
+				
 			}
 			return bufferJSONObject.toJSONString();
 		}
@@ -328,7 +334,7 @@ public class ServiceController {
 			User user = new User();
 			ObjectMapper mapper = new ObjectMapper();
 			myDoc.remove("_id");
-			System.out.println(myDoc.toJson());
+//			System.out.println(myDoc.toJson());
 			user = mapper.readValue(myDoc.toJson(),User.class);
 			return user;
 			}

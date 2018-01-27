@@ -2,14 +2,22 @@ package CoinMonitor.APIService;
 
 import static com.mongodb.client.model.Filters.eq;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,10 +39,69 @@ public class RefreshRate {
 	
 	public static boolean initUser = true;
 	public static User user1;
+	public static Logger logger = LogManager.getFormatterLogger(RefreshRate.class);
 	
 //	@Autowired mainClass classA;
 //	@Bean
+	
 	@Scheduled(fixedDelay = 10000)
+	public void RefreshRateV2(){
+		try {
+
+			URL url = new URL("https://api.coinmarketcap.com/v1/ticker/?convert=INR");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+				(conn.getInputStream())));
+
+			String output;
+			String JSONString = "";
+//			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				JSONString += output;
+			}
+			conn.disconnect();
+			JSONArray currencyList = new JSONArray(JSONString.trim());
+			for(int i=0; i < currencyList.length(); i++)
+			{
+				JSONObject currency = currencyList.getJSONObject(i);
+				if(Currency.getCURRENCYSTATE().keySet().contains((String)currency.get("symbol")))
+				{
+					CurrencySnapShot currencyValue = new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString());
+					Currency.updateCurrencyValue((String)currency.get("symbol"), currencyValue);
+				}
+				else
+				{
+					Currency newCurrency = new Currency();
+					newCurrency.setCurrencyCode((String)currency.get("symbol"));
+					newCurrency.setName((String)currency.get("name"));
+					newCurrency.setValue(new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString()));
+					HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
+					currencyHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now().toString()));
+					newCurrency.setHistory(currencyHistory);
+					Currency.makeNewCurrency(newCurrency);
+				}
+				
+			}
+			
+		  } catch (IOException e) {
+
+			e.printStackTrace();
+
+		  } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+//	@Scheduled(fixedDelay = 10000)
 	public void RefreshState() {
 		
 		try {
