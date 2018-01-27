@@ -30,6 +30,8 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.util.JSON;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -107,6 +109,23 @@ public class ServiceController {
 			bufferJSONObject = new JSONObject();
 			String s;
 			for(Currency c:watchList)
+			{
+				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
+				bufferJSONObject.put(c.currencyCode, s);
+			}
+			return bufferJSONObject.toJSONString();
+		}
+		catch(Exception e){
+			return null;
+		}
+	}
+	
+	@RequestMapping(path="/getCurrencyList" , method = RequestMethod.GET)
+	public @ResponseBody String getCurrencyList(HttpServletRequest Request, HttpServletResponse response){
+		try{
+			JSONObject bufferJSONObject = new JSONObject();
+			String s;
+			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
 				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
 				bufferJSONObject.put(c.currencyCode, s);
@@ -298,7 +317,7 @@ public class ServiceController {
 
 	private User getUser(int userID) throws Exception {
 		try {
-			MongoCollection collection = ServiceController.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
+			MongoCollection<?> collection = ServiceController.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
 			Document myDoc = (Document) collection.find(eq(ApplicationConstants.USER_ID_COLUMN_NAME, userID)).first();
 			
 			if(myDoc==null) {
@@ -315,7 +334,9 @@ public class ServiceController {
 			}
 			catch(com.mongodb.MongoSocketOpenException|com.mongodb.MongoTimeoutException e)
 			{
-				System.out.println("Could not connect to the database");
+//				System.out.println("Could not connect to the database");
+				logger.error("Could not connect to the database");
+				logger.error(e);
 				throw new Exception("DBNotAvailable");
 			} catch (JsonParseException e) {
 				e.printStackTrace();
