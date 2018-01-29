@@ -11,4 +11,8 @@
     <string name="watchlist">WATCHLIST</string>
     <string name="action_search">Search</string>
     <string name="model_clicked_pattern">You clicked on the rank %1$d word: %2$s!</string>
+    <string name="bitcoin">Bitcoin</string>
+    <string name="ripple">Ripple</string>
+    <string name="Etherium">Ether</string>
+    <string name="Litecoin">Litecoin</string>
 </resources>

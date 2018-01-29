@@ -1,12 +1,12 @@
 package SupportingClasses;
 
 /**
- * Created by guptapc on 25/01/18.
+ * Anmol Gupta, LogicMationStudios -  25/01/18.
  */
 
 public class Helper {
 
-    public static String AppURL="http://192.168.0.105:8080//Koinwallet/KoinWallet/";
+    public static String AppURL="http://192.168.0.127:8080//Koinwallet/KoinWallet/";
     public static String UserURL="getUser?userID=";
     public static String CurrencyURL="getUpdate";
     public static String bitcoinURL ="https://api.cryptonator.com/api/full/btc-usd";
