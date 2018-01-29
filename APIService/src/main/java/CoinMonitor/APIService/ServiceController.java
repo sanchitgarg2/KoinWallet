@@ -133,8 +133,13 @@ public class ServiceController {
 			String s;
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
+				try{
 				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
 				bufferJSONObject.put(c.currencyCode, s);
+				}
+				catch(Exception e){
+					logger.error(c + "This is the root cause" );
+				}
 			}
 			return bufferJSONObject.toJSONString();
 		}
