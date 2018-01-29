@@ -52,7 +52,7 @@
         >
 
         <ListView
-            android:id="@+id/list_view_watchlist"
+            android:id="@+id/list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="#b5b5b5"
@@ -62,12 +62,14 @@
     </android.support.v4.widget.NestedScrollView>
 
 
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/addCurrency"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:src="@drawable/add"
+        app:backgroundTint="#68EFAD"
         app:layout_anchor="@id/main.appbar"
         app:layout_anchorGravity="bottom|right|end"
         />

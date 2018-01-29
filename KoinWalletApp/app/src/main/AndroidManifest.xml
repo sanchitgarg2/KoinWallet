@@ -25,6 +25,9 @@
         <activity android:name=".SectionDisplay"
             android:parentActivityName=".MainActivity"
             />
+        <activity android:name=".AddTransaction"
+            android:parentActivityName=".SectionDisplay"
+            />
 
 
 

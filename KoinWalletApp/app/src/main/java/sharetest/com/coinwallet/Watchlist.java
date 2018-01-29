@@ -3,174 +3,138 @@ package sharetest.com.coinwallet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
 import AdapterClasses.CoinAdapter;
+import AdapterClasses.WatchlistAdapter;
 import Coinclasses.CoinWallet;
 import Coinclasses.Currency;
+import Coinclasses.Currency.*;
 import Coinclasses.User;
 import Coinclasses.WalletSection;
-import SupportingClasses.BottomNavigationViewBehavior;
+import sharetest.com.coinwallet.R;
+import sharetest.com.coinwallet.postJSONValue;
 
-/**
- * Created by guptapc on 15/01/18.
- */
+import static SupportingClasses.Helper.AppURL;
+import static SupportingClasses.Helper.UserURL;
+import static SupportingClasses.Helper.AppuserID;
+import static SupportingClasses.Helper.watchlistURL;
 
-public class Watchlist extends AppCompatActivity{
+public class Watchlist extends Fragment {
 
-    private TextView headerText;
+    public Watchlist() {
+        // Required empty public constructor
+    }
+
+
     private ListView listView;
-    private View headerView;
-    private View headerSpace;
-    public String bitcoinURL ="https://api.cryptonator.com/api/full/btc-usd";
-    //"http://192.168.0.109:8080/Koinwallet/KoinWallet/getUser?userID=10";
-    //"http://192.168.43.122:8080/Koinwallet/KoinWallet/getUser?userID=10";
-    //
+    private Context rootContext;
+    private View rootView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View v=inflater.inflate(R.layout.watchlist, container, false);
 
+        listView = (ListView)v.findViewById(R.id.list_view_watchlist);
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.watchlist);
+        rootContext=v.getContext();
+        rootView=v;
 
-        listView = (ListView) findViewById(R.id.list_view_watchlist);
-        setBottomView();
+        getWatchlist();
 
-        FloatingActionButton myFab = (FloatingActionButton)findViewById(R.id.addCurrency);
+        FloatingActionButton myFab = (FloatingActionButton)v.findViewById(R.id.addCurrency);
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(Watchlist.this, AddCurrencyWatchlist.class);
+                Intent intent = new Intent(rootContext, AddCurrencyWatchlist.class);
                 startActivity(intent);
             }
         });
+
+
+        return v;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    private void setListViewData(HashMap<String, CurrencySnapShot> watchlists) {
+
+        WatchlistAdapter adapter = new WatchlistAdapter(rootContext,watchlists);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
+    }
+    public  void getWatchlist(){
+        HashMap<String, CurrencySnapShot> watchlistmap = new HashMap<String, CurrencySnapShot>();
+        //List<HashMap<String, CurrencySnapShot>> watchlist= new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
-        User sanchit= new User();
-        String user=null;
+        String watchlists=null;
+
         try {
-            user =new getJSONValue(this).execute(bitcoinURL).get();
-            sanchit = mapper.readValue(user, User.class);
+            watchlists =new postJSONValue(rootContext).execute(AppURL+watchlistURL,Integer.toString(AppuserID)).get();
+
+
+            if(watchlists!=null) {
+                JSONObject jObject = new JSONObject(watchlists);
+                Iterator<?> keys = jObject.keys();
+
+                while (keys.hasNext()) {
+                    String key = (String) keys.next();
+                    String value = jObject.getString(key);
+                    JSONObject newJObject = new JSONObject(value);
+                    CurrencySnapShot snapshot=new CurrencySnapShot(Float.parseFloat(newJObject.get("valueInUSD").toString()),
+                            Float.parseFloat(newJObject.get("valueInINR").toString()),newJObject.get("refreshTime").toString());
+
+                    watchlistmap.put(key, snapshot);
+
+                }
+
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        Currency.CURRENCYSTATE = new HashMap<String, Currency>();
-        for(WalletSection section : sanchit.getWallet().getSections().values())
-        {
-            Currency c = section.getCurrency();
-            Currency.makeNewCurrency(c);
+
+        if(watchlists!=null){
+
+            setListViewData(watchlistmap);
         }
-
-        //TextView currentValue = (TextView) findViewById(R.id.CurrentValue);
-        //currentValue.setText("WALLET :" + String.valueOf(sanchit.getLiquidCashInWallet()));
-        setListViewData(sanchit.getWallet());
-
     }
-    private void setListViewData(CoinWallet coinWallet) {
-
-        if(coinWallet.getSections()!=null) {
-            HashMap<String, WalletSection> sections = coinWallet.getSections();
-
-            CoinAdapter adapter = new CoinAdapter(this, new ArrayList<WalletSection>(sections.values()));
-            //ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_listview, R.id.item, modelList);
-            listView.setAdapter(adapter);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    WalletSection walletSection = (WalletSection) parent.getItemAtPosition(position);
-
-                    ObjectMapper mapper = new ObjectMapper();
-                    String walletJSONString = null;
-                    try {
-                        walletJSONString = mapper.writeValueAsString(walletSection);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-
-                    Intent intent = new Intent(Watchlist.this, SectionDisplay.class);
-                    intent.putExtra("section", walletJSONString);
-                    startActivity(intent);
-
-                }
-            });
 
 
 
 
-        }
-
-    }
-    private void setBottomView() {
-
-
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-
-        CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) bottomNavigationView .getLayoutParams();
-        layoutParams.setBehavior(new BottomNavigationViewBehavior());
-
-        bottomNavigationView.setSelectedItemId(R.id.action_watchlist);
-        bottomNavigationView.setOnNavigationItemSelectedListener(
-                new BottomNavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        Context context= Watchlist.this;
-                        Intent intent=null;
-                        switch (item.getItemId()) {
-                            case R.id.action_watchlist:break;
-
-                            case R.id.action_wallet:
-                                intent= new Intent(context, MainActivity.class);
-                                startActivity(intent);break;
-
-                            case R.id.action_exchange:
-                                intent  = new Intent(context, CurrencyExchange.class);
-                                startActivity(intent);break;
-
-                            case R.id.action_settings:
-                                intent  = new Intent(context, Settings.class);
-                                startActivity(intent);break;
-
-                        }
-                        return true;
-                    }
-                });
-
-    }
 
 }

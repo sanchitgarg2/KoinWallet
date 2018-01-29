@@ -1,14 +1,38 @@
 package Coinclasses;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import Coinclasses.CoinWallet;
+import Coinclasses.Currency;
+import Coinclasses.Transaction;
+import Coinclasses.WalletSection;
 
 public class User {
 	int USERID;
 	CoinWallet wallet;
-	String phoneNumber; 
+	List<Currency> watchList;
+	String phoneNumber;
 	String emailID;
 	float LiquidCashInWallet;
-	
+
+	public List<Currency> getWatchList() {
+		if(this.watchList == null)
+		{
+			ArrayList<Currency> tempList = new ArrayList<>();
+			for(WalletSection w: this.wallet.sections.values()){
+				Currency c = w.getCurrency();
+				tempList.add(c);
+			}
+			this.watchList = tempList;
+		}
+		return watchList;
+	}
+
+	public void setWatchList(List<Currency> watchList) {
+		this.watchList = watchList;
+	}
+
 	public int getUSERID() {
 		return USERID;
 	}
@@ -64,7 +88,15 @@ public class User {
 	}
 
 	public void trade(Transaction transaction) {
-		this.wallet.trade(transaction);		
+		this.wallet.trade(transaction);
 	}
-	
+
+	@Override
+	public String toString() {
+		return "User [USERID=" + USERID + ", wallet=" + wallet + ", phoneNumber=" + phoneNumber + ", emailID=" + emailID
+				+ ", LiquidCashInWallet=" + LiquidCashInWallet + "]";
+	}
+
+
+
 }

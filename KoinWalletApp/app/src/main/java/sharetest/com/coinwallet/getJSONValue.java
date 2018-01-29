@@ -86,6 +86,7 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
             if(response!=null&&response.body()!=null){
                 message=response.body().string();
                 Log.d("RESPONSE FROM NET", message);
+                return message;
             }
             else{
                 Log.d("RESPONSE NO NET", user);

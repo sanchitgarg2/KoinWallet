@@ -1,28 +1,40 @@
 package Coinclasses;
 
-//import java.time.*;
+import org.threeten.bp.LocalDateTime;
 import java.util.List;
-
+//import org.apache.logging.log4j.Level;
+//
+//import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.core.appender.db.jpa.converter.LevelAttributeConverter;
+import org.json.simple.JSONObject;
+//import org.springframework.cglib.core.Local;
+//import org.springframework.context.annotation.Scope;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.threeten.bp.LocalDateTime;
+//import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import Coinclasses.CurrencyExchangeRateInvalidException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-//@Scope("prototype")
+
 public class Currency{
-	
+
 	String name;
 	String currencyCode;
 	public CurrencySnapShot value;
-	public HashMap<LocalDateTime,CurrencySnapShot> history;
+	public HashMap<String, CurrencySnapShot> history;
 	public static HashMap<String,Currency> CURRENCYSTATE;
-	
-	
+	//public static Logger logger = LogManager.getLogger(Currency.class);
+
+
 	//Define Supporting classes.
-	public class ConversionRate{
+	class ConversionRate{
 		Currency currency1;
 		Currency currency2;
 		private float buyCurrency2At;
@@ -46,18 +58,25 @@ public class Currency{
 			this.buyCurrency2At = 1/buyCurrency1At;
 		}
 	}
-	
-	public class CurrencySnapShot{
+
+	public static class CurrencySnapShot{
 		@Override
 		public String toString() {
 			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
 		}
+		public String toJSONString() {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("valueInINR", valueInINR);
+			jsonObject.put("valueInUSD", valueInUSD);
+			jsonObject.put("refreshTime",refreshTime);
+			return jsonObject.toJSONString();
+		}
 		float valueInINR;
 		float valueInUSD;
-		LocalDateTime refreshTime;
-		
-		public CurrencySnapShot(float valueInINR, float valueInUSD, LocalDateTime refreshTime) {
+		String refreshTime;
+
+		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime) {
 			super();
 			this.valueInINR = valueInINR;
 			this.valueInUSD = valueInUSD;
@@ -101,14 +120,16 @@ public class Currency{
 				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getvalueInINR();
 			return this.valueInINR;
 		}
+		public float getValueInUSD(){
+			return this.valueInUSD;
+		}
 	}
-	
-	
-	
+
+
+
 	@Override
 	public String toString() {
-		return "Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + ", history=" + history
-				+ "]";
+		return " Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
 	}
 
 
@@ -116,19 +137,19 @@ public class Currency{
 	public Currency getCurrencyState(){
 		return CURRENCYSTATE.get(this.currencyCode);
 	}
-	
+
 
 	@JsonIgnore
 	public void updateHistory(CurrencySnapShot s){
-		
+
 		if(Currency.CURRENCYSTATE != null){
 			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.getCurrencyCode());
 			if(thisCurrency.history != null){
-				thisCurrency.history.put(LocalDateTime.now(),s);
-				}
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
+			}
 			else{
-				thisCurrency.history = new HashMap<LocalDateTime,CurrencySnapShot>();
-				thisCurrency.history.put(LocalDateTime.now(),s);
+				thisCurrency.history = new HashMap<String,CurrencySnapShot>();
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
 			}
 			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 		}
@@ -153,7 +174,7 @@ public class Currency{
 			return false;
 		Currency other = (Currency) obj;
 		if (!currencyCode.equals(other.currencyCode))
-				return false;
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -164,7 +185,11 @@ public class Currency{
 	public static void makeNewCurrency(Currency newCurrency){
 		if(CURRENCYSTATE == null )
 			CURRENCYSTATE = new HashMap<String,Currency>();
-		CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
+		if(!CURRENCYSTATE.keySet().contains(newCurrency.currencyCode))
+			CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
+		else{
+			//logger.log(Level.WARN,"Currency Already Exists");
+		}
 	}
 	public static void deleteCurrency(Currency currency){
 		CURRENCYSTATE.remove(currency.currencyCode);
@@ -181,23 +206,25 @@ public class Currency{
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
-	
+
 	@JsonIgnore
 	public CurrencySnapShot getValue() throws Exception {
 		if(Currency.CURRENCYSTATE != null){
 			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
 			if(thisCurrency != null) {
 				return thisCurrency.value;
-			} else
-				throw new Exception("Stated Currency does not have a value");
+			} else{
+				//logger.log(Level.FATAL,"Currency Value being asked for is not defined." , thisCurrency);
+				throw new Exception("Stated Currency does not have a value");}
 		}
 		else{
 			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 			Currency.CURRENCYSTATE.put(this.currencyCode,this);
+			//logger.log(Level.FATAL,"Currency Value being asked for is not defined." , this);
 			throw new Exception("Stated Currency does not have a value");
 		}
 	}
-	
+
 	@JsonIgnore
 	public void setValue(CurrencySnapShot value) throws Exception {
 		if(Currency.CURRENCYSTATE != null){
@@ -212,7 +239,7 @@ public class Currency{
 				thisCurrency.value = value;
 				Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 			}
-				
+
 		}
 		else{
 			Currency.CURRENCYSTATE = new HashMap<String,Currency>();
@@ -222,17 +249,17 @@ public class Currency{
 			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 		}
 	}
-	
+
 	@JsonIgnore
-	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
+	public HashMap<String,CurrencySnapShot> getHistory() {
 		return history;
 	}
-	
+
 	@JsonIgnore
-	public void setHistory(HashMap<LocalDateTime,CurrencySnapShot> history) {
+	public void setHistory(HashMap<String,CurrencySnapShot> history) {
 		Currency.CURRENCYSTATE.get(this.currencyCode).history = history;
 	}
-	
+
 	@JsonIgnore
 	public static void updateCurrencyValue(String currencyCode, CurrencySnapShot newValue) throws Exception
 	{
@@ -241,18 +268,34 @@ public class Currency{
 		else if (!CURRENCYSTATE.containsKey(currencyCode)){
 			throw new Exception("Currency not found. Create the currency first");
 		}
-			else{
-				Currency c = CURRENCYSTATE.get(currencyCode);
-				c.setValue(newValue);
-				Currency.CURRENCYSTATE.get(currencyCode).history.put(LocalDateTime.now(),newValue);
-			}
+		else{
+			Currency c = CURRENCYSTATE.get(currencyCode);
+			c.setValue(newValue);
+			c.history.put(LocalDateTime.now().toString(),newValue);
+			Currency.CURRENCYSTATE.put(currencyCode,c);
+		}
 	}
-	
+
+	@JsonIgnore
+	public static Currency getCurrency(String currencyCode){
+		if(!Currency.CURRENCYSTATE.keySet().contains(currencyCode))
+		{
+			Currency newCurrency = new Currency();
+			newCurrency.setCurrencyCode(currencyCode);
+			Currency.makeNewCurrency(newCurrency);
+		}
+		return Currency.getCURRENCYSTATE().get(currencyCode);
+
+	}
+
+
 	@JsonIgnore
 	public static HashMap<String, Currency> getCURRENCYSTATE() {
+		if(Currency.CURRENCYSTATE == null)
+			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 		return CURRENCYSTATE;
 	}
-	
+
 	@JsonIgnore
 	public static void setCURRENCYSTATE(HashMap<String, Currency> cURRENCYSTATE) {
 		CURRENCYSTATE = cURRENCYSTATE;

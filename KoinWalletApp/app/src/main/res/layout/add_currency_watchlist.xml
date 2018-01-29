@@ -23,6 +23,7 @@ android:paddingTop="@dimen/activity_vertical_margin">
     android:hint="Search here"
     android:layout_marginTop="20dp" />
 
+
 <View
     android:id="@+id/border"
     android:layout_width="fill_parent"
@@ -38,5 +39,7 @@ android:paddingTop="@dimen/activity_vertical_margin">
     android:padding="8dp"
     android:layout_marginTop="10dp"
     android:layout_below="@+id/border"/>
+
+
 
 </RelativeLayout>

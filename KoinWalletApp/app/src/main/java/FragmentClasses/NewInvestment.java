@@ -1,77 +1,121 @@
 package FragmentClasses;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListView;
 
-import sharetest.com.coinwallet.MainActivity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import AdapterClasses.TransactionAdapter;
+import Coinclasses.CoinWallet;
+import Coinclasses.Currency;
+import Coinclasses.Transaction;
+import Coinclasses.WalletSection;
+import sharetest.com.coinwallet.AddTransaction;
 import sharetest.com.coinwallet.R;
 
 /**
  * Created by guptapc on 14/01/18.
  */
 
-public class NewInvestment extends Fragment {
+public class NewInvestment extends Fragment implements View.OnClickListener{
 
-    private RadioGroup radioGroup;
+    private static String userwalletsection;
+    private static int userID;
+    private static String userwallet;
+    private Button mClickButton1;
+    private ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.newinvestment, container, false);
+        View v = inflater.inflate(R.layout.transaction_detail, container, false);
+        mClickButton1 = (Button)v.findViewById(R.id.addTransaction);
+        mClickButton1.setOnClickListener(this);
+        listView = (ListView) v.findViewById(R.id.transaction_list_view);
 
-        //TextView tv = (TextView) v.findViewById(R.id.tvFragThird);
-        //tv.setText(getArguments().getString("msg"));
+        ObjectMapper mapper = new ObjectMapper();
 
-        radioGroup = (RadioGroup)v.findViewById(R.id.radioGroup);
-        radioGroup.clearCheck();
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        CoinWallet wallet= null;
+        WalletSection section=null;
+        try {
+            wallet = mapper.readValue(userwallet, CoinWallet.class);
+            section=mapper.readValue(userwalletsection,WalletSection.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-                @Override
-                public void onCheckedChanged(RadioGroup group, int checkedId) {
-                    RadioButton rb = (RadioButton) group.findViewById(checkedId);
-                    if (null != rb && checkedId > -1) {
-                        Toast.makeText(getContext(), rb.getText(), Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-
-        });
-
-
+        Log.d("CLASS NAME", getContext().toString());
+        if(section.getCurrency()!=null) {
+            setListViewData(wallet, userID, section.getCurrency());
+        }
         return v;
     }
-    /*
-    public void onRadioButtonClicked(View view) {
-        // Is the button now checked?
-        boolean checked = ((RadioButton) view).isChecked();
 
-        // Check which radio button was clicked
-        switch(view.getId()) {
-            case R.id.radio_pirates:
-                if (checked)
-                    // Pirates are the best
-                    break;
-            case R.id.radio_ninjas:
-                if (checked)
-                    // Ninjas rule
-                    break;
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.addTransaction: {
+                Intent intent = new Intent(getContext(), AddTransaction.class);
+                intent.putExtra("section", userwalletsection);
+                intent.putExtra("userID", userID);
+                startActivity(intent);
+
+            }
         }
     }
 
-    */
+    private void setListViewData(CoinWallet coinWallet, int userid, Currency currency) {
 
-    public static NewInvestment newInstance(String text) {
+
+
+        List<Transaction> transactions = coinWallet.getTransactionList();
+
+        List <Transaction> currencyspecifictransactions= new ArrayList<Transaction>();
+
+        if(transactions!=null) {
+            for (Transaction transaction : transactions) {
+                // BUY AND SELL TRANSACTIONS OF THAT PARTICULAR CURRENCY
+                if (transaction.getIncomingCurrency().getCurrencyCode().equals(currency.getCurrencyCode())
+                        || transaction.getOutgoingCurrency().getCurrencyCode().equals(currency.getCurrencyCode())) {
+                    currencyspecifictransactions.add(transaction);
+                }
+            }
+        }
+
+        if(currencyspecifictransactions!=null) {
+
+            TransactionAdapter adapter = new TransactionAdapter(getContext(), currencyspecifictransactions);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                }
+            });
+        }
+
+    }
+
+
+    public static NewInvestment newInstance(int uID, String section, String wallet) {
 
         NewInvestment f = new NewInvestment();
         Bundle b = new Bundle();
-        b.putString("msg", text);
-
+        //b.putString("msg", text);
+        userwalletsection=section;
+        userwallet=wallet;
+        userID=uID;
         f.setArguments(b);
 
         return f;
