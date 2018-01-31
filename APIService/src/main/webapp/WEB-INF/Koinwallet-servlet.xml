@@ -17,7 +17,7 @@
 		<property name="unmarshaller" ref="oxmMarshaller" />
 	</bean>
 <!-- 	<bean id="otpScheduler" class="ivr.OTPcleanjob"></bean> -->
-	<bean id="main Class" class="CoinMonitor.APIService.ServiceController"></bean>
+	<bean id="main Class" class="CoinMonitor.APIService.APIEndpointRecievers"></bean>
 	<bean id="ValueRefresher" class="CoinMonitor.APIService.RefreshRate"></bean>
 	<bean id="jsonView"
 		class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
