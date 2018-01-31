@@ -137,7 +137,8 @@ public class APIEndpointRecievers {
 			String countryCode = "" + bufferJSONObject.get("countryCode");
 			String deviceId = "" + bufferJSONObject.get("deviceID");
 			JSONObject returnObject = new JSONObject();
-			if(isValidUser(ApplicationConstants.PHONE_NUMBER, phoneNumber))
+			User user  = isValidUser(ApplicationConstants.PHONE_NUMBER, phoneNumber);
+			if(user != null)
 			{
 				returnObject.put("status", "User with that phone number already exists");
 				returnObject.put("statusCode", 400);
@@ -166,7 +167,9 @@ public class APIEndpointRecievers {
 			int userID = GenerateUserID(newUser); 
 			newUser.setUSERID(userID);
 			OTP OTP = GenerateOTP(newUser);
-
+			while(User.getUnverifiedUsers().containsKey(OTP))
+				OTP = GenerateOTP(newUser);
+			sendSMS("Your OTP is "+OTP.getOtp(), newUser.getPhoneNumber());
 			User.getUnverifiedUsers().put(OTP, newUser);
 			returnObject.put("status", "Successful");
 			returnObject.put("statusCode", 200);
@@ -177,38 +180,130 @@ public class APIEndpointRecievers {
 		}
 	}
 
-
-	private OTP GenerateOTP(User newUser) throws IOException {
-		String OTP;
-		int buffer; 
-		Random randomNumberGenerator = new Random();
-		OTP = java.lang.Math.abs(randomNumberGenerator.nextInt() % 9999)  + "";
-		while(OTP.length()<4)
-			OTP = "0" + OTP;
-		OTP otp = new OTP();
-		otp.setOtp(OTP);
-		otp.setGenerationDate(LocalDateTime.now());
-		sendSMS("Your OTP is "+OTP, newUser.getPhoneNumber());
-		return otp ;
-	}
-
-	private int GenerateUserID(User newUser) {
-		String phoneNumber = newUser.getPhoneNumber();
-		int userID = 0;
-		int alternator = 0;
-		for(char c : phoneNumber.toCharArray())
-		{if(alternator%3==0) userID = Integer.parseInt(""+userID+c); alternator+= 1;}
-		try {
-			while(true){
-				if(getUser(userID) == null) return userID;
-				else userID += 1;
+	@RequestMapping(path="/Login" , method = RequestMethod.POST)
+	public @ResponseBody String Login(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		try{
+			JSONParser parser = new JSONParser();
+			JSONObject bufferJSONObject = null;
+			bufferJSONObject = (JSONObject) parser.parse(jsonString);
+			String email = null;
+			String phoneNumber = null;
+			JSONObject returnObject = new JSONObject();
+			try{
+			String deviceId = "" + bufferJSONObject.get("deviceID");}
+			catch(Exception e){
+				returnObject.put("status",e.getMessage() + "Invalid Request Data.");
+				returnObject.put("statusCode", 403);
+				return returnObject.toJSONString();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			if(bufferJSONObject.containsKey("otp"))
+			{
+				OTP otp = new OTP();
+				otp.setOtp((String) bufferJSONObject.get("otp"));
+				if(User.getUsersLoggingIn().containsKey(otp)){
+					String key;
+					String value;
+					if(bufferJSONObject.keySet().contains("email"))
+					{
+						key = ApplicationConstants.EMAIL;
+						value = "" + bufferJSONObject.get("email");
+					}
+					else
+					{
+						key = ApplicationConstants.PHONE_NUMBER;
+						value = "" + bufferJSONObject.get(ApplicationConstants.PHONE_NUMBER);
+					}
+					User user = User.getUsersLoggingIn().get(otp);
+					if(value.equals(user.getEmailID())|| value.equals(user.getPhoneNumber()))
+					{
+						returnObject.put("status", "Successful");
+						returnObject.put("statusCode", 200);
+						returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
+						returnObject.put("currencyList", getCurrencyList(null, null));
+						return returnObject.toJSONString();
+					}
+					else{
+						returnObject.put("status", "OTP verification Failed.");
+						returnObject.put("statusCode", 401);
+						return returnObject.toJSONString();
+					}
+				}
+				else{
+					returnObject.put("status", "OTP verification Failed.");
+					returnObject.put("statusCode", 401);
+					return returnObject.toJSONString();
+				}
+				
+				
+			//end of if bufferJSONObject.containsKey("otp")
+			}
+			else{
+				String key;
+				String value;
+				if(bufferJSONObject.keySet().contains("email"))
+				{
+					key = ApplicationConstants.EMAIL;
+					value = "" + bufferJSONObject.get("email");
+				}
+				else
+				{
+					key = ApplicationConstants.PHONE_NUMBER;
+					value = "" + bufferJSONObject.get(ApplicationConstants.PHONE_NUMBER);
+				}
+				User user = isValidUser(key, value);
+				if(user != null)
+				{
+					try{
+						OTP otp = GenerateOTP(user);
+						while(User.getUsersLoggingIn().containsKey(otp))
+							otp = GenerateOTP(user);
+						sendSMS("Your OTP is "+ otp.getOtp(), user.getPhoneNumber());
+						User.getUsersLoggingIn().put(otp, user);
+						returnObject.put("status", "Successful");
+						returnObject.put("statusCode", 200);
+						return returnObject.toJSONString();						
+					}
+					catch(IOException e){
+						returnObject.put("status", "Sending SMS failed. Please try after some time.");
+						returnObject.put("statusCode", 402);
+						return returnObject.toJSONString();
+					}					
+				}
+				else{
+					returnObject.put("status", "User does not exist");
+					returnObject.put("statusCode", 400);
+					return returnObject.toJSONString();
+				}
+				
+			}
+			
+/*
+			if(User.getUnverifiedUsers().values().contains(newUser))
+			{
+				OTP otp1=null ;
+				for(OTP otp : User.getUnverifiedUsers().keySet())
+					if(((User)User.getUnverifiedUsers().get(otp)).getPhoneNumber().equals(newUser.getPhoneNumber()))
+					{otp1 = otp;break;}
+				sendSMS("Your OTP is "+ otp1.getOtp(), newUser.getPhoneNumber());
+				returnObject.put("status", "OTP already generated.");
+				returnObject.put("statusCode", 401);
+				return returnObject.toJSONString();
+			}
+			int userID = GenerateUserID(newUser); 
+			newUser.setUSERID(userID);
+			OTP OTP = GenerateOTP(newUser);
+
+			User.getUnverifiedUsers().put(OTP, newUser);
+			returnObject.put("status", "Successful");
+			returnObject.put("statusCode", 200);
+			return returnObject.toJSONString();*/
 		}
-		return -1;
+		catch(Exception e){
+			return null;
+		}
 	}
 
+	
 	@RequestMapping(path="/getCurrencyList" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyList(HttpServletRequest Request, HttpServletResponse response){
 		try{
@@ -237,23 +332,11 @@ public class APIEndpointRecievers {
 			//			ObjectMapper mapper = new ObjectMapper();
 			User user = getUser(userID);
 			List<Currency> watchList = user.getWatchList();
-			if(watchList.contains(Currency.getCURRENCYSTATE().get(currencyCode))){
+			if(watchList.contains(Currency.getCURRENCYSTATE().get(currencyCode)))
 				watchList.remove(Currency.getCURRENCYSTATE().get(currencyCode));
-			}
-			else{
-				watchList.add(Currency.getCURRENCYSTATE().get(currencyCode));
-			}
-
+			else watchList.add(Currency.getCURRENCYSTATE().get(currencyCode));
 			user.setWatchList(watchList);
 			updateUser(user);
-
-			//			bufferJSONObject = new JSONObject();
-			//			String s;
-			//			for(Currency c:watchList)
-			//			{
-			//				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
-			//				bufferJSONObject.put(c.currencyCode, s);
-			//			}
 			return ""+true;
 		}
 		catch(Exception e){
@@ -272,7 +355,6 @@ public class APIEndpointRecievers {
 		return JsonObject.toJSONString();
 	}
 
-
 	@RequestMapping(path="/getUser",params = {"userID"})
 	public @ResponseBody String getUser(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString) throws Exception{
 
@@ -287,36 +369,6 @@ public class APIEndpointRecievers {
 			return "INVALID_USER";
 		}
 	}
-
-	@RequestMapping(path="/getCurrentState",params = {"userID", "PIN"})
-	public @ResponseBody User getCurrentState(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){
-		int userID = Integer.parseInt(userIDString);
-		try{
-			User user = getUser(userID);
-			HashMap<String,Float> HoldingsbyCurrency = new HashMap<>();
-			for(WalletSection h:user.wallet.sections.values())
-			{
-				if(HoldingsbyCurrency.get(h.currency.currencyCode) == null || HoldingsbyCurrency.get(h.currency.currencyCode) == 0)
-					HoldingsbyCurrency.put(h.currency.currencyCode,h.currentBalance);
-				else
-					HoldingsbyCurrency.put(h.currency.currencyCode,HoldingsbyCurrency.get(h.currency.currencyCode) + h.currentBalance);
-			}
-			String output = "You hold ";
-			float totalValue = 0;
-			for(String s:HoldingsbyCurrency.keySet())
-			{
-				float coinValue = HoldingsbyCurrency.get(s)*((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD;
-				output +=  HoldingsbyCurrency.get(s) + " of " + s + " currently valued at " + ((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD + " making your investment worth " + coinValue +"\n" ;
-				totalValue += coinValue;
-			}
-			output += " Your total investments are worth "+totalValue;
-			return user;
-		}
-		catch(Exception e){
-			return null;
-		}
-	}
-
 
 	private void updateUser(User user) throws Exception {
 		try{
@@ -344,11 +396,50 @@ public class APIEndpointRecievers {
 		}		
 	}
 
-	private boolean isValidUser(String key,String object) throws Exception {
+	private OTP GenerateOTP(User newUser) throws IOException {
+		String OTP;
+		int buffer; 
+		Random randomNumberGenerator = new Random();
+		OTP = java.lang.Math.abs(randomNumberGenerator.nextInt() % 9999)  + "";
+		while(OTP.length()<4)
+			OTP = "0" + OTP;
+		OTP otp = new OTP();
+		otp.setOtp(OTP);
+		otp.setGenerationDate(LocalDateTime.now());
+		return otp ;
+	}
+
+	private int GenerateUserID(User newUser) {
+		String phoneNumber = newUser.getPhoneNumber();
+		int userID = 0;
+		int alternator = 0;
+		for(char c : phoneNumber.toCharArray())
+		{if(alternator%3==0) userID = Integer.parseInt(""+userID+c); alternator+= 1;}
+		try {
+			while(true){
+				if(getUser(userID) == null) return userID;
+				else userID += 1;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	private User isValidUser(String key,String object) throws Exception {
 		MongoCollection<?> collection = APIEndpointRecievers.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
 		Document myDoc = (Document) collection.find(eq(key, object)).first();
-		if(myDoc==null) return false;
-		return true;
+		if(myDoc==null) {
+			System.out.println("User not registered");
+			return null;
+		}
+		logger.info("User with ID " + key +" present");
+		User user = new User();
+		ObjectMapper mapper = new ObjectMapper();
+		myDoc.remove("_id");
+		//			System.out.println(myDoc.toJson());
+		user = mapper.readValue(myDoc.toJson(),User.class);
+		return user;
 	}
 
 	private User getUser(int userID) throws Exception {
@@ -382,6 +473,7 @@ public class APIEndpointRecievers {
 		}
 		return null;
 	}
+	
 	public static void sendSMS(String messageUnencoded, String phoneNumber) throws IOException{
 		final String USER_AGENT = "Mozilla/5.0";
 		String url = "https://control.msg91.com/api/sendhttp.php?";

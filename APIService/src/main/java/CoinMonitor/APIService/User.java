@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class User {
 	
 	public static HashMap<OTP, User> unverifiedUsers;
+	public static HashMap<OTP, User> UsersLoggingIn;
 	int USERID;
 	CoinWallet wallet;
 	List<Currency> watchList;
@@ -18,6 +19,18 @@ public class User {
 	String countryCode;
 	
 	
+	@JsonIgnore
+	public static HashMap<OTP, User> getUsersLoggingIn() {
+		if(UsersLoggingIn == null)
+			UsersLoggingIn = new HashMap<OTP, User>();
+		return UsersLoggingIn;
+	}
+
+	@JsonIgnore
+	public static void setUsersLoggingIn(HashMap<OTP, User> usersLoggingIn) {
+		UsersLoggingIn = usersLoggingIn;
+	}
+
 	@JsonIgnore
 	public static HashMap<OTP, User> getUnverifiedUsers() {
 		if(unverifiedUsers == null)

@@ -185,7 +185,36 @@ public class CodeBackup {
 		}
 		
 	}*/
-	
+	/* From Service Controller class. This was replaced by storing the Current State in a static variable in the app.
+			@RequestMapping(path="/getCurrentState",params = {"userID", "PIN"})
+	public @ResponseBody User getCurrentState(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString,@RequestParam(value = "PIN") String PIN){
+		int userID = Integer.parseInt(userIDString);
+		try{
+			User user = getUser(userID);
+			HashMap<String,Float> HoldingsbyCurrency = new HashMap<>();
+			for(WalletSection h:user.wallet.sections.values())
+			{
+				if(HoldingsbyCurrency.get(h.currency.currencyCode) == null || HoldingsbyCurrency.get(h.currency.currencyCode) == 0)
+					HoldingsbyCurrency.put(h.currency.currencyCode,h.currentBalance);
+				else
+					HoldingsbyCurrency.put(h.currency.currencyCode,HoldingsbyCurrency.get(h.currency.currencyCode) + h.currentBalance);
+			}
+			String output = "You hold ";
+			float totalValue = 0;
+			for(String s:HoldingsbyCurrency.keySet())
+			{
+				float coinValue = HoldingsbyCurrency.get(s)*((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD;
+				output +=  HoldingsbyCurrency.get(s) + " of " + s + " currently valued at " + ((Currency)Currency.CURRENCYSTATE.get(s)).value.valueInUSD + " making your investment worth " + coinValue +"\n" ;
+				totalValue += coinValue;
+			}
+			output += " Your total investments are worth "+totalValue;
+			return user;
+		}
+		catch(Exception e){
+			return null;
+		}
+	}
+	 */
 	
 
 }
