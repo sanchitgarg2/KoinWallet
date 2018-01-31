@@ -122,7 +122,7 @@ public class Currency{
 	
 	@Override
 	public String toString() {
-		return " Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
+		return "[name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
 	}
 
 
