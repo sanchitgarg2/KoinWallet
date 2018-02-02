@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.util.JSON;
@@ -45,14 +46,23 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.Exceptions.UserNotFoundException;
 
 @Controller
 public class APIEndpointRecievers {
+	public APIEndpointRecievers() {
+		super();
+		System.out.println("Setting MongoDB Driver Logging to SEVERE");
+		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
+	}
+
 	public final static Logger logger = LogManager.getLogger(APIEndpointRecievers.class);
 	private static MongoClient mongoClient;
 	private static MongoDatabase database;
 
 	public static MongoClient getMongoClient() {
+		if(mongoClient == null)
+			initializeMongoClient();
 		return mongoClient;
 	}
 	public static void setMongoClient(MongoClient mongoClient) {
@@ -60,88 +70,153 @@ public class APIEndpointRecievers {
 	}
 	public static MongoDatabase getDatabase() {
 		if(database == null)
-			setDataBase();
+			initializeMongoClient();
 		return APIEndpointRecievers.database;
 	}
 	public static Logger getLogger() {
-		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
 		return logger;
 	}
-	public static void setDataBase()
+	public static void initializeMongoClient()
 	{
-		if(APIEndpointRecievers.mongoClient == null)
+		logger.log(Level.INFO,"Initializing MongoClient.");
+		if(APIEndpointRecievers.mongoClient == null){
+			try{
 			APIEndpointRecievers.mongoClient = new MongoClient();
+			}
+			catch(Exception e){
+				logger.error("Error in Initialzing Mongo Client");
+				throw e;
+			}
+		}
 		APIEndpointRecievers.database = mongoClient.getDatabase(ApplicationConstants.DATABASE);
+		logger.info("Mongo client initialized successfully.");
 
 	}
 
 	@RequestMapping(path="/Trade",method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody String Trade(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		JSONObject bufferJSONObject;
 		try{
+			logger.info("Recieved Trade request");
 			JSONParser parser = new JSONParser();
-			JSONObject newJObject = null;
-			newJObject = (JSONObject) parser.parse(jsonString);
-			int userID = Integer.parseInt("" + newJObject.get("userID"));
+			JSONObject newJObject = (JSONObject) parser.parse(jsonString);
+			int userID = Integer.parseInt((String)newJObject.get("userID"));
 			User user = getUser(userID);
 			String currencyCode = (String) newJObject.get("currencyCode");
-			float quantity = Float.parseFloat("" + newJObject.get("quantity"));
-			float price = Float.parseFloat("" + newJObject.get("price"));
+			float quantity = Float.parseFloat((String)newJObject.get("quantity"));
+			float price = Float.parseFloat((String)newJObject.get("price"));
+			logger.info("Request Parameters: UserID : "+userID + " Currency : " + currencyCode +" Quantity: " + quantity);
 			Transaction transaction;
 			if(quantity > 0)
 				transaction = new Transaction(Currency.getCURRENCYSTATE().get("INR"), Currency.getCURRENCYSTATE().get(currencyCode), price, quantity);
-			else
+			else if(quantity < 0)
 				transaction = new Transaction(Currency.getCURRENCYSTATE().get(currencyCode), Currency.getCURRENCYSTATE().get("INR"), 1/price, quantity*price);
+			else{
+				logger.info("API Request with quantity 0 made.");
+				throw new NumberFormatException("Please enter a non zero quantity.");
+			}
 			user.trade(transaction);
 			updateUser(user);
-			return ""+true;
-		}
-		catch(Exception e){
-			return ""+false;
-		}
-	}
-
-	@RequestMapping(path="/getWatchList" , method = RequestMethod.POST)
-	public @ResponseBody String getWatchList(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
-		try{
-			JSONParser parser = new JSONParser();
-			JSONObject bufferJSONObject = null;
-			bufferJSONObject = (JSONObject) parser.parse(jsonString);
-			int userID = Integer.parseInt("" + bufferJSONObject.get("userID"));
-			//			ObjectMapper mapper = new ObjectMapper();
-			//			User user = getUser(userID);
-			List<Currency> watchList = getUser(userID).getWatchList();
+			
 			bufferJSONObject = new JSONObject();
-			String s;
-			for(Currency c:watchList)
-			{
-				try{
-					s = (Currency.getCurrency(c.currencyCode)).getValue().toJSONString();
-					bufferJSONObject.put(c.currencyCode, s);
-				}
-				catch(Exception e){
-					logger.error("Currency "+ c +"in WatchList, but does not exist.");
-				}
-
-			}
+			bufferJSONObject.put("status", "Successful.");
+			bufferJSONObject.put("statusCode", 200);
+			return bufferJSONObject.toJSONString();
+//			return ""+true;
+		}
+		catch(ParseException | NumberFormatException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
+			bufferJSONObject.put("statusCode", 450);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		}
+		catch(MongoException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "DataBase is down.");
+			bufferJSONObject.put("statusCode", 550);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		}
+		catch(IOException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Corrupted Data");
+			bufferJSONObject.put("statusCode", 551);
+			logger.error(e);
 			return bufferJSONObject.toJSONString();
 		}
 		catch(Exception e){
-			return null;
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "App Server has an Internal error.");
+			bufferJSONObject.put("statusCode", 500);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		}
+	}
+
+	@RequestMapping(path = "/getWatchList", method = RequestMethod.POST)
+	public @ResponseBody String getWatchList(HttpServletRequest Request, HttpServletResponse response,
+			@RequestBody String jsonString) {
+		JSONObject bufferJSONObject;
+		JSONParser parser = new JSONParser();
+		try {
+			logger.info("Received a getWatchList request");
+			bufferJSONObject = (JSONObject) parser.parse(jsonString);
+			int userID = Integer.parseInt("" + bufferJSONObject.get("userID"));
+			List<Currency> watchList = getUser(userID).getWatchList();
+			logger.info("Request Parameters -> UserID :" + userID);
+			String s;
+			for (Currency c : watchList) {
+				try {
+					s = (Currency.getCurrency(c.currencyCode)).getValue().toJSONString();
+					bufferJSONObject.put(c.currencyCode, s);
+				} catch (Exception e) {
+					logger.error("Currency " + c + "in WatchList, but does not exist.");
+				}
+
+			}
+			logger.info("Served Request successfully.");
+			bufferJSONObject.put("status", "Successful.");
+			bufferJSONObject.put("statusCode", 200);
+			return bufferJSONObject.toJSONString();
+		} catch (MongoException e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "DataBase is down.");
+			bufferJSONObject.put("statusCode", 550);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		} catch (IOException e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Corrupted Data");
+			bufferJSONObject.put("statusCode", 551);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		} catch (Exception e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "App Server is facing an Internal issue");
+			bufferJSONObject.put("statusCode", 500);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+
 		}
 	}
 
 	@RequestMapping(path="/Register" , method = RequestMethod.POST)
 	public @ResponseBody String Register(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		JSONObject bufferJSONObject;
 		try{
+			logger.info("Received a Register request.");
 			JSONParser parser = new JSONParser();
-			JSONObject bufferJSONObject = null;
+			bufferJSONObject = null;
 			bufferJSONObject = (JSONObject) parser.parse(jsonString);
 			String email = "" + bufferJSONObject.get("email");
 			String phoneNumber = "" + bufferJSONObject.get(ApplicationConstants.PHONE_NUMBER);
 			String countryCode = "" + bufferJSONObject.get("countryCode");
 			String deviceId = "" + bufferJSONObject.get("deviceID");
+			logger.info("Request Parameters : Phone Number : " + phoneNumber +" emailID : "+ email + " countryCode : " + countryCode + " devideID : " + deviceId );
 			JSONObject returnObject = new JSONObject();
 			User user  = isValidUser(ApplicationConstants.PHONE_NUMBER, phoneNumber);
+			logger.info("Parameters verified. Unique Phone Number checked.");
 			if(user != null)
 			{
 				returnObject.put("status", "User with that phone number already exists");
@@ -159,6 +234,7 @@ public class APIEndpointRecievers {
 
 			if(User.getUnverifiedUsers().values().contains(newUser))
 			{
+				
 				OTP otp1=null ;
 				for(OTP otp : User.getUnverifiedUsers().keySet())
 					if(((User)User.getUnverifiedUsers().get(otp)).getPhoneNumber().equals(newUser.getPhoneNumber()))
@@ -167,6 +243,9 @@ public class APIEndpointRecievers {
 				returnObject.put("status", "OTP already generated.");
 				returnObject.put("statusCode", 401);
 				return returnObject.toJSONString();
+			}
+			else{
+				
 			}
 			int userID = GenerateUserID(newUser); 
 			newUser.setUSERID(userID);
@@ -491,15 +570,17 @@ public class APIEndpointRecievers {
 		return user;
 	}
 
-	private User getUser(int userID) throws Exception {
+	private User getUser(int userID) throws MongoException, UserNotFoundException,IOException {
 		try {
 			MongoCollection<?> collection = APIEndpointRecievers.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
 			Instant startTime = Instant.now();
 			Document myDoc = (Document) collection.find(eq(ApplicationConstants.USER_ID_COLUMN_NAME, userID)).first();
 			logger.log(Level.INFO,"MongoQuery for user took " + Duration.between(startTime, Instant.now()).toMillis());
 			if(myDoc==null) {
-				System.out.println("User not registered");
-				return null;
+				logger.log(Level.WARN,"User with id "+ userID +" not registered");
+//				System.out.println("User not registered");
+				throw new UserNotFoundException("Failed to locate user.");
+//				return null;
 			}
 			logger.info("DB Query for userID " + userID +" successful. ");
 			User user = new User();
@@ -512,17 +593,14 @@ public class APIEndpointRecievers {
 		catch(com.mongodb.MongoSocketOpenException|com.mongodb.MongoTimeoutException e)
 		{
 			//				System.out.println("Could not connect to the database");
-			logger.error("Could not connect to the database");
+			logger.error("DataBase Connection Failed");
 			logger.error(e);
-			throw new Exception("DBNotAvailable");
-		} catch (JsonParseException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			logger.error("DBNotAvailable");
+			throw new MongoException("DBNotAvailable");
+		}catch (IOException e) {
+			logger.error("Corrupted Data for user " + userID);
 			logger.error(e);
-			throw new Exception("DBNotAvailable");
+			throw new IOException("CorruptedData");
 		}
-		return null;
 	}
 	
 	public static void sendSMS(String messageUnencoded, String phoneNumber) throws IOException{
