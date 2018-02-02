@@ -82,12 +82,24 @@ public class RefreshRate {
 					Currency newCurrency = new Currency();
 					newCurrency.setCurrencyCode((String)currency.get("symbol"));
 					newCurrency.setName((String)currency.get("name"));
-					newCurrency.setValue(new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString()));
+					CurrencySnapShot value = new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString());
+					newCurrency.setValue(value);
 					HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
-					currencyHistory.put(LocalDateTime.now().toString(),new CurrencySnapShot(8.0f, 0, LocalDateTime.now().toString()));
+					currencyHistory.put(LocalDateTime.now().toString(),value);
 					newCurrency.setHistory(currencyHistory);
 					Currency.makeNewCurrency(newCurrency);
 				}
+				
+			}
+			if(!Currency.getCURRENCYSTATE().containsKey("INR")){
+				Currency newCurrency = new Currency();
+				newCurrency.setCurrencyCode("INR");
+				newCurrency.setName("Rupee");
+				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, LocalDateTime.now().toString());
+				newCurrency.setValue(value);
+				HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
+				currencyHistory.put(LocalDateTime.now().toString(),value);
+				newCurrency.setHistory(currencyHistory);
 				
 			}
 			

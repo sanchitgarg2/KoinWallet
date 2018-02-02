@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.bson.Document;
 import org.springframework.stereotype.Controller;
@@ -61,6 +64,7 @@ public class APIEndpointRecievers {
 		return APIEndpointRecievers.database;
 	}
 	public static Logger getLogger() {
+		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
 		return logger;
 	}
 	public static void setDataBase()
@@ -192,21 +196,55 @@ public class APIEndpointRecievers {
 			try{
 			String deviceId = "" + bufferJSONObject.get("deviceID");}
 			catch(Exception e){
-				returnObject.put("status",e.getMessage() + "Invalid Request Data.");
-				returnObject.put("statusCode", 403);
+				returnObject.put(ApplicationConstants.STATUS,e.getMessage() + "Invalid Request Data.");
+				returnObject.put(ApplicationConstants.STATUS_CODE, 403);
 				return returnObject.toJSONString();
 			}
-			if(bufferJSONObject.containsKey("otp"))
+			
+			if(bufferJSONObject.keySet().contains(ApplicationConstants.EMAIL) && bufferJSONObject.keySet().contains(ApplicationConstants.PHONE_NUMBER))
+			{
+				if(bufferJSONObject.containsKey(ApplicationConstants.OTP))
+				{
+					OTP otp = new OTP();
+					otp.setOtp((String) bufferJSONObject.get(ApplicationConstants.OTP));
+					if(User.getUnverifiedUsers().containsKey(otp)){
+						String Email = (String) bufferJSONObject.get(ApplicationConstants.EMAIL);
+						String PhoneNumber = (String) bufferJSONObject.get(ApplicationConstants.PHONE_NUMBER);
+						User user = User.getUnverifiedUsers().get(otp);
+					if(Email.equals(user.getEmailID()) && PhoneNumber.equals(user.getPhoneNumber()))
+						{
+							createUser(user);
+							returnObject.put("status", "Successful");
+							returnObject.put("statusCode", 200);
+							returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
+							returnObject.put("currencyList", getCurrencyList(null, null));
+							return returnObject.toJSONString();
+						}	
+					}
+					else{
+						returnObject.put("status", "OTP verification Failed.");
+						returnObject.put("statusCode", 401);
+						return returnObject.toJSONString();
+					}
+				}
+				else{
+					returnObject.put(ApplicationConstants.STATUS, "Invalid Request Data.");
+					returnObject.put(ApplicationConstants.STATUS_CODE, 403);
+					return returnObject.toJSONString();
+				}
+			}
+			
+			if(bufferJSONObject.containsKey(ApplicationConstants.OTP))
 			{
 				OTP otp = new OTP();
-				otp.setOtp((String) bufferJSONObject.get("otp"));
+				otp.setOtp((String) bufferJSONObject.get(ApplicationConstants.OTP));
 				if(User.getUsersLoggingIn().containsKey(otp)){
 					String key;
 					String value;
-					if(bufferJSONObject.keySet().contains("email"))
+					if(bufferJSONObject.keySet().contains(ApplicationConstants.EMAIL))
 					{
 						key = ApplicationConstants.EMAIL;
-						value = "" + bufferJSONObject.get("email");
+						value = "" + bufferJSONObject.get(ApplicationConstants.EMAIL);
 					}
 					else
 					{
@@ -216,6 +254,7 @@ public class APIEndpointRecievers {
 					User user = User.getUsersLoggingIn().get(otp);
 					if(value.equals(user.getEmailID())|| value.equals(user.getPhoneNumber()))
 					{
+						
 						returnObject.put("status", "Successful");
 						returnObject.put("statusCode", 200);
 						returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
@@ -317,6 +356,8 @@ public class APIEndpointRecievers {
 			return bufferJSONObject.toJSONString();
 		}
 		catch(Exception e){
+			logger.error("Currency List null. Error message is " + e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -340,6 +381,7 @@ public class APIEndpointRecievers {
 			return ""+true;
 		}
 		catch(Exception e){
+			logger.error("Update WatchList Failed with Error " + e.getMessage() , jsonString , Currency.getCURRENCYSTATE());
 			return ""+false;
 		}
 	}
@@ -370,6 +412,13 @@ public class APIEndpointRecievers {
 		}
 	}
 
+	private void createUser(User user) throws Exception {
+		MongoCollection<Document> collection = APIEndpointRecievers.getDatabase().getCollection("Users");
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonInString = mapper.writeValueAsString(user);
+		collection.insertOne(Document.parse(jsonInString));
+	}
+	
 	private void updateUser(User user) throws Exception {
 		try{
 			MongoCollection<Document> collection = APIEndpointRecievers.getDatabase().getCollection("Users");
@@ -445,12 +494,14 @@ public class APIEndpointRecievers {
 	private User getUser(int userID) throws Exception {
 		try {
 			MongoCollection<?> collection = APIEndpointRecievers.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
+			Instant startTime = Instant.now();
 			Document myDoc = (Document) collection.find(eq(ApplicationConstants.USER_ID_COLUMN_NAME, userID)).first();
+			logger.log(Level.INFO,"MongoQuery for user took " + Duration.between(startTime, Instant.now()).toMillis());
 			if(myDoc==null) {
 				System.out.println("User not registered");
 				return null;
 			}
-			logger.info("User with ID " + userID +" present");
+			logger.info("DB Query for userID " + userID +" successful. ");
 			User user = new User();
 			ObjectMapper mapper = new ObjectMapper();
 			myDoc.remove("_id");
