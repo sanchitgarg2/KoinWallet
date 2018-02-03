@@ -56,9 +56,49 @@ public class Currency{
 	}
 	
 	static class CurrencySnapShot{
+		
+		String currencyCode;
+		String currencyName;
+		float valueInINR;
+		float valueInUSD;
+		String refreshTime;
+		
+		public String getCurrencyCode() {
+			return currencyCode;
+		}
+		public void setCurrencyCode(String currencyCode) {
+			this.currencyCode = currencyCode;
+		}
+		public String getCurrencyName() {
+			return currencyName;
+		}
+		public void setCurrencyName(String currencyName) {
+			this.currencyName = currencyName;
+		}
+		public float getValueInINR() {
+			return valueInINR;
+		}
+		public void setValueInINR(float valueInINR) {
+			this.valueInINR = valueInINR;
+		}
+		public float getValueInUSD() {
+			return valueInUSD;
+		}
+		public void setValueInUSD(float valueInUSD) {
+			this.valueInUSD = valueInUSD;
+		}
+		public String getRefreshTime() {
+			return refreshTime;
+		}
+		public void setRefreshTime(String refreshTime) {
+			this.refreshTime = refreshTime;
+		}
+		
+		
+		
 		@Override
 		public String toString() {
-			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
+			return currencyCode.toUpperCase() + "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
 		}
 		public String toJSONString() {
@@ -66,17 +106,21 @@ public class Currency{
 			jsonObject.put("valueInINR", valueInINR);
 			jsonObject.put("valueInUSD", valueInUSD);
 			jsonObject.put("refreshTime",refreshTime);
+			jsonObject.put("currencyCode", currencyCode);
+			jsonObject.put("currencyName", currencyName);
 			return jsonObject.toJSONString();
 		}
-		float valueInINR;
-		float valueInUSD;
-		String refreshTime;
-		
-		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime) {
+		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime,String currencyCode) {
 			super();
 			this.valueInINR = valueInINR;
 			this.valueInUSD = valueInUSD;
 			this.refreshTime = refreshTime;
+			this.currencyCode = currencyCode;
+			try{
+			this.currencyName = Currency.getCURRENCYSTATE().get(currencyCode).getName();}
+			catch(Exception e){
+				logger.warn("Currency not in Currency State",valueInINR, valueInUSD,refreshTime,currencyCode);				
+			}
 		}
 
 

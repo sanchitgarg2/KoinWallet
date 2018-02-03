@@ -72,9 +72,14 @@ public class RefreshRate {
 			for(int i=0; i < currencyList.length(); i++)
 			{
 				JSONObject currency = currencyList.getJSONObject(i);
-				if(Currency.getCURRENCYSTATE().keySet().contains((String)currency.get("symbol")))
+				Currency c = Currency.getCURRENCYSTATE().get("symbol");
+				if(c!= null)
 				{
-					CurrencySnapShot currencyValue = new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString());
+					CurrencySnapShot currencyValue = new CurrencySnapShot(
+																			Float.parseFloat((String)currency.get("price_inr")), 
+																			Float.parseFloat((String)currency.get("price_usd")), 
+																			LocalDateTime.now().toString(),
+																			c.getCurrencyCode());
 					Currency.updateCurrencyValue((String)currency.get("symbol"), currencyValue);
 				}
 				else
@@ -82,7 +87,7 @@ public class RefreshRate {
 					Currency newCurrency = new Currency();
 					newCurrency.setCurrencyCode((String)currency.get("symbol"));
 					newCurrency.setName((String)currency.get("name"));
-					CurrencySnapShot value = new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString());
+					CurrencySnapShot value = new CurrencySnapShot(Float.parseFloat((String)currency.get("price_inr")), Float.parseFloat((String)currency.get("price_usd")), LocalDateTime.now().toString(),newCurrency.getCurrencyCode());
 					newCurrency.setValue(value);
 					HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
 					currencyHistory.put(LocalDateTime.now().toString(),value);
@@ -95,7 +100,7 @@ public class RefreshRate {
 				Currency newCurrency = new Currency();
 				newCurrency.setCurrencyCode("INR");
 				newCurrency.setName("Rupee");
-				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, LocalDateTime.now().toString());
+				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, LocalDateTime.now().toString(),newCurrency.currencyCode);
 				newCurrency.setValue(value);
 				HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
 				currencyHistory.put(LocalDateTime.now().toString(),value);
@@ -114,7 +119,7 @@ public class RefreshRate {
 
 	}
 //	@Scheduled(fixedDelay = 10000)
-	public void RefreshState() {
+	/*public void RefreshState() {
 		
 		try {
 			Transaction t = new Transaction();
@@ -270,7 +275,7 @@ public class RefreshRate {
 			e.printStackTrace();
 		}
 		
-	}
+	}*/
 	
 	public static void main(String[] args){
 //		MongoDatabase db = ServiceController.getDatabase();
@@ -278,7 +283,7 @@ public class RefreshRate {
 		MongoDatabase mdb = mc.getDatabase("CoinMonitor");
 		MongoCollection<Document> collection = mdb.getCollection("Users");
 		RefreshRate r = new RefreshRate();
-		r.RefreshState();
+//		r.RefreshState();
 		User user = r.user1;
 		System.out.println(user);
 		

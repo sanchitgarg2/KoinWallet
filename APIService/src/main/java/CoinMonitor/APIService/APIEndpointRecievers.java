@@ -166,16 +166,18 @@ public class APIEndpointRecievers {
 			List<Currency> watchList = getUser(userID).getWatchList();
 			logger.info("Request Parameters -> UserID :" + userID);
 			String s;
+			JSONObject currencyListJson = new JSONObject();
 			for (Currency c : watchList) {
 				try {
 					s = (Currency.getCurrency(c.currencyCode)).getValue().toJSONString();
-					bufferJSONObject.put(c.currencyCode, s);
+					currencyListJson.put(c.currencyCode, s);
 				} catch (Exception e) {
 					logger.error("Currency " + c + "in WatchList, but does not exist.");
 				}
 
 			}
 			logger.info("Served Request successfully.");
+			bufferJSONObject.put("currencyList", currencyListJson.toJSONString());
 			bufferJSONObject.put("status", "Successful.");
 			bufferJSONObject.put("statusCode", 200);
 			return bufferJSONObject.toJSONString();
@@ -243,9 +245,6 @@ public class APIEndpointRecievers {
 				returnObject.put("status", "OTP already generated.");
 				returnObject.put("statusCode", 401);
 				return returnObject.toJSONString();
-			}
-			else{
-				
 			}
 			int userID = GenerateUserID(newUser); 
 			newUser.setUSERID(userID);
