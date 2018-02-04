@@ -20,12 +20,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
 
 
-    public String WalletsectionJSONString;
 
-    public int userID;
-
-
-    public  String WalletJSONString;
 
     public ViewPagerAdapter(FragmentManager manager) {
         super(manager);
@@ -36,7 +31,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
         switch(position) {
 
-            case 0: return NewInvestment.newInstance(userID,WalletsectionJSONString,WalletJSONString);
+            case 0: return NewInvestment.newInstance();
             case 1: return TabFragment.getInstance(position);
             case 2: return TabFragment.getInstance(position);
             default:return TabFragment.getInstance(position);
@@ -55,30 +50,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     }
 
 
-    public String getWalletsectionJSONString() {
-        return WalletsectionJSONString;
-    }
-
-    public void setWalletsectionJSONString(String walletsectionJSONString) {
-        WalletsectionJSONString = walletsectionJSONString;
-    }
-
-
-    public int getUserID() {
-        return userID;
-    }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-
-    public String getWalletJSONString() {
-        return WalletJSONString;
-    }
-
-    public void setWalletJSONString(String walletJSONString) {
-        WalletJSONString = walletJSONString;
-    }
 
 
 

@@ -41,7 +41,7 @@
         android:background="@drawable/bitcoin" />
 
     <TextView
-        android:id="@+id/currency_name"
+        android:id="@+id/currencylist_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/imageView"
@@ -55,12 +55,12 @@
 
 
     <TextView
-        android:id="@+id/currency_code"
+        android:id="@+id/currencylist_code"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/imageView"
         android:layout_alignStart="@+id/imageView"
-        android:layout_below="@+id/currency_name"
+        android:layout_below="@+id/currencylist_name"
         android:layout_marginEnd="19dp"
         android:layout_marginRight="19dp"
         android:text="Global average BTC/USD"

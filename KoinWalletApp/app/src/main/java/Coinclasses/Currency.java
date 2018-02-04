@@ -2,23 +2,16 @@ package Coinclasses;
 
 import org.threeten.bp.LocalDateTime;
 import java.util.List;
-//import org.apache.logging.log4j.Level;
-//
-//import org.apache.logging.log4j.LogManager;
-//import org.apache.logging.log4j.Logger;
-//import org.apache.logging.log4j.core.appender.db.jpa.converter.LevelAttributeConverter;
+
 import org.json.simple.JSONObject;
-//import org.springframework.cglib.core.Local;
-//import org.springframework.context.annotation.Scope;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-//import CoinMonitor.APIService.Currency.CurrencySnapShot;
-import Coinclasses.CurrencyExchangeRateInvalidException;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -60,9 +53,49 @@ public class Currency{
 	}
 
 	public static class CurrencySnapShot{
+
+		String currencyCode;
+		String currencyName;
+		float valueInINR;
+		float valueInUSD;
+		String refreshTime;
+
+		public String getCurrencyCode() {
+			return currencyCode;
+		}
+		public void setCurrencyCode(String currencyCode) {
+			this.currencyCode = currencyCode;
+		}
+		public String getCurrencyName() {
+			return currencyName;
+		}
+		public void setCurrencyName(String currencyName) {
+			this.currencyName = currencyName;
+		}
+		public float getValueInINR() {
+			return valueInINR;
+		}
+		public void setValueInINR(float valueInINR) {
+			this.valueInINR = valueInINR;
+		}
+		public float getValueInUSD() {
+			return valueInUSD;
+		}
+		public void setValueInUSD(float valueInUSD) {
+			this.valueInUSD = valueInUSD;
+		}
+		public String getRefreshTime() {
+			return refreshTime;
+		}
+		public void setRefreshTime(String refreshTime) {
+			this.refreshTime = refreshTime;
+		}
+
+
+
 		@Override
 		public String toString() {
-			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
+			return currencyCode.toUpperCase() + "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
 		}
 		public String toJSONString() {
@@ -70,17 +103,17 @@ public class Currency{
 			jsonObject.put("valueInINR", valueInINR);
 			jsonObject.put("valueInUSD", valueInUSD);
 			jsonObject.put("refreshTime",refreshTime);
+			jsonObject.put("currencyCode", currencyCode);
+			jsonObject.put("currencyName", currencyName);
 			return jsonObject.toJSONString();
 		}
-		float valueInINR;
-		float valueInUSD;
-		String refreshTime;
-
-		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime) {
+		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime,String currencyCode, String currencyName) {
 			super();
 			this.valueInINR = valueInINR;
 			this.valueInUSD = valueInUSD;
 			this.refreshTime = refreshTime;
+			this.currencyCode = currencyCode;
+			this.currencyName=currencyName;
 		}
 
 
@@ -120,16 +153,13 @@ public class Currency{
 				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getvalueInINR();
 			return this.valueInINR;
 		}
-		public float getValueInUSD(){
-			return this.valueInUSD;
-		}
 	}
 
 
 
 	@Override
 	public String toString() {
-		return " Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
+		return "[name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
 	}
 
 

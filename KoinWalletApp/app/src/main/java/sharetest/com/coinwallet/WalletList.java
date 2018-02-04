@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,8 +35,10 @@ import sharetest.com.coinwallet.SectionDisplay;
 import sharetest.com.coinwallet.getJSONValue;
 
 import static SupportingClasses.Helper.AppURL;
+import static SupportingClasses.Helper.USER;
 import static SupportingClasses.Helper.UserURL;
 import static SupportingClasses.Helper.AppuserID;
+import static SupportingClasses.Helper.WALLETSECTION;
 
 public class WalletList extends Fragment {
 
@@ -49,37 +52,49 @@ public class WalletList extends Fragment {
     private View headerSpace;
     private Context rootContext;
     private View rootView;
+    private View walletEmptyView;
+    private Context walletEmptyContext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View v=inflater.inflate(R.layout.fragment_wallet_list, container, false);
 
-        rootContext=v.getContext();
-        rootView=v;
-        listView = (ListView)v.findViewById(R.id.list_view);
-        //headerView = v.findViewById(R.id.header_image_view);
-        //headerText = (TextView) v.findViewById(R.id.header_text);
+            View v;
 
-        //setListViewHeader();
+            v = inflater.inflate(R.layout.fragment_wallet_list, container, false);
+            rootContext = v.getContext();
+            rootView = v;
+            listView = (ListView) v.findViewById(R.id.list_view);
+            getUser(rootContext);
 
-         getUser();
-        // Handle list View scroll events
-        //listView.setOnScrollListener(onScrollListener());
+        FloatingActionButton myFab = (FloatingActionButton)v.findViewById(R.id.addCurrency4);
 
+        if(USER.getWallet().getTransactionList()==null) {
+            v = inflater.inflate(R.layout.first_time_walletlist, container, false);
+            walletEmptyView = v;
+            walletEmptyContext = v.getContext();
+            myFab = (FloatingActionButton)v.findViewById(R.id.addCurrency2);
+        }
+        myFab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(rootContext, AddCurrencyWalletlist.class);
+                startActivity(intent);
+            }
+        });
 
         return v;
     }
 
-    public void getUser(){
+    public void getUser(Context context){
 
         ObjectMapper mapper = new ObjectMapper();
-        User sanchit= new User();
+        //User sanchit= new User();
         String user=null;
         try {
-            user =new getJSONValue(rootContext).execute(AppURL+UserURL+Integer.toString(AppuserID)).get();
-            sanchit = mapper.readValue(user, User.class);
+            user =new getJSONValue(context).execute(AppURL+UserURL+Integer.toString(AppuserID)).get();
+            if(user!=null) {
+                USER = mapper.readValue(user, User.class);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -93,18 +108,11 @@ public class WalletList extends Fragment {
         }
 
 
-        if(sanchit!=null) {
-
-            Currency.CURRENCYSTATE = new HashMap<String, Currency>();
-            for (WalletSection section : sanchit.getWallet().getSections().values()) {
-                Currency c = section.getCurrency();
-                Currency.makeNewCurrency(c);
-            }
-
+        if(user!=null) {
 
             TextView currentValue = (TextView)rootView.findViewById(R.id.CurrentValue);
-            currentValue.setText("WALLET :" + String.valueOf(sanchit.getLiquidCashInWallet()));
-            setListViewData(sanchit.getWallet(), sanchit.getUSERID());
+            currentValue.setText("WALLET :" + String.valueOf(USER.getLiquidCashInWallet()));
+            setListViewData(USER.getWallet(), USER.getUSERID());
         }
     }
     /*
@@ -140,11 +148,9 @@ public class WalletList extends Fragment {
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
+                    WALLETSECTION =walletSection;
 
                     Intent intent = new Intent(rootContext, SectionDisplay.class);
-                    intent.putExtra("section", walletsectionJSONString);
-                    intent.putExtra("userID", userid);
-                    intent.putExtra("wallet",walletJSONString);
                     startActivity(intent);
 
                 }

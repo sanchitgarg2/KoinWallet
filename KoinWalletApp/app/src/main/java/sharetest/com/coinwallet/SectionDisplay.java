@@ -33,6 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+import static SupportingClasses.Helper.WALLETSECTION;
+
 /**
  * Created by guptapc on 13/01/18.
  */
@@ -53,20 +55,8 @@ public class SectionDisplay extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.section_display);
 
-        String walletsectionJSONString=getIntent().getExtras().getString("section");
-        String walletJSONString=getIntent().getExtras().getString("wallet");
-        int userID=getIntent().getExtras().getInt("userID");
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        WalletSection section= null;
-        try {
-            section = mapper.readValue(walletsectionJSONString, WalletSection.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Toast.makeText(getBaseContext(), String.valueOf(section.getCashInvested()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), String.valueOf(WALLETSECTION.getCashInvested()), Toast.LENGTH_SHORT).show();
 
 
 
@@ -75,9 +65,10 @@ public class SectionDisplay extends AppCompatActivity {
         viewPager = (ViewPager) findViewById(R.id.viewpager);
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.setWalletsectionJSONString(walletsectionJSONString);
+        /*adapter.setWalletsectionJSONString(walletsectionJSONString);
         adapter.setUserID(userID);
         adapter.setWalletJSONString(walletJSONString);
+        */
         viewPager.setAdapter(adapter);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);

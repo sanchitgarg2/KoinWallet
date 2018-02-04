@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/currency_box"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/transaction_box"
     android:background="@android:color/white"
     android:orientation="horizontal"
     android:padding="5dip">
@@ -41,7 +41,7 @@
         android:background="@drawable/bitcoin" />
 
     <TextView
-        android:id="@+id/currency_name"
+        android:id="@+id/currencylist_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -57,12 +57,12 @@
 
 
     <TextView
-        android:id="@+id/currency_code"
+        android:id="@+id/currencylist_code"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/currency_name"
-        android:layout_alignStart="@+id/currency_name"
-        android:layout_below="@+id/currency_name"
+        android:layout_alignLeft="@+id/currencylist_name"
+        android:layout_alignStart="@+id/currencylist_name"
+        android:layout_below="@+id/currencylist_name"
         android:text="BTC"
         android:textColor="#343434"
         android:textSize="15dip" />

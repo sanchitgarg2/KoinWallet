@@ -6,33 +6,33 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.simple.JSONObject;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import sharetest.com.coinwallet.AddTransaction;
+import Coinclasses.CurrencyCode;
 import sharetest.com.coinwallet.MainActivity;
 import sharetest.com.coinwallet.R;
-import sharetest.com.coinwallet.SectionDisplay;
 import sharetest.com.coinwallet.postJSONValue;
 
 import static SupportingClasses.Helper.AppURL;
 import static SupportingClasses.Helper.AppuserID;
 import static SupportingClasses.Helper.updatewatchlistURL;
-import static android.support.v4.content.ContextCompat.startActivity;
 
 public class SearchCurrencyAdapter extends
         RecyclerView.Adapter<SearchCurrencyAdapter.MyViewHolder> {
 
-    private List<String> list_item ;
+    private List<CurrencyCode> list_item ;
     public Context mcontext;
 
 
 
-    public SearchCurrencyAdapter(List<String> list, Context context) {
+    public SearchCurrencyAdapter(List<CurrencyCode> list, Context context) {
 
         list_item = list;
         mcontext = context;
@@ -58,14 +58,19 @@ public class SearchCurrencyAdapter extends
     public void onBindViewHolder(final MyViewHolder viewHolder, final int position ) {
 
 
-        viewHolder.currency_name.setText(list_item.get(position));
+        viewHolder.currency_code.setText(list_item.get(position).getCurrencyCode());
+        viewHolder.currency_name.setText(list_item.get(position).getCurrencyName());
 
-        viewHolder.currency_name.setOnClickListener(new View.OnClickListener() {
+        viewHolder.currency_box.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 try {
-                    String response =new postJSONValue(mcontext).execute(AppURL+updatewatchlistURL,Integer.toString(AppuserID),list_item.get(position)).get();
+                        JSONObject obj = new JSONObject();
+                        obj.put("userID", Integer.toString(AppuserID));
+                        obj.put("currencyCode",list_item.get(position).getCurrencyCode());
+
+                    String response =new postJSONValue(mcontext).execute(AppURL+updatewatchlistURL,obj.toJSONString()).get();
                     if(response.equals("true")){
                         Intent intent = new Intent(mcontext, MainActivity.class);
                         mcontext.startActivity(intent);
@@ -75,7 +80,7 @@ public class SearchCurrencyAdapter extends
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
-                Toast.makeText(mcontext, list_item.get(position),
+                Toast.makeText(mcontext, list_item.get(position).getCurrencyCode(),
                         Toast.LENGTH_LONG).show();
             }
         });
@@ -85,13 +90,17 @@ public class SearchCurrencyAdapter extends
     // initializes textview in this class
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
+        public RelativeLayout currency_box;
         public TextView currency_name;
+        public  TextView currency_code;
+
 
         public MyViewHolder(View itemLayoutView) {
             super(itemLayoutView);
 
-            currency_name = (TextView) itemLayoutView.findViewById(R.id.currency_name);
-
+            currency_box = (RelativeLayout) itemLayoutView.findViewById(R.id.currency_box);
+            currency_name=(TextView)itemLayoutView.findViewById(R.id.currencylist_name);
+            currency_code=(TextView)itemLayoutView.findViewById(R.id.currencylist_code);
         }
     }
 

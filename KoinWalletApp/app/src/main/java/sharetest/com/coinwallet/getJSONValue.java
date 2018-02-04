@@ -81,7 +81,7 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
             }
 
             if (response!=null && !response.isSuccessful()) {
-                return user;
+                return null;
             }
             if(response!=null&&response.body()!=null){
                 message=response.body().string();
@@ -92,12 +92,12 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
                 Log.d("RESPONSE NO NET", user);
             }
 
-            return user;
+            return null;
 
         } catch (Exception e) {
             e.printStackTrace();
             Log.d("Failed to  CONNECT","NET problem"+e.toString());
-            return user;
+            return null;
         }
     }
 

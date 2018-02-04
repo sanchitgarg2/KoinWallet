@@ -34,7 +34,7 @@
 
 
     <TextView
-        android:id="@+id/currency_name"
+        android:id="@+id/currencylist_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
@@ -47,10 +47,10 @@
 
 
     <TextView
-        android:id="@+id/currency_code"
+        android:id="@+id/currencylist_code"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/currency_name"
+        android:layout_below="@id/currencylist_name"
         android:layout_marginTop="1dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="2345"
@@ -60,7 +60,7 @@
         android:id="@+id/cost"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/currency_code"
+        android:layout_below="@id/currencylist_code"
         android:layout_marginTop="4dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="Cost"
@@ -86,7 +86,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/currency_name"
+        android:layout_alignTop="@id/currencylist_name"
         android:layout_marginRight="5dip"
         android:gravity="right"
         android:text="Quantity"

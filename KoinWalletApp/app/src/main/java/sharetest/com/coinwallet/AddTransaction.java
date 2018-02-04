@@ -1,5 +1,6 @@
 package sharetest.com.coinwallet;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -11,6 +12,10 @@ import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.util.Currency;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +23,8 @@ import java.util.concurrent.ExecutionException;
 import Coinclasses.WalletSection;
 
 import static SupportingClasses.Helper.AppURL;
+import static SupportingClasses.Helper.AppuserID;
+import static SupportingClasses.Helper.WALLETSECTION;
 import static SupportingClasses.Helper.addURL;
 import static SupportingClasses.Helper.tradeURL;
 
@@ -27,8 +34,7 @@ import static SupportingClasses.Helper.tradeURL;
 
 public class AddTransaction extends AppCompatActivity implements View.OnClickListener{
 
-    private static String usersection;
-    private static int userID;
+
     private static WalletSection section=null;
     private static Currency currency;
     private RadioGroup radioGroup;
@@ -66,21 +72,14 @@ public class AddTransaction extends AppCompatActivity implements View.OnClickLis
 
         });
 
-        usersection=getIntent().getExtras().getString("section");
-        userID=getIntent().getExtras().getInt("userID");
+
 
         mClickButton1 = (Button)findViewById(R.id.addbutton);
         price=(EditText)findViewById(R.id.pricevalue);
         volume=(EditText)findViewById(R.id.volumevalue);
         total=(EditText)findViewById(R.id.Totalvolume);
 
-        ObjectMapper mapper = new ObjectMapper();
 
-        try {
-            section=mapper.readValue(usersection,WalletSection.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mClickButton1.setOnClickListener(this);
 
     }
@@ -107,13 +106,36 @@ public class AddTransaction extends AppCompatActivity implements View.OnClickLis
                     }
 
                     try {
-                        response =new postJSONValue(AddTransaction.this).execute(AppURL+tradeURL,Integer.toString(userID),section.getCurrency().getCurrencyCode(),pricevalue,volumevalue).get();
+                        JSONObject obj = new JSONObject();
+                        obj.put("userID", Integer.toString(AppuserID));
+                        obj.put("currencyCode",WALLETSECTION.getCurrency().getCurrencyCode());
+                        obj.put( "price", pricevalue);
+                        obj.put("quantity",volumevalue);
+
+                        response =new postJSONValue(AddTransaction.this).execute(AppURL+tradeURL,obj.toJSONString()).get();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     }
-                    Toast.makeText(AddTransaction.this, "Great going"+usersection+"  "+userID+"    "+response, Toast.LENGTH_SHORT).show();
+
+                    JSONParser parser = new JSONParser();
+                    JSONObject json = null;
+                    try {
+                        json = (JSONObject) parser.parse(response);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    String reasonCode=json.get("statusCode").toString();
+                    if(reasonCode.equals("200")) {
+                        Toast.makeText(AddTransaction.this, "Great going" + WALLETSECTION.getCurrency().getCurrencyCode() + "  " + AppuserID + "    " + response, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(this, SectionDisplay.class);
+                        startActivity(intent);
+                    }
+                    else{
+                        Toast.makeText(AddTransaction.this, "OOPS! SOMETHING WENT MISSING :(", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else{
                     Toast.makeText(AddTransaction.this, "Please fill atleast 2 VALUES", Toast.LENGTH_SHORT).show();

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/input_register_bg">
+
+    <TextView
+        android:id="@+id/FirstTimeWallet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/addCurrency2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31dp"
+        android:text="Please Add Coins to Wallet"
+        android:textColor="#ffffff"
+        android:textSize="15dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/addCurrency2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="191dp"
+        android:src="@drawable/add"
+        app:backgroundTint="#68EFAD"
+        app:layout_anchor="@id/main.appbar"
+        app:layout_anchorGravity="bottom|right|end" />
+
+</RelativeLayout>

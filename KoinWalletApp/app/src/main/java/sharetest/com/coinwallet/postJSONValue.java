@@ -75,8 +75,9 @@ public class postJSONValue extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... urls) {
 
         final MediaType MEDIA_TYPE = MediaType.parse("application/json");
-        JSONObject postdata = new JSONObject();
+        /*JSONObject postdata = new JSONObject();
         try {
+
             if(urls.length>1 && urls[1]!=null) {
                 postdata.put("userID", urls[1]);
             }
@@ -92,8 +93,8 @@ public class postJSONValue extends AsyncTask<String, Void, String> {
         } catch(JSONException e){
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        RequestBody body = RequestBody.create(MEDIA_TYPE, postdata.toString());
+        } */
+        RequestBody body = RequestBody.create(MEDIA_TYPE, urls[1]);
 
         final Request request = new Request.Builder()
                 .url(urls[0])
@@ -110,6 +111,9 @@ public class postJSONValue extends AsyncTask<String, Void, String> {
 
             if(isNetworkConnected()&&isInternetAvailable()){
                 response=client.newCall(request).execute();
+            }
+            if (response!=null && !response.isSuccessful()) {
+                return null;
             }
 
             if(response!=null&&response.body()!=null){

@@ -66,8 +66,8 @@ public class TransactionAdapter extends BaseAdapter {
             vi = inflater.inflate(R.layout.transactionitem_listview,parent,false);
         }
 
-        TextView price_type = (TextView)vi.findViewById(R.id.currency_name);
-        TextView price_per_value = (TextView)vi.findViewById(R.id.currency_code);
+        TextView price_type = (TextView)vi.findViewById(R.id.currencylist_name);
+        TextView price_per_value = (TextView)vi.findViewById(R.id.currencylist_code);
         TextView trading_pair_value=(TextView)vi.findViewById(R.id.trading_pair_value);
         TextView quantity_value = (TextView)vi.findViewById(R.id.currency_value);
         TextView cost_value = (TextView)vi.findViewById(R.id.costvalue);
