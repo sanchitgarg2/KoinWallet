@@ -54,6 +54,7 @@ public class APIEndpointRecievers {
 		super();
 		System.out.println("Setting MongoDB Driver Logging to SEVERE");
 		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
+		
 	}
 
 	public final static Logger logger = LogManager.getLogger(APIEndpointRecievers.class);
@@ -428,8 +429,12 @@ public class APIEndpointRecievers {
 			String s;
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
+				try{
 				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
-				bufferJSONObject.put(c.currencyCode, s);
+				bufferJSONObject.put(c.currencyCode, s);}
+				catch(Exception e){
+					logger.error("Something wrong here");
+				}
 			}
 			return bufferJSONObject.toJSONString();
 		}
