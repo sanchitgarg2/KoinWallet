@@ -1,14 +1,22 @@
 package CoinMonitor.APIService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import CoinMonitor.APIService.Currency.CurrencySnapShot;
 
 public class CoinWallet {
 	HashMap<String,WalletSection> sections = new HashMap<String,WalletSection>();
 	List<Transaction> TransactionList;
+	Logger logger = LogManager.getLogger(Currency.class);
+	
 	float currentValue;
 	
 
@@ -39,6 +47,7 @@ public class CoinWallet {
 	}
 	
 	public void addNewSection(WalletSection section) throws Exception{
+		//TODO: Add the value of this to the total wallet value.
 		if(this.sections.containsKey(section.currency.currencyCode)){
 			throw new Exception("Section already Exists");
 		}
@@ -72,8 +81,30 @@ public class CoinWallet {
 			this.TransactionList = new ArrayList<Transaction>();
 		}
 		this.TransactionList.add(transaction);
-		((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode)).buy(transaction);
-		((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
+		if((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode) != null){
+			((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode)).buy(transaction);
+			if((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode) != null)
+				((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
+			else{
+				//Outgoing Currency does not exist
+				System.out.println("Currency being sold does not exist.");
+				logger.warn("Currency being sold does not exist");
+				}
+			}
+		else{
+			try {
+				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, LocalDateTime.now().toString(), transaction.incomingCurrency.getCurrencyCode())));
+			} catch (Exception e) {
+				//An exception is thrown when you try to add a Currency that is already there. 
+			}
+		}
+//		if((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode) != null)
+//			((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
+//		else{
+//			//Outgoing Currency does not exist
+//			System.out.println("Currency being sold does not exist.");
+//			logger.warn("Currency being sold does not exist");
+//			}
 	}
 
 	@Override
