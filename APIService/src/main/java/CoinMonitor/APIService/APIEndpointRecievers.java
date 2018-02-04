@@ -81,7 +81,7 @@ public class APIEndpointRecievers {
 		logger.log(Level.INFO,"Initializing MongoClient.");
 		if(APIEndpointRecievers.mongoClient == null){
 			try{
-			APIEndpointRecievers.mongoClient = new MongoClient();
+			APIEndpointRecievers.mongoClient = new MongoClient("192.168.0.126:27017");
 			}
 			catch(Exception e){
 				logger.error("Error in Initialzing Mongo Client");

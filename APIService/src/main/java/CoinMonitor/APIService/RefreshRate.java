@@ -279,7 +279,7 @@ public class RefreshRate {
 	
 	public static void main(String[] args){
 //		MongoDatabase db = ServiceController.getDatabase();
-		MongoClient mc = new MongoClient();
+		MongoClient mc = new MongoClient("192.168.0.126:27017");
 		MongoDatabase mdb = mc.getDatabase("CoinMonitor");
 		MongoCollection<Document> collection = mdb.getCollection("Users");
 		RefreshRate r = new RefreshRate();
