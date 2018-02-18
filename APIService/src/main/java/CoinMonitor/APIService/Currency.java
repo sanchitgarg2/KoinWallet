@@ -1,6 +1,8 @@
 package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.apache.logging.log4j.Level;
 
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Scope;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.Exceptions.CurrencyExchangeRateInvalidException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +64,7 @@ public class Currency{
 		String currencyName;
 		float valueInINR;
 		float valueInUSD;
-		String refreshTime;
+		long refreshTime;
 		
 		public String getCurrencyCode() {
 			return currencyCode;
@@ -88,29 +91,36 @@ public class Currency{
 			this.valueInUSD = valueInUSD;
 		}
 		public String getRefreshTime() {
-			return refreshTime;
+			return refreshTime+"";
 		}
-		public void setRefreshTime(String refreshTime) {
+		public void setRefreshTime(long refreshTime) {
 			this.refreshTime = refreshTime;
 		}
-		
-		
 		
 		@Override
 		public String toString() {
 			return currencyCode.toUpperCase() + "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
 		}
+		
+		public String toSimplifiedJSONString(){
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("value", valueInINR);
+			jsonObject.put("odate",this.getRefreshTime());
+			jsonObject.put("code", currencyCode);
+			return jsonObject.toJSONString();
+		}
+		
 		public String toJSONString() {
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("valueInINR", valueInINR);
 			jsonObject.put("valueInUSD", valueInUSD);
-			jsonObject.put("refreshTime",refreshTime);
+			jsonObject.put("refreshTime",this.getRefreshTime());
 			jsonObject.put("currencyCode", currencyCode);
 			jsonObject.put("currencyName", currencyName);
 			return jsonObject.toJSONString();
 		}
-		public CurrencySnapShot(float valueInINR, float valueInUSD, String refreshTime,String currencyCode) {
+		public CurrencySnapShot(float valueInINR, float valueInUSD, long refreshTime,String currencyCode) {
 			super();
 			this.valueInINR = valueInINR;
 			this.valueInUSD = valueInUSD;
@@ -122,19 +132,20 @@ public class Currency{
 				logger.warn("Currency not in Currency State",valueInINR, valueInUSD,refreshTime,currencyCode);				
 			}
 		}
-
+		
+		public  CurrencySnapShot(){
+			super(); 
+		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((refreshTime == null) ? 0 : refreshTime.hashCode());
+			result = prime * result + ((currencyCode == null) ? 0 : currencyCode.hashCode());
+			result = prime * result + (int) (refreshTime ^ (refreshTime >>> 32));
 			result = prime * result + Float.floatToIntBits(valueInINR);
-			result = prime * result + Float.floatToIntBits(valueInUSD);
 			return result;
 		}
-
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -144,20 +155,24 @@ public class Currency{
 			if (getClass() != obj.getClass())
 				return false;
 			CurrencySnapShot other = (CurrencySnapShot) obj;
-			if (refreshTime == null) {
-				if (other.refreshTime != null)
+			if (currencyCode == null) {
+				if (other.currencyCode != null)
 					return false;
-			} else if (!refreshTime.equals(other.refreshTime))
+			} else if (!currencyCode.equals(other.currencyCode))
+				return false;
+			if (refreshTime != other.refreshTime)
 				return false;
 			if (Float.floatToIntBits(valueInINR) != Float.floatToIntBits(other.valueInINR))
 				return false;
-			if (Float.floatToIntBits(valueInUSD) != Float.floatToIntBits(other.valueInUSD))
-				return false;
 			return true;
 		}
-		public float getvalueInINR() {
-			if(this.valueInINR == 0)
-				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getvalueInINR();
+		
+		@JsonIgnore
+		public float getEquivalentValueInINR() {
+			if(this.valueInINR == 0){
+				this.valueInINR = this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getEquivalentValueInINR();
+				return this.valueInINR;
+			}
 			return this.valueInINR;
 		}
 	}

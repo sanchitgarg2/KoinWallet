@@ -49,15 +49,15 @@ import CoinMonitor.APIService.Currency.CurrencySnapShot;
 import CoinMonitor.APIService.Exceptions.UserNotFoundException;
 
 @Controller
-public class APIEndpointRecievers {
-	public APIEndpointRecievers() {
+public class APIEndpointMapper {
+	public APIEndpointMapper() {
 		super();
 		System.out.println("Setting MongoDB Driver Logging to SEVERE");
 		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
 		
 	}
 
-	public final static Logger logger = LogManager.getLogger(APIEndpointRecievers.class);
+	public final static Logger logger = LogManager.getLogger(APIEndpointMapper.class);
 	private static MongoClient mongoClient;
 	private static MongoDatabase database;
 
@@ -67,12 +67,12 @@ public class APIEndpointRecievers {
 		return mongoClient;
 	}
 	public static void setMongoClient(MongoClient mongoClient) {
-		APIEndpointRecievers.mongoClient = mongoClient;
+		APIEndpointMapper.mongoClient = mongoClient;
 	}
 	public static MongoDatabase getDatabase() {
 		if(database == null)
 			initializeMongoClient();
-		return APIEndpointRecievers.database;
+		return APIEndpointMapper.database;
 	}
 	public static Logger getLogger() {
 		return logger;
@@ -80,16 +80,16 @@ public class APIEndpointRecievers {
 	public static void initializeMongoClient()
 	{
 		logger.log(Level.INFO,"Initializing MongoClient.");
-		if(APIEndpointRecievers.mongoClient == null){
+		if(APIEndpointMapper.mongoClient == null){
 			try{
-			APIEndpointRecievers.mongoClient = new MongoClient("192.168.0.126:27017");
+			APIEndpointMapper.mongoClient = new MongoClient("192.168.0.126:27017");
 			}
 			catch(Exception e){
 				logger.error("Error in Initialzing Mongo Client");
 				throw e;
 			}
 		}
-		APIEndpointRecievers.database = mongoClient.getDatabase(ApplicationConstants.DATABASE);
+		APIEndpointMapper.database = mongoClient.getDatabase(ApplicationConstants.DATABASE);
 		logger.info("Mongo client initialized successfully.");
 
 	}
@@ -232,7 +232,7 @@ public class APIEndpointRecievers {
 			newUser.setLastUsedDeviceID(deviceId);
 			newUser.setLiquidCashInWallet(0);
 			newUser.setPhoneNumber(phoneNumber);
-			newUser.setWallet(new CoinWallet());
+			newUser.setWallet(new Wallet());
 			newUser.setWatchList(null);
 
 			if(User.getUnverifiedUsers().values().contains(newUser))
@@ -296,7 +296,7 @@ public class APIEndpointRecievers {
 							returnObject.put("status", "Successful");
 							returnObject.put("statusCode", 200);
 							returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
-							returnObject.put("currencyList", getCurrencyList(null, null));
+							returnObject.put("currencyList",((JSONObject) new JSONParser().parse(getCurrencyList(null, null))).get("currencyList"));
 							return returnObject.toJSONString();
 						}	
 					}
@@ -337,7 +337,7 @@ public class APIEndpointRecievers {
 						returnObject.put("status", "Successful");
 						returnObject.put("statusCode", 200);
 						returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
-						returnObject.put("currencyList", getCurrencyList(null, null));
+						returnObject.put("currencyList", ((JSONObject) new JSONParser().parse(getCurrencyList(null, null))).get("currencyList"));
 						return returnObject.toJSONString();
 					}
 					else{
@@ -424,24 +424,45 @@ public class APIEndpointRecievers {
 	
 	@RequestMapping(path="/getCurrencyList" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyList(HttpServletRequest Request, HttpServletResponse response){
+		JSONObject bufferJSONObject = new JSONObject();
+		bufferJSONObject.put("currencyList",null);
 		try{
-			JSONObject bufferJSONObject = new JSONObject();
+			JSONObject bufferJSONObjectCurrencyList = new JSONObject();
 			String s;
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
 				try{
 				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
-				bufferJSONObject.put(c.currencyCode, s);}
+				bufferJSONObjectCurrencyList.put(c.currencyCode, s);}
 				catch(Exception e){
 					logger.error("Something wrong here");
 				}
 			}
+			bufferJSONObject.put("currencyList", bufferJSONObjectCurrencyList.toJSONString());
+			bufferJSONObject.put("status", "Successful.");
+			bufferJSONObject.put("statusCode", 200);
+			return bufferJSONObject.toJSONString();
+		}
+		catch(NumberFormatException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
+			bufferJSONObject.put("statusCode", 450);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		}
+		catch(MongoException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "DataBase is down.");
+			bufferJSONObject.put("statusCode", 550);
+			logger.error(e);
 			return bufferJSONObject.toJSONString();
 		}
 		catch(Exception e){
-			logger.error("Currency List null. Error message is " + e.getMessage());
-			e.printStackTrace();
-			return null;
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "App Server has an Internal error.");
+			bufferJSONObject.put("statusCode", 500);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
 		}
 	}
 
@@ -496,7 +517,7 @@ public class APIEndpointRecievers {
 	}
 
 	private void createUser(User user) throws Exception {
-		MongoCollection<Document> collection = APIEndpointRecievers.getDatabase().getCollection("Users");
+		MongoCollection<Document> collection = APIEndpointMapper.getDatabase().getCollection("Users");
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(user);
 		collection.insertOne(Document.parse(jsonInString));
@@ -504,7 +525,7 @@ public class APIEndpointRecievers {
 	
 	private void updateUser(User user) throws Exception {
 		try{
-			MongoCollection<Document> collection = APIEndpointRecievers.getDatabase().getCollection("Users");
+			MongoCollection<Document> collection = APIEndpointMapper.getDatabase().getCollection("Users");
 			Document myDoc = collection.find(eq("userid", user.USERID)).first();
 			if(myDoc==null) {
 				System.out.println("User not registered");
@@ -559,7 +580,7 @@ public class APIEndpointRecievers {
 	}
 
 	private User isValidUser(String key,String object) throws Exception {
-		MongoCollection<?> collection = APIEndpointRecievers.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
+		MongoCollection<?> collection = APIEndpointMapper.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
 		Document myDoc = (Document) collection.find(eq(key, object)).first();
 		if(myDoc==null) {
 			System.out.println("User not registered");
@@ -576,7 +597,7 @@ public class APIEndpointRecievers {
 
 	private User getUser(int userID) throws MongoException, UserNotFoundException,IOException {
 		try {
-			MongoCollection<?> collection = APIEndpointRecievers.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
+			MongoCollection<?> collection = APIEndpointMapper.getDatabase().getCollection(ApplicationConstants.USERS_TABLE);
 			Instant startTime = Instant.now();
 			Document myDoc = (Document) collection.find(eq(ApplicationConstants.USER_ID_COLUMN_NAME, userID)).first();
 			logger.log(Level.INFO,"MongoQuery for user took " + Duration.between(startTime, Instant.now()).toMillis());

@@ -11,7 +11,7 @@ public class User {
 	public static HashMap<OTP, User> unverifiedUsers;
 	public static HashMap<OTP, User> UsersLoggingIn;
 	int USERID;
-	CoinWallet wallet;
+	Wallet wallet;
 	List<Currency> watchList;
 	String phoneNumber; 
 	String emailID;
@@ -93,11 +93,11 @@ public class User {
 		USERID = uSERID;
 	}
 
-	public CoinWallet getWallet() {
+	public Wallet getWallet() {
 		return wallet;
 	}
 
-	public void setWallet(CoinWallet wallet) {
+	public void setWallet(Wallet wallet) {
 		this.wallet = wallet;
 	}
 
@@ -129,7 +129,7 @@ public class User {
 		super();
 	}
 
-	public User(int uSERID, CoinWallet wallet, String phoneNumber, String emailID, float liquidCashInWallet) throws Exception {
+	public User(int uSERID, Wallet wallet, String phoneNumber, String emailID, float liquidCashInWallet) throws Exception {
 		super();
 		if (uSERID == 0)
 			throw new Exception("Invalid USERID");
