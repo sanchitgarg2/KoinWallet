@@ -22,14 +22,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 @Scope("prototype")
+@SuppressWarnings("unchecked")
 public class Currency{
 	
-	String name;
-	String currencyCode;
-	public CurrencySnapShot value;
-	public HashMap<String, CurrencySnapShot> history; 
-	public static HashMap<String,Currency> CURRENCYSTATE;
-	public static Logger logger = LogManager.getLogger(Currency.class);
+	private String name;
+	private String currencyCode;
+	private CurrencySnapShot value;
+	private HashMap<String, CurrencySnapShot> history; 
+	private static HashMap<String,Currency> CURRENCYSTATE;
+	private static Logger logger = LogManager.getLogger(Currency.class);
 	
 	
 	//Define Supporting classes.
@@ -78,9 +79,7 @@ public class Currency{
 		public void setCurrencyName(String currencyName) {
 			this.currencyName = currencyName;
 		}
-		public float getValueInINR() {
-			return valueInINR;
-		}
+
 		public void setValueInINR(float valueInINR) {
 			this.valueInINR = valueInINR;
 		}
@@ -103,7 +102,8 @@ public class Currency{
 					+ refreshTime+" ";
 		}
 		
-		public String toSimplifiedJSONString(){
+		@JsonIgnore
+		public String getSimplifiedJSONString(){
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("value", valueInINR);
 			jsonObject.put("odate",this.getRefreshTime());
@@ -111,7 +111,8 @@ public class Currency{
 			return jsonObject.toJSONString();
 		}
 		
-		public String toJSONString() {
+		@JsonIgnore
+		public String getJSONString() {
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("valueInINR", valueInINR);
 			jsonObject.put("valueInUSD", valueInUSD);
@@ -168,9 +169,9 @@ public class Currency{
 		}
 		
 		@JsonIgnore
-		public float getEquivalentValueInINR() {
-			if(this.valueInINR == 0){
-				this.valueInINR = this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getEquivalentValueInINR();
+		public float getValueInINR() {
+			if(this.valueInUSD != 0){
+				this.valueInINR = this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getValueInINR();
 				return this.valueInINR;
 			}
 			return this.valueInINR;
@@ -267,13 +268,13 @@ public class Currency{
 				return thisCurrency.value;
 			} else{
 				logger.log(Level.FATAL,"Currency Value being asked for is not defined." , thisCurrency);
-				throw new Exception("Stated Currency does not have a value");}
+				throw new Exception("Stated Currency does not have a value : " + this.getCurrencyCode());}
 		}
 		else{
 			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 			Currency.CURRENCYSTATE.put(this.currencyCode,this);
 			logger.log(Level.FATAL,"Currency Value being asked for is not defined." , this);
-			throw new Exception("Stated Currency does not have a value");
+			throw new Exception("Stated Currency does not have a value : " + this.getCurrencyCode());
 		}
 	}
 	

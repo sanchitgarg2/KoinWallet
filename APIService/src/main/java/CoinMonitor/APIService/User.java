@@ -139,7 +139,7 @@ public class User {
 		this.emailID = emailID;		LiquidCashInWallet = liquidCashInWallet;
 	}
 
-	public void trade(Transaction transaction) {
+	public void trade(Transaction transaction) throws Exception {
 		this.wallet.trade(transaction);		
 	}
 

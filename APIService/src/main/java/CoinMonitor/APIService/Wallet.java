@@ -49,11 +49,11 @@ public class Wallet {
 	
 	public void addNewSection(WalletSection section) throws Exception{
 		//TODO: Add the value of this to the total wallet value.
-		if(this.sections.containsKey(section.currency.currencyCode)){
+		if(this.sections.containsKey(section.currency.getCurrencyCode())){
 			throw new Exception("Section already Exists");
 		}
 		else{
-			this.sections.put(section.currency.currencyCode, section);
+			this.sections.put(section.currency.getCurrencyCode(), section);
 		}
 	}
 	
@@ -71,41 +71,56 @@ public class Wallet {
 	private float getCurrentValueinINR(){
 		float currentValue = 0;
 		for(WalletSection h:this.sections.values()){
-			currentValue += h.currentBalance *((Currency)Currency.CURRENCYSTATE.get(h.currency.currencyCode)).value.getEquivalentValueInINR();
+			CurrencySnapShot currentPrice;
+			try {
+				currentPrice = h.currency.getValue();
+				currentValue += h.currentBalance *(currentPrice.getValueInINR());
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
 		}
 		return currentValue;
 	}
 
-	public void trade(Transaction transaction) {
+	public void trade(Transaction transaction) throws Exception {
+		WalletSection incomingCurrencySection = this.sections.get(transaction.incomingCurrency.getCurrencyCode());
+		WalletSection outgoingCurrencySection = this.sections.get(transaction.outgoingCurrency.getCurrencyCode());
+		boolean buyTransactionSuccessful = false;
+		boolean sellTransactionSuccessful = false;
+		
 		if(this.TransactionList == null)
 		{
 			this.TransactionList = new ArrayList<Transaction>();
 		}
-		this.TransactionList.add(transaction);
-		if((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode) != null){
-			((WalletSection)this.sections.get(transaction.incomingCurrency.currencyCode)).buy(transaction);
-			if((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode) != null)
-				((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
-			else{
-				//Outgoing Currency does not exist
-				System.out.println("Currency being sold does not exist.");
-				logger.warn("Currency being sold does not exist");
-				}
+		try{
+			if(incomingCurrencySection == null ){
+				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, System.currentTimeMillis(), transaction.incomingCurrency.getCurrencyCode()))); 
 			}
-		else{
-			try {
-				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, System.currentTimeMillis(), transaction.incomingCurrency.getCurrencyCode())));
-			} catch (Exception e) {
-				//An exception is thrown when you try to add a Currency that is already there. 
+			if(outgoingCurrencySection == null ){
+				this.addNewSection(new WalletSection(transaction.outgoingCurrency, -1 * (transaction.pricePerIncoming * transaction.purchaseQuantity), LocalDateTime.now(), new CurrencySnapShot((1/transaction.pricePerIncoming)*transaction.incomingCurrency.getValue().getValueInINR(), 0f, System.currentTimeMillis(), transaction.incomingCurrency.getCurrencyCode())));
 			}
 		}
-//		if((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode) != null)
-//			((WalletSection)this.sections.get(transaction.outgoingCurrency.currencyCode)).sell(transaction);
-//		else{
-//			//Outgoing Currency does not exist
-//			System.out.println("Currency being sold does not exist.");
-//			logger.warn("Currency being sold does not exist");
-//			}
+		catch (Exception e){
+			logger.error("Error in creating new Wallet Section " + e.getMessage());
+			throw e;
+		}
+		
+		try {
+			incomingCurrencySection.buy(transaction);
+			buyTransactionSuccessful = true;
+			outgoingCurrencySection.sell(transaction);
+			sellTransactionSuccessful = true;
+			this.TransactionList.add(transaction);
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage());
+			if(!buyTransactionSuccessful)
+				incomingCurrencySection.reverseTransaction(transaction);
+			if(!sellTransactionSuccessful){
+				outgoingCurrencySection.reverseTransaction(transaction);
+			}
+			throw e;
+		}
 	}
 
 	@Override

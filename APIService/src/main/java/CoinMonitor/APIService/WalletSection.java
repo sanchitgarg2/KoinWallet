@@ -47,12 +47,12 @@ public class WalletSection {
 		this.cashInvested = numberOfCoins * purchasePrice.valueInINR;
 	}
 	
-	public void buy(Transaction transaction){
+	public void buy(Transaction transaction) throws Exception{
 		this.currentBalance += transaction.purchaseQuantity;
-		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.value.valueInINR;
+		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.getValue().valueInINR;
 	};
-	public void sell(Transaction transaction){
-		this.cashRedeemed += transaction.purchaseQuantity*transaction.incomingCurrency.value.valueInINR;
+	public void sell(Transaction transaction) throws Exception{
+		this.cashRedeemed += transaction.purchaseQuantity*transaction.incomingCurrency.getValue().valueInINR;
 		this.currentBalance -= transaction.purchaseQuantity * transaction.pricePerIncoming;
 	};
 	
@@ -63,6 +63,21 @@ public class WalletSection {
 	@Override
 	public String toString() {
 		return "[currency=" + currency + ", currentBalance=" + currentBalance + ", cashInvested=" + cashInvested + ", cashRedeemed=" + cashRedeemed + "]\n";
+	}
+
+	public void reverseTransaction(Transaction transaction) throws Exception {
+		if(this.getCurrency() == transaction.getIncomingCurrency()){
+			//reverse Buy Process
+			this.currentBalance -= transaction.purchaseQuantity;
+			this.cashInvested -= transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.getValue().valueInINR;
+		} else if (this.getCurrency() == transaction.getOutgoingCurrency()){
+			//reverse Sell Process
+			this.cashRedeemed -= transaction.purchaseQuantity*transaction.incomingCurrency.getValue().valueInINR;
+			this.currentBalance += transaction.purchaseQuantity * transaction.pricePerIncoming;
+		
+		}
+		this.currentBalance += transaction.purchaseQuantity;
+		this.cashInvested += transaction.purchaseQuantity*transaction.pricePerIncoming*transaction.outgoingCurrency.getValue().valueInINR;
 	}
 	
 	

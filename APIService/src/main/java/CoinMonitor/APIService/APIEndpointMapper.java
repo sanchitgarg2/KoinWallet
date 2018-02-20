@@ -39,7 +39,6 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.util.JSON;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,6 +48,7 @@ import CoinMonitor.APIService.Currency.CurrencySnapShot;
 import CoinMonitor.APIService.Exceptions.UserNotFoundException;
 
 @Controller
+@SuppressWarnings("unchecked")
 public class APIEndpointMapper {
 	public APIEndpointMapper() {
 		super();
@@ -170,8 +170,8 @@ public class APIEndpointMapper {
 			JSONObject currencyListJson = new JSONObject();
 			for (Currency c : watchList) {
 				try {
-					s = (Currency.getCurrency(c.currencyCode)).getValue().toJSONString();
-					currencyListJson.put(c.currencyCode, s);
+					s = (Currency.getCurrency(c.getCurrencyCode())).getValue().getJSONString();
+					currencyListJson.put(c.getCurrencyCode(), s);
 				} catch (Exception e) {
 					logger.error("Currency " + c + "in WatchList, but does not exist.");
 				}
@@ -258,20 +258,39 @@ public class APIEndpointMapper {
 			returnObject.put("statusCode", 200);
 			return returnObject.toJSONString();
 		}
-		catch(Exception e){
-			return null;
+		catch (MongoException e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "DataBase is down.");
+			bufferJSONObject.put("statusCode", 550);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		} catch (IOException e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Corrupted Data");
+			bufferJSONObject.put("statusCode", 551);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+		} catch (Exception e) {
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "App Server is facing an Internal issue");
+			bufferJSONObject.put("statusCode", 500);
+			logger.error(e);
+			return bufferJSONObject.toJSONString();
+
 		}
 	}
 
 	@RequestMapping(path="/Login" , method = RequestMethod.POST)
 	public @ResponseBody String Login(HttpServletRequest Request, HttpServletResponse response, @RequestBody String jsonString){
+		JSONObject returnObject;
 		try{
 			JSONParser parser = new JSONParser();
 			JSONObject bufferJSONObject = null;
 			bufferJSONObject = (JSONObject) parser.parse(jsonString);
+			//TODO:Use the below values or delete them.
 			String email = null;
 			String phoneNumber = null;
-			JSONObject returnObject = new JSONObject();
+			returnObject = new JSONObject();
 			try{
 			String deviceId = "" + bufferJSONObject.get("deviceID");}
 			catch(Exception e){
@@ -333,10 +352,10 @@ public class APIEndpointMapper {
 					User user = User.getUsersLoggingIn().get(otp);
 					if(value.equals(user.getEmailID())|| value.equals(user.getPhoneNumber()))
 					{
-						
+						ObjectMapper m = new ObjectMapper();
 						returnObject.put("status", "Successful");
 						returnObject.put("statusCode", 200);
-						returnObject.put("user", getUser(null, null, ""+user.getUSERID()));
+						returnObject.put("user", m.writeValueAsString(getUser(user.getUSERID())));
 						returnObject.put("currencyList", ((JSONObject) new JSONParser().parse(getCurrencyList(null, null))).get("currencyList"));
 						return returnObject.toJSONString();
 					}
@@ -394,33 +413,27 @@ public class APIEndpointMapper {
 				}
 				
 			}
-			
-/*
-			if(User.getUnverifiedUsers().values().contains(newUser))
-			{
-				OTP otp1=null ;
-				for(OTP otp : User.getUnverifiedUsers().keySet())
-					if(((User)User.getUnverifiedUsers().get(otp)).getPhoneNumber().equals(newUser.getPhoneNumber()))
-					{otp1 = otp;break;}
-				sendSMS("Your OTP is "+ otp1.getOtp(), newUser.getPhoneNumber());
-				returnObject.put("status", "OTP already generated.");
-				returnObject.put("statusCode", 401);
-				return returnObject.toJSONString();
-			}
-			int userID = GenerateUserID(newUser); 
-			newUser.setUSERID(userID);
-			OTP OTP = GenerateOTP(newUser);
-
-			User.getUnverifiedUsers().put(OTP, newUser);
-			returnObject.put("status", "Successful");
-			returnObject.put("statusCode", 200);
-			return returnObject.toJSONString();*/
 		}
-		catch(Exception e){
-			return null;
+		catch (MongoException e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "DataBase is down.");
+			returnObject.put("statusCode", 550);
+			logger.error(e);
+			return returnObject.toJSONString();
+		} catch (IOException e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "Corrupted Data");
+			returnObject.put("statusCode", 551);
+			logger.error(e);
+			return returnObject.toJSONString();
+		} catch (Exception e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "App Server is facing an Internal issue");
+			returnObject.put("statusCode", 500);
+			logger.error(e);
+			return returnObject.toJSONString();
 		}
 	}
-
 	
 	@RequestMapping(path="/getCurrencyList" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyList(HttpServletRequest Request, HttpServletResponse response){
@@ -432,8 +445,8 @@ public class APIEndpointMapper {
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
 				try{
-				s = (Currency.getCURRENCYSTATE().get(c.currencyCode)).getValue().toJSONString();
-				bufferJSONObjectCurrencyList.put(c.currencyCode, s);}
+				s = (Currency.getCURRENCYSTATE().get(c.getCurrencyCode())).getValue().getJSONString();
+				bufferJSONObjectCurrencyList.put(c.getCurrencyCode(), s);}
 				catch(Exception e){
 					logger.error("Something wrong here");
 				}
@@ -495,24 +508,42 @@ public class APIEndpointMapper {
 		JSONObject JsonObject = new JSONObject();
 		String s = "";
 		for (Currency c : Currency.getCURRENCYSTATE().values()){
-			s = c.getValue().toJSONString();
-			JsonObject.put(c.currencyCode, s);
+			s = c.getValue().getJSONString();
+			JsonObject.put(c.getCurrencyCode(), s);
 		}
 		return JsonObject.toJSONString();
 	}
 
 	@RequestMapping(path="/getUser",params = {"userID"})
-	public @ResponseBody String getUser(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString) throws Exception{
-
+	public @ResponseBody String getUser(HttpServletRequest Request, HttpServletResponse response,  @RequestParam(value = "userID") String userIDString){
+		JSONObject returnObject = new JSONObject();
 		ObjectMapper m = new ObjectMapper();
 		int userID = Integer.parseInt(userIDString);
-		//		System.out.println("\nClass toString");
-		//		System.out.println(sanchit);
 		try {
 			String s = m.writeValueAsString(getUser(userID));
-			return s;
-		} catch (JsonProcessingException e) {
-			return "INVALID_USER";
+			returnObject.put("user", s);
+			returnObject.put("status", "Successful.");
+			returnObject.put("statusCode", 200);
+			return returnObject.toJSONString();
+		} catch (MongoException e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "DataBase is down.");
+			returnObject.put("statusCode", 550);
+			logger.error(e);
+			return returnObject.toJSONString();
+		} catch (IOException e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "Corrupted Data");
+			returnObject.put("statusCode", 551);
+			logger.error(e);
+			return returnObject.toJSONString();
+		} catch (Exception e) {
+			returnObject = new JSONObject();
+			returnObject.put("status", "App Server is facing an Internal issue");
+			returnObject.put("statusCode", 500);
+			logger.error(e);
+			return returnObject.toJSONString();
+
 		}
 	}
 
@@ -551,7 +582,6 @@ public class APIEndpointMapper {
 
 	private OTP GenerateOTP(User newUser) throws IOException {
 		String OTP;
-		int buffer; 
 		Random randomNumberGenerator = new Random();
 		OTP = java.lang.Math.abs(randomNumberGenerator.nextInt() % 9999)  + "";
 		while(OTP.length()<4)
@@ -636,16 +666,15 @@ public class APIEndpointMapper {
 		String message = "message=" + messageUnencoded.replace(" ", "%20" );
 		String sender = "sender=KNWALT";
 		String route= "route=4";
-		String delim = "&";
+		List<String> urlParameters = new ArrayList<>();
+		
+		urlParameters.add(authKey);
+		urlParameters.add(mobiles);
+		urlParameters.add(message);
+		urlParameters.add(sender);
+		urlParameters.add(route);
 
-		List<String> parameters = new ArrayList<>();
-		parameters.add(authKey);
-		parameters.add(mobiles);
-		parameters.add(message);
-		parameters.add(sender);
-		parameters.add(route);
-
-		String URLParams = String.join("&", parameters);
+		String URLParams = String.join("&", urlParameters);
 		URL obj = new URL(url + URLParams);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
@@ -656,8 +685,8 @@ public class APIEndpointMapper {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
+//		System.out.println("\nSending 'GET' request to URL : " + url);
+//		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(con.getInputStream()));
@@ -668,8 +697,8 @@ public class APIEndpointMapper {
 			response.append(inputLine);
 		}
 		in.close();
-
-		//print result
-		System.out.println(response.toString());
+//
+//		//print result
+//		System.out.println(response.toString());
 	}
 }

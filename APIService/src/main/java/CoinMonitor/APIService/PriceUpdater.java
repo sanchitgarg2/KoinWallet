@@ -108,7 +108,7 @@ public class PriceUpdater {
 				}
 				
 				try{
-				this.priceHistory.insertOne(Document.parse(thisValue.toSimplifiedJSONString()));}
+				this.priceHistory.insertOne(Document.parse(thisValue.getSimplifiedJSONString()));}
 				catch(Exception e){
 					logger.error("Updating the priceHistory Failed");
 				}
@@ -131,7 +131,7 @@ public class PriceUpdater {
 				Currency newCurrency = new Currency();
 				newCurrency.setCurrencyCode("INR");
 				newCurrency.setName("Rupee");
-				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, System.currentTimeMillis(),newCurrency.currencyCode);
+				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, System.currentTimeMillis(),newCurrency.getCurrencyCode());
 				newCurrency.setValue(value);
 				HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
 				currencyHistory.put(LocalDateTime.now().toString(),value);

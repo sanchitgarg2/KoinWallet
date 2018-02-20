@@ -1,0 +1,16 @@
+CoinMonitor\APIService\ApplicationConstants.class
+CoinMonitor\APIService\Currency.class
+CoinMonitor\APIService\OTP.class
+CoinMonitor\APIService\WalletSection.class
+CoinMonitor\APIService\Currency$CurrencySnapShot.class
+CoinMonitor\APIService\APIEndpointRecievers.class
+CoinMonitor\APIService\DBNotAvailableException.class
+CoinMonitor\APIService\RefreshRate.class
+CoinMonitor\APIService\CurrencyExchangeRateInvalidException.class
+CoinMonitor\APIService\Exceptions\UserNotFoundException.class
+CoinMonitor\APIService\Transaction.class
+CoinMonitor\APIService\Currency$ConversionRate.class
+CoinMonitor\APIService\InvalidHoldingException.class
+CoinMonitor\APIService\User.class
+CoinMonitor\APIService\CodeBackup.class
+CoinMonitor\APIService\CoinWallet.class
