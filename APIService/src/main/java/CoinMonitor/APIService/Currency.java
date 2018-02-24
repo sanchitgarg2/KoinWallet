@@ -105,9 +105,9 @@ public class Currency{
 		@JsonIgnore
 		public String getSimplifiedJSONString(){
 			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("value", valueInINR);
-			jsonObject.put("odate",this.getRefreshTime());
-			jsonObject.put("code", currencyCode);
+			jsonObject.put("valueInINR", valueInINR);
+			jsonObject.put("RefreshTime",this.getRefreshTime());
+			jsonObject.put("currencyCode", currencyCode);
 			return jsonObject.toJSONString();
 		}
 		
@@ -175,6 +175,16 @@ public class Currency{
 				return this.valueInINR;
 			}
 			return this.valueInINR;
+		}
+		
+		public void setCode(String code){
+			this.setCurrencyCode(code);
+		}
+		public void setOdate(String date){
+			this.setRefreshTime(Long.parseLong(date));
+		}
+		public void setValue(Long value){
+			this.setValueInINR(value);
 		}
 	}
 	

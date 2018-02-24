@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -37,6 +38,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -45,6 +47,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.Exceptions.CurrencyNotFoundException;
 import CoinMonitor.APIService.Exceptions.UserNotFoundException;
 
 @Controller
@@ -54,7 +57,7 @@ public class APIEndpointMapper {
 		super();
 		System.out.println("Setting MongoDB Driver Logging to SEVERE");
 		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(java.util.logging.Level.SEVERE);
-		
+
 	}
 
 	public final static Logger logger = LogManager.getLogger(APIEndpointMapper.class);
@@ -82,7 +85,7 @@ public class APIEndpointMapper {
 		logger.log(Level.INFO,"Initializing MongoClient.");
 		if(APIEndpointMapper.mongoClient == null){
 			try{
-			APIEndpointMapper.mongoClient = new MongoClient("192.168.0.126:27017");
+				APIEndpointMapper.mongoClient = new MongoClient("192.168.0.126:27017");
 			}
 			catch(Exception e){
 				logger.error("Error in Initialzing Mongo Client");
@@ -118,12 +121,12 @@ public class APIEndpointMapper {
 			}
 			user.trade(transaction);
 			updateUser(user);
-			
+
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Successful.");
 			bufferJSONObject.put("statusCode", 200);
 			return bufferJSONObject.toJSONString();
-//			return ""+true;
+			//			return ""+true;
 		}
 		catch(ParseException | NumberFormatException e){
 			bufferJSONObject = new JSONObject();
@@ -237,7 +240,7 @@ public class APIEndpointMapper {
 
 			if(User.getUnverifiedUsers().values().contains(newUser))
 			{
-				
+
 				OTP otp1=null ;
 				for(OTP otp : User.getUnverifiedUsers().keySet())
 					if(((User)User.getUnverifiedUsers().get(otp)).getPhoneNumber().equals(newUser.getPhoneNumber()))
@@ -292,13 +295,13 @@ public class APIEndpointMapper {
 			String phoneNumber = null;
 			returnObject = new JSONObject();
 			try{
-			String deviceId = "" + bufferJSONObject.get("deviceID");}
+				String deviceId = "" + bufferJSONObject.get("deviceID");}
 			catch(Exception e){
 				returnObject.put(ApplicationConstants.STATUS,e.getMessage() + "Invalid Request Data.");
 				returnObject.put(ApplicationConstants.STATUS_CODE, 403);
 				return returnObject.toJSONString();
 			}
-			
+
 			if(bufferJSONObject.keySet().contains(ApplicationConstants.EMAIL) && bufferJSONObject.keySet().contains(ApplicationConstants.PHONE_NUMBER))
 			{
 				if(bufferJSONObject.containsKey(ApplicationConstants.OTP))
@@ -309,7 +312,7 @@ public class APIEndpointMapper {
 						String Email = (String) bufferJSONObject.get(ApplicationConstants.EMAIL);
 						String PhoneNumber = (String) bufferJSONObject.get(ApplicationConstants.PHONE_NUMBER);
 						User user = User.getUnverifiedUsers().get(otp);
-					if(Email.equals(user.getEmailID()) && PhoneNumber.equals(user.getPhoneNumber()))
+						if(Email.equals(user.getEmailID()) && PhoneNumber.equals(user.getPhoneNumber()))
 						{
 							createUser(user);
 							returnObject.put("status", "Successful");
@@ -331,7 +334,7 @@ public class APIEndpointMapper {
 					return returnObject.toJSONString();
 				}
 			}
-			
+
 			if(bufferJSONObject.containsKey(ApplicationConstants.OTP))
 			{
 				OTP otp = new OTP();
@@ -370,9 +373,9 @@ public class APIEndpointMapper {
 					returnObject.put("statusCode", 401);
 					return returnObject.toJSONString();
 				}
-				
-				
-			//end of if bufferJSONObject.containsKey("otp")
+
+
+				//end of if bufferJSONObject.containsKey("otp")
 			}
 			else{
 				String key;
@@ -411,7 +414,7 @@ public class APIEndpointMapper {
 					returnObject.put("statusCode", 400);
 					return returnObject.toJSONString();
 				}
-				
+
 			}
 		}
 		catch (MongoException e) {
@@ -434,7 +437,7 @@ public class APIEndpointMapper {
 			return returnObject.toJSONString();
 		}
 	}
-	
+
 	@RequestMapping(path="/getCurrencyList" , method = RequestMethod.GET)
 	public @ResponseBody String getCurrencyList(HttpServletRequest Request, HttpServletResponse response){
 		JSONObject bufferJSONObject = new JSONObject();
@@ -445,8 +448,8 @@ public class APIEndpointMapper {
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
 				try{
-				s = (Currency.getCURRENCYSTATE().get(c.getCurrencyCode())).getValue().getJSONString();
-				bufferJSONObjectCurrencyList.put(c.getCurrencyCode(), s);}
+					s = (Currency.getCURRENCYSTATE().get(c.getCurrencyCode())).getValue().getJSONString();
+					bufferJSONObjectCurrencyList.put(c.getCurrencyCode(), s);}
 				catch(Exception e){
 					logger.error("Something wrong here");
 				}
@@ -546,6 +549,81 @@ public class APIEndpointMapper {
 
 		}
 	}
+	//TODO:Set rules for the DB collections. Create validator functions. 
+	//TODO:Storing different timelines in different Collections vs Same Collection as a field.
+	@RequestMapping(path="/getCandleStickData", method = RequestMethod.POST)
+	public @ResponseBody String getCandleStickData(HttpServletRequest Request, HttpServletResponse response,@RequestBody String jsonString){
+		ArrayList<CandleStickDataPoint> graphData = new ArrayList<>();
+		MongoCollection<Document> candleStickData = APIEndpointMapper.getDatabase().getCollection("CandleStickData");
+		JSONParser parser = new JSONParser();
+		JSONObject returnObject = null;
+		
+		String currencyCode;
+		String timeLine;
+
+		try{
+			returnObject = (JSONObject) parser.parse(jsonString);
+			timeLine = "" + returnObject.get("timeLine");
+			currencyCode = (String)returnObject.get("currencyCode");
+			JSONObject query = new JSONObject();
+			query.put("code", currencyCode);
+			query.put("timeLine", TimeLinetoPulseConverter.getMapping(timeLine));
+			query.put("odate", TimeLinetoPulseConverter.getStartTime(timeLine));
+
+			//		graphData = new ArrayList<>();
+			FindIterable<Document> abc  = candleStickData.find(Document.parse(query.toJSONString())).sort(new Document("odate",1));
+			//Sort the data to be most recent first.
+			List dataPoints = new ArrayList<Document>();
+			int numberOfGraphDataPoints = ApplicationConstants.CANDLE_STICK_DATA_POINTS;
+			ObjectMapper mapper = new ObjectMapper();
+			CandleStickDataPoint dataPoint;
+			ArrayList<CandleStickDataPoint> returnData = new ArrayList<CandleStickDataPoint>();
+			returnObject = new JSONObject();
+			for( Document myDoc : abc ){
+				myDoc.remove("_id");
+				dataPoint = mapper.readValue(((Document) myDoc).toJson(),CandleStickDataPoint.class);
+				graphData.add(dataPoint);
+			}
+			if(graphData.size() == 0){
+				//TODO:No data found. Generate data and re-call this service.
+			}
+			else{
+				//TODO:Check if the last element has a timeStamp more than 5% before the  currentTime;
+				int lowerBound = graphData.size() / numberOfGraphDataPoints;
+				int higherBound = lowerBound + 1;
+				int moduloOperator = numberOfGraphDataPoints / (graphData.size() % numberOfGraphDataPoints);
+				Iterator<CandleStickDataPoint> inputData = graphData.iterator();
+				for(int i=0;i<numberOfGraphDataPoints;i++)
+				{
+					CandleStickDataPoint thisPoint = new CandleStickDataPoint();
+					CandleStickDataPoint inputPoint;
+					if(i%moduloOperator == 0){
+						for(int j=0; inputData.hasNext() && j< higherBound ; j++){
+							inputPoint = inputData.next();
+							thisPoint.merge(inputPoint);
+						}
+					}
+					else{
+						for(int j=0; inputData.hasNext() && j< lowerBound ; j++){
+							inputPoint = inputData.next();
+							thisPoint.merge(inputPoint);
+						}
+					}
+					returnData.add(thisPoint);
+				}
+				String dataJson = (new ObjectMapper()).writeValueAsString(returnData);
+				returnObject.put("graphData", dataJson);
+				returnObject.put("status", "Successful.");
+				returnObject.put("statusCode", 200);
+
+			}
+			return returnObject.toJSONString();
+		}
+		catch(Exception e){
+			//TODO:Add status codes for the error state to the response sent.
+		}
+		return null;
+	}
 
 	private void createUser(User user) throws Exception {
 		MongoCollection<Document> collection = APIEndpointMapper.getDatabase().getCollection("Users");
@@ -553,7 +631,7 @@ public class APIEndpointMapper {
 		String jsonInString = mapper.writeValueAsString(user);
 		collection.insertOne(Document.parse(jsonInString));
 	}
-	
+
 	private void updateUser(User user) throws Exception {
 		try{
 			MongoCollection<Document> collection = APIEndpointMapper.getDatabase().getCollection("Users");
@@ -633,9 +711,9 @@ public class APIEndpointMapper {
 			logger.log(Level.INFO,"MongoQuery for user took " + Duration.between(startTime, Instant.now()).toMillis());
 			if(myDoc==null) {
 				logger.log(Level.WARN,"User with id "+ userID +" not registered");
-//				System.out.println("User not registered");
+				//				System.out.println("User not registered");
 				throw new UserNotFoundException("Failed to locate user.");
-//				return null;
+				//				return null;
 			}
 			logger.info("DB Query for userID " + userID +" successful. ");
 			User user = new User();
@@ -657,7 +735,7 @@ public class APIEndpointMapper {
 			throw new IOException("CorruptedData");
 		}
 	}
-	
+
 	public static void sendSMS(String messageUnencoded, String phoneNumber) throws IOException{
 		final String USER_AGENT = "Mozilla/5.0";
 		String url = "https://control.msg91.com/api/sendhttp.php?";
@@ -667,7 +745,7 @@ public class APIEndpointMapper {
 		String sender = "sender=KNWALT";
 		String route= "route=4";
 		List<String> urlParameters = new ArrayList<>();
-		
+
 		urlParameters.add(authKey);
 		urlParameters.add(mobiles);
 		urlParameters.add(message);
@@ -685,8 +763,8 @@ public class APIEndpointMapper {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 
 		int responseCode = con.getResponseCode();
-//		System.out.println("\nSending 'GET' request to URL : " + url);
-//		System.out.println("Response Code : " + responseCode);
+		//		System.out.println("\nSending 'GET' request to URL : " + url);
+		//		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(con.getInputStream()));
@@ -697,8 +775,8 @@ public class APIEndpointMapper {
 			response.append(inputLine);
 		}
 		in.close();
-//
-//		//print result
-//		System.out.println(response.toString());
+		//
+		//		//print result
+		//		System.out.println(response.toString());
 	}
 }

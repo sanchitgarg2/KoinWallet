@@ -19,6 +19,7 @@
 <!-- 	<bean id="otpScheduler" class="ivr.OTPcleanjob"></bean> -->
 	<bean id="main Class" class="CoinMonitor.APIService.APIEndpointMapper"></bean>
 	<bean id="ValueRefresher" class="CoinMonitor.APIService.PriceUpdater"></bean>
+	<bean id="GraphDataDigester" class="CoinMonitor.APIService.GraphDataProcessor"></bean>
 	<bean id="jsonView"
 		class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
 <!-- 	<bean
