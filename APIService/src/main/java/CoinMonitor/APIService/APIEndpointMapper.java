@@ -549,8 +549,10 @@ public class APIEndpointMapper {
 
 		}
 	}
+	
 	//TODO:Set rules for the DB collections. Create validator functions. 
 	//TODO:Storing different timelines in different Collections vs Same Collection as a field.
+	
 	@RequestMapping(path="/getCandleStickData", method = RequestMethod.POST)
 	public @ResponseBody String getCandleStickData(HttpServletRequest Request, HttpServletResponse response,@RequestBody String jsonString){
 		ArrayList<CandleStickDataPoint> graphData = new ArrayList<>();
@@ -620,6 +622,7 @@ public class APIEndpointMapper {
 			return returnObject.toJSONString();
 		}
 		catch(Exception e){
+			logger.error(e);
 			//TODO:Add status codes for the error state to the response sent.
 		}
 		return null;

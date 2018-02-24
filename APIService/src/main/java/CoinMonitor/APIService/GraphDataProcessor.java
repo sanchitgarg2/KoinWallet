@@ -2,46 +2,28 @@ package CoinMonitor.APIService;
 
 import static com.mongodb.client.model.Filters.eq;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.util.JSON;
+
 
 //import org.apache.logging.log4j.Logger;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 import CoinMonitor.APIService.Exceptions.CurrencyNotFoundException;
-import CoinMonitor.APIService.Exceptions.UserNotFoundException;
-
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.validation.annotation.Validated;
 
 @Configuration
 @EnableScheduling

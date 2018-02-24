@@ -6,8 +6,8 @@ import CoinMonitor.APIService.Exceptions.UndefinedTimeLineException;
 
 public class TimeLinetoPulseConverter {
 
-	static HashMap<String,String> mapping = new HashMap<String, String>();
-	static HashMap<String,Long> timeLineMapping = new HashMap<String, Long>();
+	static HashMap<String,String> mapping = null;
+	static HashMap<String,Long> timeLineMapping = null;// new HashMap<String, Long>();
 	
 	public static String getMapping(String timeLine) throws UndefinedTimeLineException{
 		if(mapping == null)
