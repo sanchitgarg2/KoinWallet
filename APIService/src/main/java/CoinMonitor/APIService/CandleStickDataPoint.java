@@ -5,7 +5,7 @@ import org.bson.Document;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CandleStickDataPoint {
+public class CandleStickDataPoint implements Comparable<CandleStickDataPoint>{
 	@Override
 	public String toString() {
 		return String.format(
@@ -102,6 +102,17 @@ public class CandleStickDataPoint {
 			this.setLow(this.getLow()<inputPoint.getLow()?inputPoint.getLow():this.getLow());
 		}
 		
+	} 
+	public int compareTo(CandleStickDataPoint otherPoint) {
+
+		long otherTimeStamp = ((CandleStickDataPoint) otherPoint).getOpenTimeStamp();
+
+		//ascending order
+		return (int) (this.getOpenTimeStamp() - otherTimeStamp);
+
+		//descending order
+		//return compareQuantity - this.quantity;
+
 	}
 	public Document toBSONDocument() throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
