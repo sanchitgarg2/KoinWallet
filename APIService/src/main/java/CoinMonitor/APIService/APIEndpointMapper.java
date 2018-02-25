@@ -1,6 +1,7 @@
 package CoinMonitor.APIService;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.gt;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -567,26 +569,35 @@ public class APIEndpointMapper {
 			returnObject = (JSONObject) parser.parse(jsonString);
 			timeLine = "" + returnObject.get("timeLine");
 			currencyCode = (String)returnObject.get("currencyCode");
+			JSONObject bac = new JSONObject();
 			JSONObject query = new JSONObject();
-			query.put("code", currencyCode);
-			query.put("timeLine", TimeLinetoPulseConverter.getMapping(timeLine));
-			query.put("odate", TimeLinetoPulseConverter.getStartTime(timeLine));
-
+			query.put("currencyCode",new Document("$eq",currencyCode ));
+			query.put("timeLine", new Document("$eq",TimeLinetoPulseConverter.getMapping(timeLine)));
+			StringBuilder myString = new StringBuilder();
+			myString.append(" \"openTimeStamp\" : " + " { " + " \"$gt\" : " + TimeLinetoPulseConverter.getStartTime(timeLine)+" }" );
+//			bac.put("$gt" , );
+//			query.put("openTimeStamp", bac.toJSONString());
+			String abce = query.toJSONString();
+			abce = abce.substring(0,abce.length()-1)+ " ," + myString.toString() + " }";
 			//		graphData = new ArrayList<>();
-			FindIterable<Document> abc  = candleStickData.find(Document.parse(query.toJSONString())).sort(new Document("odate",1));
+			FindIterable<Document> abc  = candleStickData.find(Document.parse(abce)).sort(new Document("odate",1));
 			//Sort the data to be most recent first.
 			List dataPoints = new ArrayList<Document>();
 			int numberOfGraphDataPoints = ApplicationConstants.CANDLE_STICK_DATA_POINTS;
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			CandleStickDataPoint dataPoint;
 			ArrayList<CandleStickDataPoint> returnData = new ArrayList<CandleStickDataPoint>();
 			returnObject = new JSONObject();
 			for( Document myDoc : abc ){
-				myDoc.remove("_id");
-				dataPoint = mapper.readValue(((Document) myDoc).toJson(),CandleStickDataPoint.class);
+//				myDoc.remove("_id");
+				dataPoint = mapper.readValue(myDoc.toJson(),CandleStickDataPoint.class);
 				graphData.add(dataPoint);
 			}
 			if(graphData.size() == 0){
+//				returnObject.put("graphData", dataJson);
+				returnObject.put("status", "Successful.");
+				returnObject.put("statusCode", 200);
 				//TODO:No data found. Generate data and re-call this service.
 			}
 			else{
@@ -595,18 +606,18 @@ public class APIEndpointMapper {
 				int higherBound = lowerBound + 1;
 				int moduloOperator = numberOfGraphDataPoints / (graphData.size() % numberOfGraphDataPoints);
 				Iterator<CandleStickDataPoint> inputData = graphData.iterator();
-				for(int i=0;i<numberOfGraphDataPoints;i++)
+				for(int i=0;i<numberOfGraphDataPoints&&inputData.hasNext();i++)
 				{
 					CandleStickDataPoint thisPoint = new CandleStickDataPoint();
 					CandleStickDataPoint inputPoint;
 					if(i%moduloOperator == 0){
-						for(int j=0; inputData.hasNext() && j< higherBound ; j++){
+						for(int j=0; inputData.hasNext() && j <= higherBound ; j++){
 							inputPoint = inputData.next();
 							thisPoint.merge(inputPoint);
 						}
 					}
 					else{
-						for(int j=0; inputData.hasNext() && j< lowerBound ; j++){
+						for(int j=0; inputData.hasNext() && j <= lowerBound ; j++){
 							inputPoint = inputData.next();
 							thisPoint.merge(inputPoint);
 						}

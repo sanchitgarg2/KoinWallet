@@ -84,7 +84,7 @@ public class PriceUpdater {
 					CurrencySnapShot currencyValue = new CurrencySnapShot(
 																			Float.parseFloat((String)currency.get("price_inr")), 
 																			Float.parseFloat((String)currency.get("price_usd")), 
-																			System.currentTimeMillis(),
+																			System.currentTimeMillis()/1000,
 																			c.getCurrencyCode());
 					thisValue = currencyValue;
 					Currency.updateCurrencyValue((String)currency.get("symbol"), currencyValue);
@@ -97,7 +97,7 @@ public class PriceUpdater {
 					CurrencySnapShot value = new CurrencySnapShot(
 																	Float.parseFloat((String)currency.get("price_inr")), 
 																	Float.parseFloat((String)currency.get("price_usd")), 
-																	System.currentTimeMillis(),
+																	System.currentTimeMillis()/1000,
 																	newCurrency.getCurrencyCode());
 					thisValue = value;
 					newCurrency.setValue(value);
@@ -131,7 +131,7 @@ public class PriceUpdater {
 				Currency newCurrency = new Currency();
 				newCurrency.setCurrencyCode("INR");
 				newCurrency.setName("Rupee");
-				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, System.currentTimeMillis(),newCurrency.getCurrencyCode());
+				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, System.currentTimeMillis()/1000,newCurrency.getCurrencyCode());
 				newCurrency.setValue(value);
 				HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
 				currencyHistory.put(LocalDateTime.now().toString(),value);

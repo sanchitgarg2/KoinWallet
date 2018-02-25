@@ -27,7 +27,7 @@ public class TimeLinetoPulseConverter {
 			if (interval == -1)
 				return -1;
 			else
-				return System.currentTimeMillis() - interval;
+				return System.currentTimeMillis()/1000 - interval;
 		}
 		else{
 			throw new UndefinedTimeLineException(timeLine);
@@ -37,15 +37,15 @@ public class TimeLinetoPulseConverter {
 	private static void initTimeLineMapping(){
 		timeLineMapping = new HashMap<String, Long>();
 		timeLineMapping.put("ALL_TIME" , new Long(-1));
-		timeLineMapping.put("ONE_YEAR" , new Long(31536000));
-		timeLineMapping.put("SIX_MONTHS" , new Long(15768000));
-		timeLineMapping.put("THREE_MONTHS" , new Long(7884000));
-		timeLineMapping.put("ONE_MONTH" , new Long(2628000));
-		timeLineMapping.put("ONE_WEEK" , new Long(657000));
-		timeLineMapping.put("ONE_DAY" , new Long(93858));
-		timeLineMapping.put("SIX_HOURS" , new Long(23465));
-		timeLineMapping.put("THREE_HOURS" , new Long(11732));
-		timeLineMapping.put("ONE_HOUR" , new Long(3910));
+		timeLineMapping.put("ONE_YEAR" , new Long(31104000));
+		timeLineMapping.put("SIX_MONTHS" , new Long(15552000));
+		timeLineMapping.put("THREE_MONTHS" , new Long(7776000));
+		timeLineMapping.put("ONE_MONTH" , new Long(2592000));
+		timeLineMapping.put("ONE_WEEK" , new Long(604800));
+		timeLineMapping.put("ONE_DAY" , new Long(86400));
+		timeLineMapping.put("SIX_HOURS" , new Long(21600));
+		timeLineMapping.put("THREE_HOURS" , new Long(10800));
+		timeLineMapping.put("ONE_HOUR" , new Long(3600));
 	}
 	
 	private static void initMapping() {

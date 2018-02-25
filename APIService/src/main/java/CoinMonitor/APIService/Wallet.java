@@ -94,10 +94,10 @@ public class Wallet {
 		}
 		try{
 			if(incomingCurrencySection == null ){
-				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, System.currentTimeMillis(), transaction.incomingCurrency.getCurrencyCode()))); 
+				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode()))); 
 			}
 			if(outgoingCurrencySection == null ){
-				this.addNewSection(new WalletSection(transaction.outgoingCurrency, -1 * (transaction.pricePerIncoming * transaction.purchaseQuantity), LocalDateTime.now(), new CurrencySnapShot((1/transaction.pricePerIncoming)*transaction.incomingCurrency.getValue().getValueInINR(), 0f, System.currentTimeMillis(), transaction.incomingCurrency.getCurrencyCode())));
+				this.addNewSection(new WalletSection(transaction.outgoingCurrency, -1 * (transaction.pricePerIncoming * transaction.purchaseQuantity), LocalDateTime.now(), new CurrencySnapShot((1/transaction.pricePerIncoming)*transaction.incomingCurrency.getValue().getValueInINR(), 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode())));
 			}
 		}
 		catch (Exception e){

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import CoinMonitor.APIService.Currency.CurrencySnapShot;
 import CoinMonitor.APIService.Exceptions.CurrencyExchangeRateInvalidException;
+import org.bson.types.Decimal128;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,25 +81,31 @@ public class Currency{
 			this.currencyName = currencyName;
 		}
 
-		public void setValueInINR(float valueInINR) {
+		public void setValueInINR(Float valueInINR) {
 			this.valueInINR = valueInINR;
 		}
 		public float getValueInUSD() {
 			return valueInUSD;
 		}
-		public void setValueInUSD(float valueInUSD) {
+		public void setValueInUSD(Float valueInUSD) {
 			this.valueInUSD = valueInUSD;
 		}
-		public String getRefreshTime() {
-			return refreshTime+"";
+		public long getRefreshTime() {
+			return refreshTime ;
 		}
-		public void setRefreshTime(long refreshTime) {
+		public void setRefreshTime(Long refreshTime) {
 			this.refreshTime = refreshTime;
+		}
+//		public void setRefreshTime(int refreshTime) {
+//			this.refreshTime = refreshTime;
+//		}
+		public void setValueInINR(Double valueInINR){
+			this.valueInINR = Float.parseFloat(valueInINR.toString());
 		}
 		
 		@Override
 		public String toString() {
-			return currencyCode.toUpperCase() + "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
+			return currencyCode.toUpperCase() + " valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
 					+ refreshTime+" ";
 		}
 		
@@ -106,7 +113,7 @@ public class Currency{
 		public String getSimplifiedJSONString(){
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("valueInINR", valueInINR);
-			jsonObject.put("RefreshTime",this.getRefreshTime());
+			jsonObject.put("refreshTime",this.getRefreshTime());
 			jsonObject.put("currencyCode", currencyCode);
 			return jsonObject.toJSONString();
 		}
@@ -180,10 +187,10 @@ public class Currency{
 		public void setCode(String code){
 			this.setCurrencyCode(code);
 		}
-		public void setOdate(String date){
-			this.setRefreshTime(Long.parseLong(date));
+		public void setOdate(long date){
+			this.setRefreshTime(date);
 		}
-		public void setValue(Long value){
+		public void setValue(float value){
 			this.setValueInINR(value);
 		}
 	}
@@ -192,7 +199,7 @@ public class Currency{
 	
 	@Override
 	public String toString() {
-		return "[name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
+		return "[name=" + name + " , currencyCode=" + currencyCode + ", value=" + value + "]\n";
 	}
 
 
