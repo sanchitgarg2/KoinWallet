@@ -447,13 +447,14 @@ public class APIEndpointMapper {
 		try{
 			JSONObject bufferJSONObjectCurrencyList = new JSONObject();
 			String s;
+			
 			for(Currency c:Currency.getCURRENCYSTATE().values())
 			{
 				try{
 					s = (Currency.getCURRENCYSTATE().get(c.getCurrencyCode())).getValue().getJSONString();
 					bufferJSONObjectCurrencyList.put(c.getCurrencyCode(), s);}
 				catch(Exception e){
-					logger.error("Something wrong here");
+					logger.error(this.getClass() + ".getCurrencyList" +"Something wrong here" + e.getMessage());
 				}
 			}
 			bufferJSONObject.put("currencyList", bufferJSONObjectCurrencyList.toJSONString());

@@ -177,9 +177,8 @@ public class Currency{
 		
 		@JsonIgnore
 		public float getValueInINR() {
-			if(this.valueInUSD != 0){
-				this.valueInINR = this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getValueInINR();
-				return this.valueInINR;
+			if(this.valueInINR == 0 && this.valueInUSD != 0){
+				this.valueInINR = this.valueInUSD * Currency.getCurrency("USD").value.getValueInINR();
 			}
 			return this.valueInINR;
 		}

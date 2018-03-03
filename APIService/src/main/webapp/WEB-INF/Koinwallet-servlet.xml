@@ -9,42 +9,36 @@
          	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
         	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 	<context:component-scan base-package="src.main.java.CoinMonitor.APIService" />
-	 <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
 	<bean id="oxmMarshaller" class="org.springframework.oxm.xstream.XStreamMarshaller"></bean>
 	<bean id="marshallingHttpMessageConverter"
 		class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter">
 		<property name="marshaller" ref="oxmMarshaller" />
 		<property name="unmarshaller" ref="oxmMarshaller" />
 	</bean>
-<!-- 	<bean id="otpScheduler" class="ivr.OTPcleanjob"></bean> -->
+	<!-- <bean id="otpScheduler" class="ivr.OTPcleanjob"></bean> -->
 	<bean id="main Class" class="CoinMonitor.APIService.APIEndpointMapper"></bean>
 	<bean id="ValueRefresher" class="CoinMonitor.APIService.PriceUpdater"></bean>
 	<bean id="GraphDataDigester" class="CoinMonitor.APIService.GraphDataProcessor"></bean>
+<!-- 	<bean id="mylog"
+		class="org.springframework.beans.factory.config.CommonsLogFactoryBean">
+		<property name="logName" value="mylog"/>
+	</bean> -->
 	<bean id="jsonView"
 		class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
-<!-- 	<bean
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-		<property name="messageConverters">
-			<util:list id="beanList">
-				<ref bean="jsonConverter" />
-				<ref bean="marshallingHttpMessageConverter" />
-			</util:list>
-		</property>
-	</bean> -->
+	<!-- <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"> 
+		<property name="messageConverters"> <util:list id="beanList"> <ref bean="jsonConverter" 
+		/> <ref bean="marshallingHttpMessageConverter" /> </util:list> </property> 
+		</bean> -->
 
-	<bean id="jsonConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+	<bean id="jsonConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
 		<property name="supportedMediaTypes" value="application/json" />
 		<!-- <property name="objectMapper" value="jacksonObjectMapper" /> -->
 	</bean>
 
-	<!-- <bean
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
-		<property name="messageConverters">
-			<list>
-				<ref bean="jsonConverter" />
-				<ref bean="marshallingHttpMessageConverter" />
-			</list>
-		</property>
-	</bean> -->
+	<!-- <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver"> 
+		<property name="messageConverters"> <list> <ref bean="jsonConverter" /> <ref 
+		bean="marshallingHttpMessageConverter" /> </list> </property> </bean> -->
 </beans>
 

@@ -45,10 +45,10 @@ public class GraphDataProcessor {
 		final int DATA_POINT_TIME_LINE = 60;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		System.out.println(Currency.getCURRENCYSTATE().values());
+//		System.out.println(Currency.getCURRENCYSTATE().values());
 		for(Currency c : Currency.getCURRENCYSTATE().values()){
 			System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------");
-			System.out.print("Processing for " + c.getCurrencyCode() + " ");
+			System.out.println("Processing for " + c.getCurrencyCode() + " ");
 			try {
 				//				List<CurrencySnapShot> allDataPoints  = new ArrayList<CurrencySnapShot>();
 				List<List<CurrencySnapShot>> dataPointGroups = new ArrayList<List<CurrencySnapShot>>();
@@ -63,8 +63,8 @@ public class GraphDataProcessor {
 						throw new CurrencyNotFoundException("Failed to locate Currency.");
 					}
 					CurrencySnapShot thisSnap = new CurrencySnapShot();
-					//TODO: Remove the string replace later for performance improvement.
-					System.out.println(myDoc.toJson());
+					//TODO: Remove the string replace later for performance improvements.
+					System.out.print(myDoc.get("valueInINR") + "\t" + myDoc.get("refreshTime"));
 //					.replaceAll("\\.([0-9]+)", ".$1f")
 					Pattern pattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
 					Matcher matcher = pattern.matcher(myDoc.toJson());
