@@ -34,8 +34,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 @EnableScheduling
 @EnableAsync
 
-public class GraphDataProcessor {
-	
+public class GraphDataProcessor2 {
+
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static boolean initUser = true;
 	public static Logger logger = LogManager.getFormatterLogger(GraphDataProcessor.class);
@@ -43,97 +43,20 @@ public class GraphDataProcessor {
 	static MongoCollection<Document> priceHistoryBackup = APIEndpointMapper.getDatabase().getCollection("PriceHistoryBackup");
 	static MongoCollection<Document> candleStickData = APIEndpointMapper.getDatabase().getCollection("CandleStickData");
 
+	
+	private void printData(int i2, int dataPointsGroupsSize){
+		System.out.println("Found " + i2 + " data points for this currency");	
+		System.out.println("Divided into " + dataPointsGroupsSize + " aggregated points ");
+		System.out.println("Parsing each individual point.");
+		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Scheduled(fixedDelay = 6000)
 	public void digestCurrencyData(){
 		int DATA_POINT_TIME_LINE = 60;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);		
-
-		for (String DATA_POINT_TIME_LINE_NAME:TimeLinetoPulseConverter.getDATA_POINT_TIME_LINE().keySet())
-		{
-			String lowerTimeLine = TimeLinetoPulseConverter.getLOWER_TIME_LINE().get(DATA_POINT_TIME_LINE_NAME);
-			if(lowerTimeLine == null)
-				continue;
-			int ratio = TimeLinetoPulseConverter.DATA_POINT_TIME_LINE.get(DATA_POINT_TIME_LINE_NAME) / TimeLinetoPulseConverter.DATA_POINT_TIME_LINE.get(lowerTimeLine);
-
-			//			if(LowerTimeLine == null){
-			//				continue;
-			//			}
-			for(Currency c : Currency.getCURRENCYSTATE().values()){
-
-				//------------- The section to get the latest point of this timeline. Use that to filter the input data.
-				JSONObject query1 = new JSONObject();
-				query1.put("timeLine" ,new Document("$eq", DATA_POINT_TIME_LINE_NAME));
-				query1.put("currencyCode",new Document("$eq", c.getCurrencyCode()));
-				FindIterable<Document> MaxPoint = candleStickData.find(Document.parse(query1.toJSONString())).sort(new Document("refreshTime",-1)).limit(1);
-				String maxOdate = "";
-				for(Document abcd : MaxPoint){
-					maxOdate = abcd.getString("RefreshTime");
-				}
-				//------------- End Section to get the latest point			
-
-				JSONObject query = new JSONObject();
-				query.put("timeLine" ,new Document("$eq", lowerTimeLine));
-				query.put("currencyCode",new Document("$eq", c.getCurrencyCode()));
-				if(maxOdate != null && !"".equals(maxOdate)) 
-					query.put("openTimeStamp", new Document("$gt",Integer.parseInt(maxOdate)));
-				else
-					//TODO: Remove this else condition later. This was a filter for old, junk data.
-					query.put("openTimeStamp", new Document("$gt", 151114000));
-				FindIterable<Document> DBResult = candleStickData.find(Document.parse(query.toJSONString())).sort(new Document("refreshTime",-1)).limit(250);
-				CandleStickDataPoint dataPoint;
-				List<CandleStickDataPoint> graphData = new ArrayList<CandleStickDataPoint>();
-				for( Document myDoc : DBResult ){
-					try {
-						dataPoint = mapper.readValue(myDoc.toJson(),CandleStickDataPoint.class);
-					}  
-					catch (Exception e) {
-						continue;//break;
-					}
-					graphData .add(dataPoint);
-				}
-				//TODO:Delete the previous timeLine data - no right?
-				//		Find out the 
-				if(graphData.size() < ratio){
-					//No Data found. 
-					//TODO: Continue here or Asynchronously trigger a new thread to digest the data.
-					continue;
-				}
-				else{
-					Iterator<CandleStickDataPoint> inputData = graphData.iterator();
-					List<CandleStickDataPoint> outputData = new ArrayList<CandleStickDataPoint>();
-					CandleStickDataPoint mergedPoint , inputPoint;
-					while(inputData.hasNext())
-					{
-						mergedPoint = new CandleStickDataPoint();
-						mergedPoint.setTimeLine(DATA_POINT_TIME_LINE_NAME);
-						inputPoint = inputData.next();
-						int pointCount = 0;
-						do {
-							pointCount += 1;
-							mergedPoint.merge(inputPoint);
-							inputPoint = inputData.next();
-						}
-						while(inputData.hasNext() && 
-								((mergedPoint.getCloseTimeStamp() - mergedPoint.getOpenTimeStamp()) < TimeLinetoPulseConverter.DATA_POINT_TIME_LINE.get(DATA_POINT_TIME_LINE_NAME)));
-						// TODO: Drop / otherwise prevent from further processing the points obtained.
-						// If the last few points are part of an incomplete senior dataPoint, do not consider any of them.
-						System.out.println("This is a merged point from " + lowerTimeLine + " and " + pointCount + " points were merged.");
-						if(pointCount >= ratio){
-							outputData.add(mergedPoint);}
-						else{
-							//TODO: If the number of points is less than the optimal, the merged point should be dropped and the points should still be considered in the next run.
-						}
-					}
-					//					String dataJson = (new ObjectMapper()).writeValueAsString(returnData);
-				}
-				//				------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-			}
-		}
-		/*//		System.out.println(Currency.getCURRENCYSTATE().values());
 		for(Currency c : Currency.getCURRENCYSTATE().values()){
 			System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------");
 			System.out.println("Processing for " + c.getCurrencyCode() + " ");
@@ -144,8 +67,10 @@ public class GraphDataProcessor {
 				List<org.bson.types.ObjectId> removeIds = new ArrayList<>();
 				FindIterable<Document> DBResult = priceHistory.find(eq("currencyCode",c.getCurrencyCode())).sort(new Document("refreshTime",-1)).limit(250);
 				int i2 = 0;
-				boolean shouldPrint = false;
+				boolean hasDeletedRecords = false;
+				int i=0;
 				for( Document myDoc : DBResult){
+					i++;
 					if(myDoc==null) {
 						logger.log(Level.ERROR,"No History stored for this currency. " + c.getCurrencyCode());
 						throw new CurrencyNotFoundException("Failed to locate Currency.");
@@ -153,11 +78,11 @@ public class GraphDataProcessor {
 					CurrencySnapShot thisSnap = new CurrencySnapShot();
 					//TODO: Remove the string replace later for performance improvements.
 					System.out.print(myDoc.get("valueInINR") + "\t" + myDoc.get("refreshTime"));
-					Pattern pattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
-					Matcher matcher = pattern.matcher(myDoc.toJson());
+					Pattern numberPattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
+					Matcher numberPatternMatcher = numberPattern.matcher(myDoc.toJson());
 					Float abc = -1f;
-					if(matcher.find())
-						abc = Float.parseFloat(matcher.group(1)+"." +matcher.group(2));
+					if(numberPatternMatcher.find())
+						abc = Float.parseFloat(numberPatternMatcher.group(1)+"." +numberPatternMatcher.group(2));
 					thisSnap = mapper.readValue(myDoc.toJson().replaceAll("RefreshTime", "refreshTime"),CurrencySnapShot.class);
 					thisSnap.setValueInINR(abc);
 					localDataPointsGroup.add(thisSnap);
@@ -171,16 +96,9 @@ public class GraphDataProcessor {
 						localDataPointsGroup = new ArrayList<CurrencySnapShot>();
 						priceHistory.deleteMany(new Document("_id", new Document("$in" , removeIds)));
 						removeIds = new ArrayList<org.bson.types.ObjectId>();
-						shouldPrint = true;
+						printData(i2,dataPointGroups.size());
 					}
 					i2 += 1;
-				}
-				if(shouldPrint){
-					System.out.println("Found " + i2 + " data points for this currency");	
-					System.out.println("Divided into " + dataPointGroups.size() + " aggregated points ");
-					System.out.println("Parsing each individual point.");
-					System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-					shouldPrint = false;
 				}
 				for (List<CurrencySnapShot> dataPointsGroup : dataPointGroups){
 					System.out.println("This candleStick point is a merge of " + dataPointsGroup.size());
@@ -207,6 +125,8 @@ public class GraphDataProcessor {
 				logger.error(e.getMessage());
 			}
 			System.out.println("Data digested for " + c.getCurrencyCode());
-		}*/
+		}
+		
 	}
+	
 }
