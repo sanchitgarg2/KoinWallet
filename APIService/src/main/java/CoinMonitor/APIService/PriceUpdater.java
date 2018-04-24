@@ -30,7 +30,7 @@ import com.mongodb.util.JSON;
 
 //import org.apache.logging.log4j.Logger;
 
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.CurrencySnapshot;
 
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -77,11 +77,11 @@ public class PriceUpdater {
 			for(int i=0; i < currencyList.length(); i++)
 			{
 				JSONObject currency = currencyList.getJSONObject(i);
-				Currency c = Currency.getCURRENCYSTATE().get("symbol");
-				CurrencySnapShot thisValue;
+				Currency c = Currency.getStaticCurrencyState().get("symbol");
+				CurrencySnapshot thisValue;
 				if(c!= null)
 				{
-					CurrencySnapShot currencyValue = new CurrencySnapShot(
+					CurrencySnapshot currencyValue = new CurrencySnapshot(
 																			Float.parseFloat((String)currency.get("price_inr")), 
 																			Float.parseFloat((String)currency.get("price_usd")), 
 																			System.currentTimeMillis()/1000,
@@ -94,14 +94,14 @@ public class PriceUpdater {
 					Currency newCurrency = new Currency();
 					newCurrency.setCurrencyCode((String)currency.get("symbol"));
 					newCurrency.setName((String)currency.get("name"));
-					CurrencySnapShot value = new CurrencySnapShot(
+					CurrencySnapshot value = new CurrencySnapshot(
 																	Float.parseFloat((String)currency.get("price_inr")), 
 																	Float.parseFloat((String)currency.get("price_usd")), 
 																	System.currentTimeMillis()/1000,
 																	newCurrency.getCurrencyCode());
 					thisValue = value;
 					newCurrency.setValue(value);
-					HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
+					HashMap<String,CurrencySnapshot> currencyHistory = new HashMap<String,CurrencySnapshot>();
 					currencyHistory.put(LocalDateTime.now().toString(),value);
 					newCurrency.setHistory(currencyHistory);
 					Currency.makeNewCurrency(newCurrency);
@@ -116,7 +116,7 @@ public class PriceUpdater {
 				try{
 					if(thisValue.getCurrencyCode() == "XRP")
 					for( Document myDoc :priceHistory.find(eq("code","XRP"))){
-					CurrencySnapShot thisSnap = new CurrencySnapShot();
+					CurrencySnapshot thisSnap = new CurrencySnapshot();
 					ObjectMapper mapper = new ObjectMapper();
 					System.out.println(myDoc.toJson());
 					}
@@ -127,13 +127,13 @@ public class PriceUpdater {
 				
 				
 			}
-			if(!Currency.getCURRENCYSTATE().containsKey("INR")){
+			if(!Currency.getStaticCurrencyState().containsKey("INR")){
 				Currency newCurrency = new Currency();
 				newCurrency.setCurrencyCode("INR");
 				newCurrency.setName("Rupee");
-				CurrencySnapShot value = new CurrencySnapShot(1.0f, 1/65f, System.currentTimeMillis()/1000,newCurrency.getCurrencyCode());
+				CurrencySnapshot value = new CurrencySnapshot(1.0f, 1/65f, System.currentTimeMillis()/1000,newCurrency.getCurrencyCode());
 				newCurrency.setValue(value);
-				HashMap<String,CurrencySnapShot> currencyHistory = new HashMap<String,CurrencySnapShot>();
+				HashMap<String,CurrencySnapshot> currencyHistory = new HashMap<String,CurrencySnapshot>();
 				currencyHistory.put(LocalDateTime.now().toString(),value);
 				newCurrency.setHistory(currencyHistory);
 				

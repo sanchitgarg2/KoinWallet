@@ -23,9 +23,6 @@ import com.mongodb.client.MongoCollection;
 
 
 //import org.apache.logging.log4j.Logger;
-
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
-import CoinMonitor.APIService.Exceptions.CurrencyNotFoundException;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -44,7 +41,7 @@ public class GraphDataProcessor {
 	static MongoCollection<Document> candleStickData = APIEndpointMapper.getDatabase().getCollection("CandleStickData");
 
 	@SuppressWarnings("unchecked")
-	@Scheduled(fixedDelay = 6000)
+//	@Scheduled(fixedDelay = 6000)
 	public void digestCurrencyData(){
 		int DATA_POINT_TIME_LINE = 60;
 		ObjectMapper mapper = new ObjectMapper();
@@ -60,7 +57,7 @@ public class GraphDataProcessor {
 			//			if(LowerTimeLine == null){
 			//				continue;
 			//			}
-			for(Currency c : Currency.getCURRENCYSTATE().values()){
+			for(Currency c : Currency.getStaticCurrencyState().values()){
 
 				//------------- The section to get the latest point of this timeline. Use that to filter the input data.
 				JSONObject query1 = new JSONObject();

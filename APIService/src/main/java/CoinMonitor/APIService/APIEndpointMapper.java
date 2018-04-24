@@ -1,8 +1,6 @@
 package CoinMonitor.APIService;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.gt;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,7 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -31,13 +28,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
@@ -48,8 +41,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
-import CoinMonitor.APIService.Exceptions.CurrencyNotFoundException;
 import CoinMonitor.APIService.Exceptions.UserNotFoundException;
 
 @Controller
@@ -87,7 +78,7 @@ public class APIEndpointMapper {
 		logger.log(Level.INFO,"Initializing MongoClient.");
 		if(APIEndpointMapper.mongoClient == null){
 			try{
-				APIEndpointMapper.mongoClient = new MongoClient("192.168.0.126:27017");
+				APIEndpointMapper.mongoClient = new MongoClient("localhost:27017");
 			}
 			catch(Exception e){
 				logger.error("Error in Initialzing Mongo Client");
@@ -114,9 +105,9 @@ public class APIEndpointMapper {
 			logger.info("Request Parameters: UserID : "+userID + " Currency : " + currencyCode +" Quantity: " + quantity);
 			Transaction transaction;
 			if(quantity > 0)
-				transaction = new Transaction(Currency.getCURRENCYSTATE().get("INR"), Currency.getCURRENCYSTATE().get(currencyCode), price, quantity);
+				transaction = new Transaction(Currency.getStaticCurrencyState().get("INR"), Currency.getStaticCurrencyState().get(currencyCode), price, quantity);
 			else if(quantity < 0)
-				transaction = new Transaction(Currency.getCURRENCYSTATE().get(currencyCode), Currency.getCURRENCYSTATE().get("INR"), 1/price, quantity*price);
+				transaction = new Transaction(Currency.getStaticCurrencyState().get(currencyCode), Currency.getStaticCurrencyState().get("INR"), 1/price, quantity*price);
 			else{
 				logger.info("API Request with quantity 0 made.");
 				throw new NumberFormatException("Please enter a non zero quantity.");
@@ -448,10 +439,10 @@ public class APIEndpointMapper {
 			JSONObject bufferJSONObjectCurrencyList = new JSONObject();
 			String s;
 			
-			for(Currency c:Currency.getCURRENCYSTATE().values())
+			for(Currency c:Currency.getStaticCurrencyState().values())
 			{
 				try{
-					s = (Currency.getCURRENCYSTATE().get(c.getCurrencyCode())).getValue().getJSONString();
+					s = (Currency.getStaticCurrencyState().get(c.getCurrencyCode())).getValue().getJSONString();
 					bufferJSONObjectCurrencyList.put(c.getCurrencyCode(), s);}
 				catch(Exception e){
 					logger.error(this.getClass() + ".getCurrencyList" +"Something wrong here" + e.getMessage());
@@ -496,15 +487,15 @@ public class APIEndpointMapper {
 			//			ObjectMapper mapper = new ObjectMapper();
 			User user = getUser(userID);
 			List<Currency> watchList = user.getWatchList();
-			if(watchList.contains(Currency.getCURRENCYSTATE().get(currencyCode)))
-				watchList.remove(Currency.getCURRENCYSTATE().get(currencyCode));
-			else watchList.add(Currency.getCURRENCYSTATE().get(currencyCode));
+			if(watchList.contains(Currency.getStaticCurrencyState().get(currencyCode)))
+				watchList.remove(Currency.getStaticCurrencyState().get(currencyCode));
+			else watchList.add(Currency.getStaticCurrencyState().get(currencyCode));
 			user.setWatchList(watchList);
 			updateUser(user);
 			return ""+true;
 		}
 		catch(Exception e){
-			logger.error("Update WatchList Failed with Error " + e.getMessage() , jsonString , Currency.getCURRENCYSTATE());
+			logger.error("Update WatchList Failed with Error " + e.getMessage() , jsonString , Currency.getStaticCurrencyState());
 			return ""+false;
 		}
 	}
@@ -513,7 +504,7 @@ public class APIEndpointMapper {
 	public @ResponseBody String getCurrencyState() throws Exception{
 		JSONObject JsonObject = new JSONObject();
 		String s = "";
-		for (Currency c : Currency.getCURRENCYSTATE().values()){
+		for (Currency c : Currency.getStaticCurrencyState().values()){
 			s = c.getValue().getJSONString();
 			JsonObject.put(c.getCurrencyCode(), s);
 		}

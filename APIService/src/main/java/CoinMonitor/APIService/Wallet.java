@@ -11,7 +11,7 @@ import org.apache.logging.log4j.LogManager;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.CurrencySnapshot;
 
 public class Wallet {
 	HashMap<String,WalletSection> sections = new HashMap<String,WalletSection>();
@@ -71,7 +71,7 @@ public class Wallet {
 	private float getCurrentValueinINR(){
 		float currentValue = 0;
 		for(WalletSection h:this.sections.values()){
-			CurrencySnapShot currentPrice;
+			CurrencySnapshot currentPrice;
 			try {
 				currentPrice = h.currency.getValue();
 				currentValue += h.currentBalance *(currentPrice.getValueInINR());
@@ -94,11 +94,11 @@ public class Wallet {
 		}
 		try{
 			if(incomingCurrencySection == null ){
-				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapShot(transaction.pricePerIncoming, 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode()))); 
+				this.addNewSection(new WalletSection(transaction.incomingCurrency, transaction.purchaseQuantity, LocalDateTime.now(), new CurrencySnapshot(transaction.pricePerIncoming, 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode()))); 
 				incomingCurrencySection = this.sections.get(transaction.incomingCurrency.getCurrencyCode());
 			}
 			if(outgoingCurrencySection == null ){
-				this.addNewSection(new WalletSection(transaction.outgoingCurrency, -1 * (transaction.pricePerIncoming * transaction.purchaseQuantity), LocalDateTime.now(), new CurrencySnapShot((1/transaction.pricePerIncoming)*transaction.incomingCurrency.getValue().getValueInINR(), 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode())));
+				this.addNewSection(new WalletSection(transaction.outgoingCurrency, -1 * (transaction.pricePerIncoming * transaction.purchaseQuantity), LocalDateTime.now(), new CurrencySnapshot((1/transaction.pricePerIncoming)*transaction.incomingCurrency.getValue().getValueInINR(), 0f, System.currentTimeMillis()/1000, transaction.incomingCurrency.getCurrencyCode())));
 				outgoingCurrencySection = this.sections.get(transaction.outgoingCurrency.getCurrencyCode());
 			}
 		}

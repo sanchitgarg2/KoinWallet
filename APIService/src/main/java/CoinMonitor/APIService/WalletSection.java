@@ -1,7 +1,7 @@
 package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.CurrencySnapshot;
 
 public class WalletSection {
 	Currency currency;
@@ -40,7 +40,7 @@ public class WalletSection {
 		this.cashRedeemed = cashRedeemed;
 	}
 
-	public WalletSection(Currency currency, float numberOfCoins, LocalDateTime purchaseDate, CurrencySnapShot purchasePrice) {
+	public WalletSection(Currency currency, float numberOfCoins, LocalDateTime purchaseDate, CurrencySnapshot purchasePrice) {
 		super();
 		this.currency = currency;
 		this.currentBalance = numberOfCoins;

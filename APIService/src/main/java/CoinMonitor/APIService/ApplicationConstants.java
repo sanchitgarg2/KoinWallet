@@ -6,6 +6,7 @@ public final class ApplicationConstants {
 	public static final String OTP = "otp";
 	public static final String STATUS = "status";
 	public static final String STATUS_CODE = "statusCode";
+	public static final float TOLERANCE = 0.95f;
 	public static String DATABASE = "CoinMonitor";
 	public static String USERS_TABLE = "Users";
 	public static String USER_ID_COLUMN_NAME = "userid";

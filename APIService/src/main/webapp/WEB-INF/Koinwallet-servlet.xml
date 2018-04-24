@@ -20,6 +20,7 @@
 	<bean id="main Class" class="CoinMonitor.APIService.APIEndpointMapper"></bean>
 	<bean id="ValueRefresher" class="CoinMonitor.APIService.PriceUpdater"></bean>
 	<bean id="GraphDataDigester" class="CoinMonitor.APIService.GraphDataProcessor"></bean>
+	<bean id="GraphDataDigester2" class="CoinMonitor.APIService.GraphDataProcessor2"></bean>
 <!-- 	<bean id="mylog"
 		class="org.springframework.beans.factory.config.CommonsLogFactoryBean">
 		<property name="logName" value="mylog"/>

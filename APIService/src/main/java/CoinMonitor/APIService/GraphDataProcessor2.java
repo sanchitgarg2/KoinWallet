@@ -24,7 +24,7 @@ import com.mongodb.client.MongoCollection;
 
 //import org.apache.logging.log4j.Logger;
 
-import CoinMonitor.APIService.Currency.CurrencySnapShot;
+import CoinMonitor.APIService.CurrencySnapshot;
 import CoinMonitor.APIService.Exceptions.CurrencyNotFoundException;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -45,6 +45,9 @@ public class GraphDataProcessor2 {
 
 	
 	private void printData(int i2, int dataPointsGroupsSize){
+		if(dataPointsGroupsSize < 1 ) {
+			return;
+		}
 		System.out.println("Found " + i2 + " data points for this currency");	
 		System.out.println("Divided into " + dataPointsGroupsSize + " aggregated points ");
 		System.out.println("Parsing each individual point.");
@@ -57,33 +60,40 @@ public class GraphDataProcessor2 {
 		int DATA_POINT_TIME_LINE = 60;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);		
-		for(Currency c : Currency.getCURRENCYSTATE().values()){
+		for(Currency c : Currency.getStaticCurrencyState().values()){
 			System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------");
 			System.out.println("Processing for " + c.getCurrencyCode() + " ");
+			List<List<CurrencySnapshot>> dataPointGroups;
+			List<CurrencySnapshot> localDataPointsGroup;
+			List<org.bson.types.ObjectId> removeIds;
+			FindIterable<Document> DBResult;
+			dataPointGroups = new ArrayList<List<CurrencySnapshot>>();
+			localDataPointsGroup = new ArrayList<CurrencySnapshot>();
+			removeIds = new ArrayList<>();
+			
 			try {
-				//				List<CurrencySnapShot> allDataPoints  = new ArrayList<CurrencySnapShot>();
-				List<List<CurrencySnapShot>> dataPointGroups = new ArrayList<List<CurrencySnapShot>>();
-				List<CurrencySnapShot> localDataPointsGroup = new ArrayList<CurrencySnapShot>();
-				List<org.bson.types.ObjectId> removeIds = new ArrayList<>();
-				FindIterable<Document> DBResult = priceHistory.find(eq("currencyCode",c.getCurrencyCode())).sort(new Document("refreshTime",-1)).limit(250);
+				//				List<CurrencySnapshot> allDataPoints  = new ArrayList<CurrencySnapshot>();
+				DBResult = priceHistory.find(eq("currencyCode",c.getCurrencyCode())).sort(new Document("refreshTime",-1)).limit(250);
 				int i2 = 0;
-				boolean hasDeletedRecords = false;
 				int i=0;
+				for(Document myDoc : DBResult){
+					System.out.println(myDoc.get("valueInINR") + "\t" + myDoc.get("refreshTime"));
+				}
 				for( Document myDoc : DBResult){
+					Pattern numberPattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
 					i++;
 					if(myDoc==null) {
 						logger.log(Level.ERROR,"No History stored for this currency. " + c.getCurrencyCode());
 						throw new CurrencyNotFoundException("Failed to locate Currency.");
 					}
-					CurrencySnapShot thisSnap = new CurrencySnapShot();
+					CurrencySnapshot thisSnap = new CurrencySnapshot();
 					//TODO: Remove the string replace later for performance improvements.
-					System.out.print(myDoc.get("valueInINR") + "\t" + myDoc.get("refreshTime"));
-					Pattern numberPattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
+					System.out.println(myDoc.get("valueInINR") + "\t" + myDoc.get("refreshTime"));
 					Matcher numberPatternMatcher = numberPattern.matcher(myDoc.toJson());
 					Float abc = -1f;
 					if(numberPatternMatcher.find())
 						abc = Float.parseFloat(numberPatternMatcher.group(1)+"." +numberPatternMatcher.group(2));
-					thisSnap = mapper.readValue(myDoc.toJson().replaceAll("RefreshTime", "refreshTime"),CurrencySnapShot.class);
+					thisSnap = mapper.readValue(myDoc.toJson().replaceAll("RefreshTime", "refreshTime"),CurrencySnapshot.class);
 					thisSnap.setValueInINR(abc);
 					localDataPointsGroup.add(thisSnap);
 
@@ -91,21 +101,22 @@ public class GraphDataProcessor2 {
 					//					priceHistory.deleteOne(myDoc);
 					//					myDoc.remove("_id");
 					//					priceHistoryBackup.insertOne(myDoc);
-					if( Math.abs( localDataPointsGroup.get(0).getRefreshTime() - localDataPointsGroup.get(localDataPointsGroup.size()-1).getRefreshTime()) >= DATA_POINT_TIME_LINE ){
+					if( Math.abs( localDataPointsGroup.get(0).getRefreshTime() - localDataPointsGroup.get(localDataPointsGroup.size()-1).getRefreshTime()) >= (DATA_POINT_TIME_LINE * ApplicationConstants.TOLERANCE) ){
+						System.out.println("Iteration number " + (i + 1) + ". Deleting " + removeIds.size() + " records");
 						dataPointGroups.add(localDataPointsGroup);
-						localDataPointsGroup = new ArrayList<CurrencySnapShot>();
+						localDataPointsGroup = new ArrayList<CurrencySnapshot>();
 						priceHistory.deleteMany(new Document("_id", new Document("$in" , removeIds)));
 						removeIds = new ArrayList<org.bson.types.ObjectId>();
-						printData(i2,dataPointGroups.size());
 					}
 					i2 += 1;
 				}
-				for (List<CurrencySnapShot> dataPointsGroup : dataPointGroups){
+				printData(i2,dataPointGroups.size());
+				for (List<CurrencySnapshot> dataPointsGroup : dataPointGroups){
 					System.out.println("This candleStick point is a merge of " + dataPointsGroup.size());
 					CandleStickDataPoint dataPoint = new CandleStickDataPoint();
 					dataPoint.setCurrencyCode(c.getCurrencyCode());
 					dataPoint.setTimeLine("MINUTE");
-					for(CurrencySnapShot snap:dataPointsGroup){
+					for(CurrencySnapshot snap:dataPointsGroup){
 						if(dataPoint.getLow() == 0 || snap.getValueInINR() < dataPoint.getLow())
 							dataPoint.setLow(snap.getValueInINR());
 						if(dataPoint.getHigh() == 0 || snap.getValueInINR() > dataPoint.getHigh())
