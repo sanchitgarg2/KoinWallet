@@ -1,11 +1,14 @@
 package domain;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.fasterxml.uuid.Generators;
 
+import exceptions.AccessOverrideException;
 import exceptions.InputMissingException;
 import exceptions.InsufficientPaymentException;
+import exceptions.MessageNotSentException;
 
 public class Merchant implements PersonInterface{
 
@@ -20,11 +23,25 @@ public class Merchant implements PersonInterface{
 	String address;
 	String merchantID;
 	ArrayList<String> currenciesAccepted;
+	String latitude; 
+	String longitude;
 	Currency currency;
+	String status;
+	OTP loginOTP;
+	SessionKey authorizationKey;
+	SessionKey sessionKey;
+
+	public SessionKey getSessionKey() {
+		return sessionKey;
+	}
+
+	public void setSessionKey(SessionKey sessionKey) {
+		this.sessionKey = sessionKey;
+	}
 
 	public Merchant() throws InputMissingException {
 		super();
-		this.merchantID = Generators.randomBasedGenerator().toString();
+		this.merchantID = Generators.randomBasedGenerator().generate().toString();
 		this.phoneNumber = "1234567890";
 		this.govtAuthNumber = "TEST_AUTH_NUMBER";
 		this.govtAuthType = "TEST_AUTH_TYPE";
@@ -34,12 +51,82 @@ public class Merchant implements PersonInterface{
 
 	public Merchant(String phoneNumber, String govtAuthNumber, String govtAuthType, String name, String address) {
 		super();
-		this.merchantID = Generators.randomBasedGenerator().toString();
+		this.merchantID = Generators.randomBasedGenerator().generate().toString();
 		this.phoneNumber = phoneNumber;
 		this.govtAuthNumber = govtAuthNumber;
 		this.govtAuthType = govtAuthType;
 		this.name = name;
 		this.address = address;
+		this.setProfileLastUpdatedTS(""+System.currentTimeMillis());
+		this.setSessionKey(new SessionKey());
+		this.status = Constants.STATUS_LOGGED_OUT;
+	}
+	
+	public String login() throws AccessOverrideException, MessageNotSentException{
+		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus()))
+			throw new AccessOverrideException();
+		if(Constants.STATUS_LOGGED_OUT.equals(this.getStatus())){
+			this.loginOTP = this.generateOTP();
+			this.loginOTP.setTransactionType(Constants.TRNASACTION_TYPE_AUTH);
+			
+			try {
+				this.sendOTP(this.getLoginOTP());
+				this.authorizationKey = new SessionKey();
+			} catch (MessageNotSentException e) {
+				this.loginOTP = null;
+				throw new MessageNotSentException("Sending OTP failed.");
+			}
+			return this.getLoginOTP().getOTP();
+		}
+		return null;
+	}
+	public Boolean login(String OTP){
+		if(this.getLoginOTP() != null){
+			if(this.getLoginOTP().isMatching(OTP)&&this.getLoginOTP().isValid()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public OTP getLoginOTP() {
+		return loginOTP;
+	}
+
+	public void setLoginOTP(OTP loginOTP) {
+		this.loginOTP = loginOTP;
+	}
+
+	public SessionKey getAuthorizationKey() {
+		return authorizationKey;
+	}
+
+	public void setAuthorizationKey(SessionKey authorizationKey) {
+		this.authorizationKey = authorizationKey;
+	}
+
+	public String getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
+	}
+
+	public String getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
 	}
 
 	//TODO:Initialize the Merchant Currency along with the Merchant
@@ -171,10 +258,32 @@ public class Merchant implements PersonInterface{
 	}
 
 	@Override
-	public void sendOTP(OTP otp) {
-		// TODO Auto-generated method stub
+	public void sendOTP(OTP otp) throws MessageNotSentException {
+		HashMap<String, String > smsParameters = new HashMap<>();
+		smsParameters.put("phoneNumber", this.getPhoneNumber());
+		smsParameters.put("otp", otp.getOTP());
+		SendSMS.sendSarvMessage(smsParameters, 1);
 	}
 
+	public void claimOTP(String OTP, float amount) throws Exception{
+		Transaction partialTransactionFromTheMerchant = new Transaction();
+		OTP otp = new OTP();
+		otp.setOTP(OTP);
+		otp.setUseTS(System.currentTimeMillis() + "");
+		otp.setAmount(0);
+		otp.setExpiryTS(null);
+		otp.setGenerationTS(null);
+		otp.setLifeSpan(0);
+		otp.setTransactionType(null);
+		partialTransactionFromTheMerchant.setOTP(otp);
+		partialTransactionFromTheMerchant.setMerchant(this);
+		partialTransactionFromTheMerchant.setRequestedAmount(amount);
+		partialTransactionFromTheMerchant.setStatus(null);
+		partialTransactionFromTheMerchant.setTransactionRefNo(null);
+		partialTransactionFromTheMerchant.setTransactionType(null);
+		partialTransactionFromTheMerchant.setCustomerID(null);
+		partialTransactionFromTheMerchant.processTransaction(partialTransactionFromTheMerchant);
+	}
 	public void collectPayment(Transaction transaction) throws InsufficientPaymentException{
 		float amountCollected = 0;
 		if(transaction.getPayment() == null || transaction.getPayment().size() == 0)

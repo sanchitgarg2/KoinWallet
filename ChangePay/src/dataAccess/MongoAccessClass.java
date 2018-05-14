@@ -16,7 +16,7 @@ public class MongoAccessClass implements MongoAccessInterface{
 	static MongoClient mongoClient;
 	MongoCollection<Document> collection;
 	MongoDatabase database;
-	
+
 	@SuppressWarnings("rawtypes")
 	public MongoCollection getCollection() {
 		return this.collection;
@@ -30,7 +30,6 @@ public class MongoAccessClass implements MongoAccessInterface{
 
 	public static MongoClient getMongoClient() {
 		if(MongoAccessClass.mongoClient == null)
-			//TODO:Insert using the DB Credentials here.
 			MongoAccessClass.mongoClient = new MongoClient(StaticMongoConfig.getDB_HOST_NAME()+":"+StaticMongoConfig.getDB_PORT_NUMBER());
 		return MongoAccessClass.mongoClient;
 	}
@@ -47,16 +46,16 @@ public class MongoAccessClass implements MongoAccessInterface{
 	}
 
 	@Override
-	public Object getObjectByKeyValuePair(String key, Object value) throws Exception {
+	public Document getObjectByKeyValuePair(String key, Object value) throws Exception {
 		if(MongoAccessClass.getDatabase()!= null)
 			if(this.getCollection() != null)
-				return this.getCollection().find(new Document(key,value)).first();
+				return (Document) this.getCollection().find(new Document(key,value)).first();
 			else
 				throw new DataBaseException("Mongo Collection not found");
 		else
 			throw new DataBaseException("Mongo Database not found");
 	}
-	
+
 	@Override
 	public Object getObjectsByKeyValuePair(String key, Object value) throws Exception {
 		if(MongoAccessClass.getDatabase()!= null)
@@ -69,12 +68,19 @@ public class MongoAccessClass implements MongoAccessInterface{
 	}
 
 	@Override
-	public void updateObjectWithKey(ObjectId key, Object updatedObject) throws JsonProcessingException, Exception {
+	public void updateObjectWithKey(String key,String value ,  Object updatedObject) throws JsonProcessingException, Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(updatedObject);
 		if(MongoAccessClass.getDatabase()!= null)
 			if(this.getCollection() != null)
-				collection.replaceOne(new Document("_id",key), Document.parse(jsonInString));
+			{
+				try{
+					this.getCollection().replaceOne(new Document(key, value), Document.parse(jsonInString));
+				}
+				catch(Exception e){
+					System.out.println(e);
+				}
+			}
 			else
 				throw new Exception("Mongo Collection not found");
 		else

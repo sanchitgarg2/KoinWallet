@@ -6,4 +6,8 @@ public class InsufficientFundsException extends Exception {
 		super(string);
 	}
 
+	public InsufficientFundsException() {
+		super();
+	}
+
 }

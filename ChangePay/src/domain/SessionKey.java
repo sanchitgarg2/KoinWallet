@@ -13,7 +13,7 @@ public class SessionKey {
 	
 	public SessionKey() {
 		super();
-		this.key = Generators.randomBasedGenerator().toString();
+		this.key = Generators.randomBasedGenerator().generate().toString();
 		this.generationTS = "" + System.currentTimeMillis();
 		this.expiryTS = ( Long.parseLong(this.generationTS) + Constants.SESSION_KEY_EXPIRY )+ ""; 
 		this.usageCount = 0;

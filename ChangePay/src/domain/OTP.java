@@ -71,7 +71,10 @@ public class OTP {
 		this.lifeSpan = lifeSpan;
 	}
 	public boolean isMatching(String OTP){
-		return this.OTP.equals(OTP);
+		if(OTP == null)
+			return false;
+		else
+			return OTP.equals(this.getOTP());
 	}
 	public boolean isValid() {
 		return System.currentTimeMillis() < Long.parseLong(this.getExpiryTS())  ? true:false;

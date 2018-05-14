@@ -16,13 +16,14 @@ import domain.WalletSection;
 import exceptions.CustomerAlreadyExistsException;
 import exceptions.ElementAlreadyPresentException;
 
+
 public class CustomerDAO extends MongoAccessClass {
 
 	static StaticMongoConfig config;
 	public CustomerDAO() {
 		config = new StaticMongoConfig();
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public MongoCollection getCollection(){
@@ -41,13 +42,17 @@ public class CustomerDAO extends MongoAccessClass {
 		customer.setProfileLastUpdatedTS(""+System.currentTimeMillis());
 		Wallet wallet = new Wallet(customer.getCustomerID());
 		WalletSection walletSection;
-		for (PaymentObject p : initialCash)
+		if(initialCash != null)
 		{
-			walletSection = new WalletSection(p.getCurrencyCode());
-			walletSection.setBalance(p.getAmount());
-			try {
-				wallet.addSection(walletSection);
-			} catch (ElementAlreadyPresentException e) {
+			for (PaymentObject p : initialCash)
+			{
+				walletSection = new WalletSection(p.getCurrencyCode());
+				walletSection.setBalance(p.getAmount());
+				try {
+					wallet.addSection(walletSection);
+				} catch (ElementAlreadyPresentException e) {
+					//TODO:catch this exception and process.
+				}
 			}
 		}
 		customer.setWallet(wallet);
@@ -55,7 +60,7 @@ public class CustomerDAO extends MongoAccessClass {
 		String jsonInString;
 		try {
 			jsonInString = mapper.writeValueAsString(customer);
-			collection.insertOne(Document.parse(jsonInString));
+			this.getCollection().insertOne(Document.parse(jsonInString));
 		} catch (JsonProcessingException e) {
 			System.out.println(customer);
 			throw new Exception("Could not serialize the customer JSON.");

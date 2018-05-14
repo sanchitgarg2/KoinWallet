@@ -1,8 +1,8 @@
 package dataAccess;
 
 public class StaticMongoConfig {
-	public static String DB_HOST_NAME;
-	public static String DB_PORT_NUMBER;
+	public static String DB_HOST_NAME = "localhost";
+	public static String DB_PORT_NUMBER = "27017";
 	public static String DB_PASSWORD;
 	public static String DB_USER_NAME;
 	

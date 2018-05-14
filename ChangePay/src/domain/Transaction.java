@@ -2,12 +2,17 @@ package domain;
 
 import java.util.ArrayList;
 
+import org.bson.Document;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.uuid.Generators;
 
+import dataAccess.CustomerDAO;
 import dataAccess.TransactionDAO;
 
 public class Transaction {
 	String transactionRefNo;
+	String customerID;
 	String currencyCode; 
 	OTP OTP;
 	ArrayList<PaymentObject> payment;
@@ -15,11 +20,24 @@ public class Transaction {
 	String transactionType;
 	String status;
 	float requestedAmount;
+	Transaction authTransaction;
 
 	
 	public Transaction() {
 		super();
 		this.transactionRefNo = Generators.randomBasedGenerator().generate().toString();
+	}
+	public Transaction getAuthTransaction() {
+		return authTransaction;
+	}
+	public void setAuthTransaction(Transaction authTransaction) {
+		this.authTransaction = authTransaction;
+	}
+	public String getCustomerID() {
+		return customerID;
+	}
+	public void setCustomerID(String customerID) {
+		this.customerID = customerID;
 	}
 	public float getConsolidatedPaymentAmount(){
 		String destinationCurrencyCode = "INR";
@@ -156,13 +174,27 @@ public class Transaction {
 		return true;
 	}
 	public void openTransaction(Transaction partialTransactionFromTheCustomer) throws Exception {
+		//TODO : Check if the OTP is available.
 		new TransactionDAO().createNewTransaction(partialTransactionFromTheCustomer);
 		//TODO: Open a new transaction here. i.e insert the details of the new transaction into the DB. 
 		
 	}
-	public static void processTransaction(Transaction partialTransactionFromTheMerchant) {
-		
-		//TODO: Process a request here. 
+	public void processTransaction(Transaction partialTransactionFromTheMerchant) throws Exception {
+		CustomerDAO customerDAO = new CustomerDAO();
+		TransactionDAO transactionDAO = new TransactionDAO();
+		ObjectMapper mapper = new ObjectMapper();
+		Document mongoDocument = transactionDAO.getObjectByKeyValuePair("OTP.OTP", partialTransactionFromTheMerchant.getOTP().getOTP());
+		Transaction transaction = mapper.readValue(mongoDocument.toJson(),Transaction.class);
+		mongoDocument = customerDAO.getObjectByKeyValuePair("customerID", transaction.getCustomerID());
+		Customer customer = mapper.readValue(mongoDocument.toJson(), Customer.class);
+		transaction = customer.settleTransaction(partialTransactionFromTheMerchant);
+		//TODO:If the process fails here, roll back the transaction to give the customer his money back.
+		merchant.collectPayment(transaction);
+		//Get the Transaction from the DB for this OTP.
+		//Get the Customer for that transaction
+		//Customer.settle Transaction.
+		//Merchant -> Update the record for the merchant.
+		//merchant.processPayment
 		
 	}
 	

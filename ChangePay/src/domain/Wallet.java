@@ -7,25 +7,25 @@ import exceptions.ElementAlreadyPresentException;
 import exceptions.InputMissingException;
 
 public class Wallet {
-	String customerID;
+	String ownerID;
 	HashMap<String,WalletSection> sections = null;
 	float netWorth;
 
 
-	public Wallet() throws InputMissingException {
+	public Wallet(){
 		super();
-		throw new InputMissingException();
+		this.ownerID = "NULL";
 	}
 
-	public Wallet(String customerID) {
+	public Wallet(String ownerID) {
 		super();
-		this.customerID = customerID;
+		this.ownerID = ownerID;
 	}
-	public String getCustomerID() {
-		return customerID;
+	public String getOwnerID() {
+		return ownerID;
 	}
-	public void setCustomerID(String customerID) {
-		this.customerID = customerID;
+	public void setOwnerID(String customerID) {
+		this.ownerID = customerID;
 	}
 	public HashMap<String,WalletSection> getSections() {
 		return sections;

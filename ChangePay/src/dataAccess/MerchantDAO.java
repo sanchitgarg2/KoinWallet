@@ -35,9 +35,8 @@ public class MerchantDAO extends MongoAccessClass {
 	public void createMerchant (String phoneNumber, String govtAuthNumber, String govtAuthType, String name, String address ) throws CustomerAlreadyExistsException , Exception{
 		//Check if phone Number Exists already.
 		Merchant merchant = new Merchant(phoneNumber, govtAuthNumber, govtAuthType, name, address);
-		merchant.setPhoneNumber(phoneNumber);
+		//		merchant.setPhoneNumber(phoneNumber);
 		//		customer.setPersonType(personType);
-		merchant.setProfileLastUpdatedTS(""+System.currentTimeMillis());
 		Wallet wallet = new Wallet(merchant.getMerchantID());
 		WalletSection walletSection;
 		merchant.setWallet(wallet);
@@ -45,7 +44,7 @@ public class MerchantDAO extends MongoAccessClass {
 		String jsonInString;
 		try {
 			jsonInString = mapper.writeValueAsString(merchant);
-			collection.insertOne(Document.parse(jsonInString));
+			this.getCollection().insertOne(Document.parse(jsonInString));
 		} catch (JsonProcessingException e) {
 			System.out.println(merchant);
 			throw new Exception("Could not serialize the customer JSON.");
