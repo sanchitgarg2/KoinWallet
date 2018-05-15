@@ -10,9 +10,16 @@ import domain.Constants;
 import domain.Merchant;
 import domain.Transaction;
 @SuppressWarnings("unchecked")
-public class TransactionDAO extends MongoAccessClass{
+public class TransactionDAO extends MongoAccessClass {
 
-	public void createNewTransaction(Transaction partialTransactionFromTheCustomer) throws Exception {
+	@Override
+	public MongoCollection getCollection(){
+		if (this.getDatabase()!= null){
+			return this.getDatabase().getCollection(Constants.COLLECTIONS_TRANSACTIONS);
+		}
+		return null;
+	}
+	public void createNewCashTransaction(Transaction partialTransactionFromTheCustomer) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString;
 		try {
@@ -26,12 +33,7 @@ public class TransactionDAO extends MongoAccessClass{
 	
 	public void processTransaction(Merchant merchant, String OTP) throws Exception{
 		this.getObjectByKeyValuePair("OTP.OTP", OTP);
-	}
-
-	public MongoCollection getCollection(){
-		if (MongoAccessClass.getDatabase()!= null){
-			return MongoAccessClass.getDatabase().getCollection(Constants.COLLECTIONS_TRANSACTIONS);
-		}
-		return null;
+		//TODO:CRITICAL write the transaction logic here.
+		
 	}
 }

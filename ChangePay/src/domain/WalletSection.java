@@ -56,5 +56,11 @@ public class WalletSection {
 		amount = Math.abs(amount);
 		this.setBalance(this.getBalance() +amount);		
 	}
+	public void addTransaction(Transaction transaction) {
+		if(this.getTransactions() == null)
+			this.setTransactions(new ArrayList<Transaction>());
+		this.getTransactions().add(transaction);
+		
+	}
 	
 }

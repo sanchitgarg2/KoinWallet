@@ -88,7 +88,7 @@ public class MongoAccessClass implements MongoAccessInterface{
 	}
 
 	@Override
-	public void deleteObjectWithKey(ObjectId key) throws Exception {
+	public void deleteObjectWithKey(String key, Object value) throws Exception {
 		if(MongoAccessClass.getDatabase()!= null)
 			if(this.getCollection() != null)
 				collection.deleteOne(new Document("_id",key));

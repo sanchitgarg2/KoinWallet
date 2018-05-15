@@ -161,7 +161,7 @@ public class ServiceControllerCustomer {
 	}
 
 	@RequestMapping(path="/Login",method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String Login(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
+	public @ResponseBody JSONObject Login(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
 		JSONObject bufferJSONObject;
 		try{
 			bufferJSONObject = new JSONObject();
@@ -197,41 +197,41 @@ public class ServiceControllerCustomer {
 				bufferJSONObject.put("status", "Successful.");
 				bufferJSONObject.put("statusCode", 200);
 			}
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(AccessOverrideException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "User Already Logged In");
 			bufferJSONObject.put("statusCode", 403);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(ParseException | NumberFormatException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
 			bufferJSONObject.put("statusCode", 450);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(MongoException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "DataBase is down.");
 			bufferJSONObject.put("statusCode", 550);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(IOException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Corrupted Data");
 			bufferJSONObject.put("statusCode", 551);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(Exception e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "App Server has an Internal error.");
 			bufferJSONObject.put("statusCode", 500);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 	}
 

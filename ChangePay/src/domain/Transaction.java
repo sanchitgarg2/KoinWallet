@@ -4,10 +4,13 @@ import java.util.ArrayList;
 
 import org.bson.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.uuid.Generators;
 
 import dataAccess.CustomerDAO;
+import dataAccess.MerchantDAO;
 import dataAccess.TransactionDAO;
 
 public class Transaction {
@@ -16,7 +19,7 @@ public class Transaction {
 	String currencyCode; 
 	OTP OTP;
 	ArrayList<PaymentObject> payment;
-	Merchant merchant;
+	String merchantID;
 	String transactionType;
 	String status;
 	float requestedAmount;
@@ -30,7 +33,8 @@ public class Transaction {
 	public Transaction getAuthTransaction() {
 		return authTransaction;
 	}
-	public void setAuthTransaction(Transaction authTransaction) {
+	public void setAuthTransaction(Transaction authTransaction) throws Exception {
+		new TransactionDAO().deleteObjectWithKey("transactionRefNo",authTransaction.getTransactionRefNo());
 		this.authTransaction = authTransaction;
 	}
 	public String getCustomerID() {
@@ -39,6 +43,8 @@ public class Transaction {
 	public void setCustomerID(String customerID) {
 		this.customerID = customerID;
 	}
+	
+	@JsonIgnore
 	public float getConsolidatedPaymentAmount(){
 		String destinationCurrencyCode = "INR";
 		//TODO: The above parameter should be input.
@@ -85,11 +91,11 @@ public class Transaction {
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
-	public Merchant getMerchant() {
-		return merchant;
+	public String getMerchantID() {
+		return merchantID;
 	}
-	public void setMerchant(Merchant merchant) {
-		this.merchant = merchant;
+	public void setMerchantID(String merchantID) {
+		this.merchantID = merchantID;
 	}
 	public OTP getOTP() {
 		return OTP;
@@ -97,14 +103,18 @@ public class Transaction {
 	public void setOTP(OTP oTP) {
 		OTP = oTP;
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((OTP == null) ? 0 : OTP.hashCode());
+		result = prime * result + ((authTransaction == null) ? 0 : authTransaction.hashCode());
 		result = prime * result + ((currencyCode == null) ? 0 : currencyCode.hashCode());
-		result = prime * result + ((merchant == null) ? 0 : merchant.hashCode());
+		result = prime * result + ((customerID == null) ? 0 : customerID.hashCode());
+		result = prime * result + ((merchantID == null) ? 0 : merchantID.hashCode());
 		result = prime * result + ((payment == null) ? 0 : payment.hashCode());
+		result = prime * result + Float.floatToIntBits(requestedAmount);
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((transactionRefNo == null) ? 0 : transactionRefNo.hashCode());
 		result = prime * result + ((transactionType == null) ? 0 : transactionType.hashCode());
@@ -129,6 +139,13 @@ public class Transaction {
 		} else if (!OTP.equals(other.OTP)) {
 			return false;
 		}
+		if (authTransaction == null) {
+			if (other.authTransaction != null) {
+				return false;
+			}
+		} else if (!authTransaction.equals(other.authTransaction)) {
+			return false;
+		}
 		if (currencyCode == null) {
 			if (other.currencyCode != null) {
 				return false;
@@ -136,11 +153,18 @@ public class Transaction {
 		} else if (!currencyCode.equals(other.currencyCode)) {
 			return false;
 		}
-		if (merchant == null) {
-			if (other.merchant != null) {
+		if (customerID == null) {
+			if (other.customerID != null) {
 				return false;
 			}
-		} else if (!merchant.equals(other.merchant)) {
+		} else if (!customerID.equals(other.customerID)) {
+			return false;
+		}
+		if (merchantID == null) {
+			if (other.merchantID != null) {
+				return false;
+			}
+		} else if (!merchantID.equals(other.merchantID)) {
 			return false;
 		}
 		if (payment == null) {
@@ -148,6 +172,9 @@ public class Transaction {
 				return false;
 			}
 		} else if (!payment.equals(other.payment)) {
+			return false;
+		}
+		if (Float.floatToIntBits(requestedAmount) != Float.floatToIntBits(other.requestedAmount)) {
 			return false;
 		}
 		if (status == null) {
@@ -175,27 +202,28 @@ public class Transaction {
 	}
 	public void openTransaction(Transaction partialTransactionFromTheCustomer) throws Exception {
 		//TODO : Check if the OTP is available.
-		new TransactionDAO().createNewTransaction(partialTransactionFromTheCustomer);
+		new TransactionDAO().createNewCashTransaction(partialTransactionFromTheCustomer);
 		//TODO: Open a new transaction here. i.e insert the details of the new transaction into the DB. 
 		
 	}
 	public void processTransaction(Transaction partialTransactionFromTheMerchant) throws Exception {
 		CustomerDAO customerDAO = new CustomerDAO();
+		MerchantDAO merchantDAO = new MerchantDAO();
 		TransactionDAO transactionDAO = new TransactionDAO();
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Document mongoDocument = transactionDAO.getObjectByKeyValuePair("OTP.OTP", partialTransactionFromTheMerchant.getOTP().getOTP());
 		Transaction transaction = mapper.readValue(mongoDocument.toJson(),Transaction.class);
 		mongoDocument = customerDAO.getObjectByKeyValuePair("customerID", transaction.getCustomerID());
 		Customer customer = mapper.readValue(mongoDocument.toJson(), Customer.class);
 		transaction = customer.settleTransaction(partialTransactionFromTheMerchant);
 		//TODO:If the process fails here, roll back the transaction to give the customer his money back.
+		mongoDocument = merchantDAO.getObjectByKeyValuePair("merchantID", merchantID);
+		Merchant merchant = mapper.readValue(mongoDocument.toJson(), Merchant.class);
 		merchant.collectPayment(transaction);
-		//Get the Transaction from the DB for this OTP.
-		//Get the Customer for that transaction
-		//Customer.settle Transaction.
-		//Merchant -> Update the record for the merchant.
-		//merchant.processPayment
-		
+		merchantDAO.updateObjectWithKey("merchantID", merchantID, merchant);
+		customerDAO.updateObjectWithKey(customerID, customerID, customer);
+		transactionDAO.updateObjectWithKey("transactionRefNo", transactionRefNo, transaction);
 	}
 	
 }

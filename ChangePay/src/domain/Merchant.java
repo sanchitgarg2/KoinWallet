@@ -13,6 +13,7 @@ import exceptions.MessageNotSentException;
 public class Merchant implements PersonInterface{
 
 	private String phoneNumber;
+	float upperLimit;
 	Wallet wallet;
 	String profileLastUpdatedTS;
 	String personType;
@@ -22,7 +23,7 @@ public class Merchant implements PersonInterface{
 	String name;
 	String address;
 	String merchantID;
-	ArrayList<String> currenciesAccepted;
+	ArrayList<String> currenciesAccepted ;
 	String latitude; 
 	String longitude;
 	Currency currency;
@@ -47,6 +48,9 @@ public class Merchant implements PersonInterface{
 		this.govtAuthType = "TEST_AUTH_TYPE";
 		this.name = "JOHN DOE";
 		this.address = "1402, Maple Heights";
+		ArrayList<String> currenciesAccepted = new ArrayList<>();
+		currenciesAccepted.add(Constants.CURRENCY_CODE_COMMON_CASH);
+		this.setCurrenciesAccepted(currenciesAccepted);
 	}
 
 	public Merchant(String phoneNumber, String govtAuthNumber, String govtAuthType, String name, String address) {
@@ -56,12 +60,23 @@ public class Merchant implements PersonInterface{
 		this.govtAuthNumber = govtAuthNumber;
 		this.govtAuthType = govtAuthType;
 		this.name = name;
+		ArrayList<String> currenciesAccepted = new ArrayList<>();
+		currenciesAccepted.add(Constants.CURRENCY_CODE_COMMON_CASH);
+		this.setCurrenciesAccepted(currenciesAccepted);
 		this.address = address;
 		this.setProfileLastUpdatedTS(""+System.currentTimeMillis());
 		this.setSessionKey(new SessionKey());
 		this.status = Constants.STATUS_LOGGED_OUT;
 	}
 	
+	public float getUpperLimit() {
+		return upperLimit;
+	}
+
+	public void setUpperLimit(float upperLimit) {
+		this.upperLimit = upperLimit;
+	}
+
 	public String login() throws AccessOverrideException, MessageNotSentException{
 		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus()))
 			throw new AccessOverrideException();
@@ -83,6 +98,8 @@ public class Merchant implements PersonInterface{
 	public Boolean login(String OTP){
 		if(this.getLoginOTP() != null){
 			if(this.getLoginOTP().isMatching(OTP)&&this.getLoginOTP().isValid()){
+				this.setStatus(Constants.STATUS_LOGGED_IN);
+				this.setSessionKey(new SessionKey());
 				return true;
 			}
 		}
@@ -276,7 +293,7 @@ public class Merchant implements PersonInterface{
 		otp.setLifeSpan(0);
 		otp.setTransactionType(null);
 		partialTransactionFromTheMerchant.setOTP(otp);
-		partialTransactionFromTheMerchant.setMerchant(this);
+		partialTransactionFromTheMerchant.setMerchantID(this.getMerchantID());
 		partialTransactionFromTheMerchant.setRequestedAmount(amount);
 		partialTransactionFromTheMerchant.setStatus(null);
 		partialTransactionFromTheMerchant.setTransactionRefNo(null);

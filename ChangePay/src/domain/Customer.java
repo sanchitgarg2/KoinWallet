@@ -1,12 +1,20 @@
 package domain;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
+import org.bson.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.uuid.Generators;
 import dataAccess.CustomerDAO;
+import dataAccess.MerchantDAO;
 import exceptions.AccessOverrideException;
 import exceptions.InputMissingException;
 import exceptions.InsufficientFundsException;
@@ -131,12 +139,13 @@ public class Customer implements PersonInterface{
 		}
 		else{
 			//TODO:Throw an error here that leads to the customer needing to add the rest of the money into his account.
+			
 			System.out.println("Please add money to the wallet.");
-			return null;
+			throw new InsufficientFundsException();
 		}
 	}
 
-	public Transaction settleTransaction(Transaction partialTransactionFromMerchant) throws InsufficientFundsException{
+	public Transaction settleTransaction(Transaction partialTransactionFromMerchant) throws JsonParseException, JsonMappingException, IOException, Exception{
 
 		if(		this.getHotTransactions().keySet().contains(partialTransactionFromMerchant.getOTP().getOTP()) && 
 				this.getHotTransactions().get(partialTransactionFromMerchant.getOTP().getOTP()).getOTP().isValid())
@@ -146,7 +155,11 @@ public class Customer implements PersonInterface{
 //			if(amountDue != previousTransaction.getOTP().getAmount())
 				//TODO:The amount does not match. Handle it. Throwing an Exception for now.
 //				throw new InputMismatchException("The requested amount does not match");
-			ArrayList<String> currenciesAccepted = partialTransactionFromMerchant.getMerchant().getCurrenciesAccepted();
+			
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			
+			ArrayList<String> currenciesAccepted = mapper.readValue((new MerchantDAO()).getObjectByKeyValuePair("merchantID",partialTransactionFromMerchant.getMerchantID()).toJson() , Merchant.class).getCurrenciesAccepted();
 			ArrayList<PaymentObject> payment = new ArrayList<PaymentObject>();
 			PaymentObject paymentObject = null;
 			previousTransaction.getOTP().setUseTS(partialTransactionFromMerchant.getOTP().getUseTS());
@@ -167,7 +180,7 @@ public class Customer implements PersonInterface{
 					paymentObject = new PaymentObject();
 					paymentObject.setCurrencyCode(currencyCode);
 					paymentObject.setSource(this.getCustomerID());
-					paymentObject.setDestination(partialTransactionFromMerchant.getMerchant().getMerchantID());
+					paymentObject.setDestination(partialTransactionFromMerchant.getMerchantID());
 					paymentObject.setAmount(applicableAmount);
 					// TODO : Find the value of the currency used up.
 
@@ -304,5 +317,17 @@ public class Customer implements PersonInterface{
 	public void sendOTP(OTP otp) {
 		//TODO:Write Code here to Send the OTP message.
 	}
-
+	public void acceptPayment(ArrayList<PaymentObject> payment , String transactionID , String otp) {
+		if(payment != null){
+			if(this.getWallet() == null)
+			{
+				this.setWallet(new Wallet(this.getCustomerID()));
+			}
+		}
+		WalletSection walletSection;
+		for(PaymentObject paymentIterator : payment){
+			this.getWallet().processPayment(paymentIterator , transactionID );
+			this.getHotTransactions().remove(otp);
+		}
+	}
 }

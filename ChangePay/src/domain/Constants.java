@@ -14,6 +14,8 @@ public class Constants {
 	public static final String TRNASACTION_TYPE_AUTH = "AUTH" ;
 	public static final String TRNASACTION_TYPE_CASH = "CASH";
 	public static final String TRNASACTION_TYPE_PARTIAL = "PARTIAL";
+	public static final String TRNASACTION_TYPE_RECHARGE = "RECHARGE";
+
 	
 	public static final String COLLECTIONS_CUSTOMER = "CUSTOMERS";
 	public static final String COLLECTIONS_MERCHANTS = "MERCHANTS";
@@ -42,5 +44,6 @@ public class Constants {
 	public final static String SARV_TEMPLATE_MERCH_TRANS_SUCC = "Transaction+of+XXXX,+successful.+Account+Balance+now+is+XXXX";
 	public final static boolean sendTransConfirmationtoMerchant = true;
 	public final static String SARV_TEMPLATE_MERCH_TRANS_FAILED = "Transaction+of+amount+XXXX+from+XXXX+failed" ;
+	public static final String CURRENCY_CODE_COMMON_CASH = "CC";
 	
 }

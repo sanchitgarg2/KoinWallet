@@ -28,7 +28,12 @@ public class Wallet {
 		this.ownerID = customerID;
 	}
 	public HashMap<String,WalletSection> getSections() {
-		return sections;
+		if(sections != null) 
+			return sections;
+		else{
+			this.setSections(new HashMap<String, WalletSection>());
+			return sections;
+		}
 	}
 	public void setSections(HashMap<String,WalletSection> sections) {
 		this.sections = sections;
@@ -58,4 +63,30 @@ public class Wallet {
 		this.getSections().remove(currencyCode);
 	}
 
+	public void processPayment(PaymentObject p,String tranactionID) {
+		//Assume this money is coming into the wallet and then code.
+		WalletSection walletSection;
+		if(this.getSections().containsKey(p.getCurrencyCode())){
+			walletSection = this.getSections().get(p.getCurrencyCode());
+		}
+		else{
+			walletSection = new WalletSection(p.getCurrencyCode());
+		}
+		Transaction partialRecharge = new Transaction();
+		partialRecharge.setTransactionRefNo(tranactionID);
+		partialRecharge.setCurrencyCode(p.getCurrencyCode());
+		partialRecharge.setCustomerID(this.getOwnerID());
+		partialRecharge.setTransactionType(Constants.TRNASACTION_TYPE_PARTIAL);
+		ArrayList<PaymentObject> payment  = new ArrayList<>();
+		payment.add(p);
+		partialRecharge.setPayment(payment);
+		partialRecharge.setStatus(Constants.TRANSACTION_STATUS_COMPLETED);
+		partialRecharge.setOTP(null);
+		partialRecharge.setMerchantID(p.getSource());
+		walletSection.addTransaction(partialRecharge);
+		walletSection.setBalance(p.getAmount()+walletSection.getBalance());
+		walletSection.setUpdateTS(System.currentTimeMillis()+"");
+		this.setNetWorth(this.getNetWorth() + p.amount);
+		this.getSections().put(p.getCurrencyCode(), walletSection);
+	}
 }
