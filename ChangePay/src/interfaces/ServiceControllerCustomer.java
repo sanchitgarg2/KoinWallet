@@ -27,6 +27,8 @@ import domain.Customer;
 import domain.Merchant;
 import domain.OTP;
 import domain.SendSMS;
+import exceptions.AccessOverrideException;
+import exceptions.InsufficientFundsException;
 
 
 @Controller
@@ -91,21 +93,28 @@ public class ServiceControllerCustomer {
 	public @ResponseBody String getOTP(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
 		JSONObject bufferJSONObject;
 		try{
-			//			JSONParser parser = new JSONParser();
-			//			JSONObject newJObject = (JSONObject) parser.parse(jsonString);
 			String phoneNumber = (String) newJObject.get("phoneNumber");
 			if(newJObject.containsKey("amount")){
 				float amount = Float.parseFloat(""+newJObject.get("amount"))	;
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				Customer customer = mapper.readValue((new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(), Customer.class);
+				try{
 				String otp = customer.openTransaction(amount);
-
+				new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 				bufferJSONObject = new JSONObject();
 				bufferJSONObject.put("status", "Successful.");
 				bufferJSONObject.put("statusCode", 200);
 				bufferJSONObject.put("otp", otp);
 				return bufferJSONObject.toJSONString();
+				}
+				catch(InsufficientFundsException e) {
+					bufferJSONObject = new JSONObject();
+					bufferJSONObject.put("status", "Insufficient Funds.");
+					bufferJSONObject.put("statusCode", 403);
+					return bufferJSONObject.toJSONString();
+				}
+
 			}
 			else{
 				//The OTP is for collecting money or basically for auth purposes.
@@ -188,6 +197,12 @@ public class ServiceControllerCustomer {
 				bufferJSONObject.put("status", "Successful.");
 				bufferJSONObject.put("statusCode", 200);
 			}
+			return bufferJSONObject.toJSONString();
+		}
+		catch(AccessOverrideException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "User Already Logged In");
+			bufferJSONObject.put("statusCode", 403);
 			return bufferJSONObject.toJSONString();
 		}
 		catch(ParseException | NumberFormatException e){
