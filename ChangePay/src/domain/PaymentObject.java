@@ -15,7 +15,7 @@ public class PaymentObject {
 	
 	public PaymentObject() {
 		super();
-		this.setUuid(Generators.randomBasedGenerator().toString());
+		this.setUuid(Generators.randomBasedGenerator().generate().toString());
 	}
 	public float convertToOtherCurrency(String currencyCode){
 		return amount;

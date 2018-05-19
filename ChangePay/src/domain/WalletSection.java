@@ -10,9 +10,11 @@ public class WalletSection {
 	float balance;
 	String updateTS;
 	ArrayList<Transaction> transactions = null;
-	public WalletSection() throws InputMissingException {
+	public WalletSection(){
 		super();
-		throw new InputMissingException();
+		this.setCurrencyCode("INVALID");
+		this.updateTS = "" + System.currentTimeMillis();
+		this.balance = 0;
 	}
 	public WalletSection(String currencyCode) {
 		super();
@@ -32,7 +34,7 @@ public class WalletSection {
 	public void setBalance(float balance) {
 		this.balance = balance;
 	}
-	public void dedductBalance(float balance) throws InsufficientFundsException {
+	public void deductBalance(float balance) throws InsufficientFundsException {
 		balance = Math.abs(balance);
 		if(balance > this.balance)
 			throw new InsufficientFundsException("Currency " +this.getCurrencyCode() + "is less than what should be available. Requested is " + balance +" and avaialable is "+this.balance);

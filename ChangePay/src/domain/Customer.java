@@ -66,6 +66,7 @@ public class Customer implements PersonInterface{
 				this.setLastLoginAt(System.currentTimeMillis()+"");
 				this.sessionKey = new SessionKey();
 				this.setStatus(Constants.STATUS_LOGGED_IN);
+				this.setLoginOTP(null);
 				return true;
 			}
 		}
@@ -192,7 +193,8 @@ public class Customer implements PersonInterface{
 			if(amountDue == 0 && payment!= null && payment.size() > 0){
 				for (PaymentObject t : payment){
 					try {
-						this.getWallet().getSections().get(t.getCurrencyCode()).dedductBalance(t.getAmount());
+						this.getWallet().setNetWorth(this.wallet.getNetWorth() - t.amount);
+						this.getWallet().getSections().get(t.getCurrencyCode()).deductBalance(t.getAmount());
 					} catch (InsufficientFundsException e) {
 						// TODO One currency is short, check what to do with it.Check Roll back Logic
 						e.printStackTrace();
@@ -206,7 +208,8 @@ public class Customer implements PersonInterface{
 					partialTransaction.setRequestedAmount(t.getAmount());
 					partialTransaction.setStatus(Constants.TRANSACTION_STATUS_COMPLETED);
 					partialTransaction.setTransactionType(Constants.TRNASACTION_TYPE_PARTIAL);
-					this.getWallet().getSections().get(t.getCurrencyCode()).transactions.add(partialTransaction);
+					this.getWallet().getSections().get(t.getCurrencyCode()).getTransactions().add(partialTransaction);
+//					this.getWallet()
 				}
 			}
 			else {
@@ -217,7 +220,7 @@ public class Customer implements PersonInterface{
 			partialTransactionFromMerchant.setPayment(payment);
 			partialTransactionFromMerchant.setCustomerID(previousTransaction.getCustomerID());
 			partialTransactionFromMerchant.setStatus(Constants.TRANSACTION_STATUS_COMPLETED);
-			this.getHotTransactions().remove(partialTransactionFromMerchant).getOTP().getOTP();
+			this.getHotTransactions().remove(partialTransactionFromMerchant.getOTP().getOTP());
 			//Populate the Payment Objects in the transaction
 			//Update the Merchant Details
 			//update the local copy of the transaction and remove it from hot transactions.
@@ -227,7 +230,6 @@ public class Customer implements PersonInterface{
 				this.getHotTransactions().remove(partialTransactionFromMerchant.getOTP().getOTP());
 				//TODO: throw an exception here that the OTP expired?
 			}
-			
 			partialTransactionFromMerchant = null;
 		}
 		return partialTransactionFromMerchant;
@@ -329,5 +331,10 @@ public class Customer implements PersonInterface{
 			this.getWallet().processPayment(paymentIterator , transactionID );
 			this.getHotTransactions().remove(otp);
 		}
+	}
+	public void logout() {
+		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus())){
+			this.setStatus(Constants.STATUS_LOGGED_OUT);
+		}	
 	}
 }

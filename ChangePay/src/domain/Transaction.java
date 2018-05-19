@@ -33,8 +33,15 @@ public class Transaction {
 	public Transaction getAuthTransaction() {
 		return authTransaction;
 	}
-	public void setAuthTransaction(Transaction authTransaction) throws Exception {
-		new TransactionDAO().deleteObjectWithKey("transactionRefNo",authTransaction.getTransactionRefNo());
+	public void setAuthTransaction(Transaction authTransaction) {
+		try{
+			new TransactionDAO().deleteObjectWithKey("transactionRefNo",authTransaction.getTransactionRefNo());
+			//TODO:Remove this jugaad.
+		}
+		catch(Exception e)
+		{
+			
+		}
 		this.authTransaction = authTransaction;
 	}
 	public String getCustomerID() {
@@ -212,7 +219,7 @@ public class Transaction {
 		TransactionDAO transactionDAO = new TransactionDAO();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Document mongoDocument = transactionDAO.getObjectByKeyValuePair("OTP.OTP", partialTransactionFromTheMerchant.getOTP().getOTP());
+		Document mongoDocument = transactionDAO.getObjectByKeyValuePair("otp.OTP", partialTransactionFromTheMerchant.getOTP().getOTP());
 		Transaction transaction = mapper.readValue(mongoDocument.toJson(),Transaction.class);
 		mongoDocument = customerDAO.getObjectByKeyValuePair("customerID", transaction.getCustomerID());
 		Customer customer = mapper.readValue(mongoDocument.toJson(), Customer.class);
@@ -222,7 +229,7 @@ public class Transaction {
 		Merchant merchant = mapper.readValue(mongoDocument.toJson(), Merchant.class);
 		merchant.collectPayment(transaction);
 		merchantDAO.updateObjectWithKey("merchantID", merchantID, merchant);
-		customerDAO.updateObjectWithKey(customerID, customerID, customer);
+		customerDAO.updateObjectWithKey("customerID", customerID, customer);
 		transactionDAO.updateObjectWithKey("transactionRefNo", transactionRefNo, transaction);
 	}
 	

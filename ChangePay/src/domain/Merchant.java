@@ -100,6 +100,7 @@ public class Merchant implements PersonInterface{
 			if(this.getLoginOTP().isMatching(OTP)&&this.getLoginOTP().isValid()){
 				this.setStatus(Constants.STATUS_LOGGED_IN);
 				this.setSessionKey(new SessionKey());
+				this.setLoginOTP(null);
 				return true;
 			}
 		}
@@ -328,14 +329,22 @@ public class Merchant implements PersonInterface{
 				walletSection = this.getWallet().getSections().get(t.getPayment().get(0).getCurrencyCode());
 				walletSection.addBalance(t.getPayment().get(0).getAmount());
 				walletSection.getTransactions().add(t);
+				this.getWallet().setNetWorth(this.getWallet().getNetWorth() + t.getPayment().get(0).getAmount());
 			}
 			else{
 				//TODO:Create a new Section here. If possible, check if the merchant accepts the currency, nahi toh convert it.
 				walletSection = new WalletSection(t.getPayment().get(0).getCurrencyCode());
 				walletSection.addBalance(t.getPayment().get(0).getAmount());
-				walletSection.getTransactions().add(t);				
+				walletSection.getTransactions().add(t);
+				this.getWallet().setNetWorth(this.getWallet().getNetWorth() + t.getPayment().get(0).getAmount());
 			}
 
 		}
+	}
+
+	public void logout() {
+		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus())){
+			this.setStatus(Constants.STATUS_LOGGED_OUT);
+		}	
 	}
 }

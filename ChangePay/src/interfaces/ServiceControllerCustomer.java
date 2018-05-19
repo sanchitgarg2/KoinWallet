@@ -8,24 +8,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.w3c.dom.css.CSSUnknownRule;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 
 import dataAccess.CustomerDAO;
-import dataAccess.MerchantDAO;
 import domain.Customer;
-import domain.Merchant;
-import domain.OTP;
 import domain.SendSMS;
 import exceptions.AccessOverrideException;
 import exceptions.InsufficientFundsException;
@@ -43,7 +37,7 @@ public class ServiceControllerCustomer {
 
 	}
 	@RequestMapping(path="/RegisterNewCustomer",method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String RegisterNewCustomer(HttpServletRequest Request, HttpServletResponse response, @RequestBody Object abc){
+	public @ResponseBody JSONObject RegisterNewCustomer(HttpServletRequest Request, HttpServletResponse response, @RequestBody Object abc){
 		JSONObject bufferJSONObject;
 		try{
 			String phoneNumber = (String)((LinkedHashMap<Object,Object>)abc).get("phoneNumber");
@@ -57,40 +51,84 @@ public class ServiceControllerCustomer {
 			bufferJSONObject.put("status", "Successful.");
 			bufferJSONObject.put("statusCode", 200);
 			bufferJSONObject.put("customer", (new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson());
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(ParseException | NumberFormatException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
 			bufferJSONObject.put("statusCode", 450);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(MongoException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "DataBase is down.");
 			bufferJSONObject.put("statusCode", 550);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(IOException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Corrupted Data");
 			bufferJSONObject.put("statusCode", 551);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(Exception e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "App Server has an Internal error.");
 			bufferJSONObject.put("statusCode", 500);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 	}
 
+	@RequestMapping(path="/Logout",method = RequestMethod.POST, consumes = "application/json")
+	public @ResponseBody JSONObject logout(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
+		JSONObject bufferJSONObject = new JSONObject();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		
+		try{
+			String phoneNumber = (String) newJObject.get("phoneNumber");
+			Customer customer = mapper.readValue((new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(), Customer.class);
+			customer.logout();
+			new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
+			bufferJSONObject.put("status", "Successful.");
+			bufferJSONObject.put("statusCode", 200);
+			return bufferJSONObject;
+		}
+		catch(ParseException | NumberFormatException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
+			bufferJSONObject.put("statusCode", 450);
+			//			logger.error(e);
+			return bufferJSONObject;
+		}
+		catch(MongoException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "DataBase is down.");
+			bufferJSONObject.put("statusCode", 550);
+			//			logger.error(e);
+			return bufferJSONObject;
+		}
+		catch(IOException e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "Corrupted Data");
+			bufferJSONObject.put("statusCode", 551);
+			//			logger.error(e);
+			return bufferJSONObject;
+		}
+		catch(Exception e){
+			bufferJSONObject = new JSONObject();
+			bufferJSONObject.put("status", "App Server has an Internal error.");
+			bufferJSONObject.put("statusCode", 500);
+			//			logger.error(e);
+			return bufferJSONObject;
+		}
+	}
 	@RequestMapping(path="/getOTP",method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String getOTP(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
+	public @ResponseBody JSONObject getOTP(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
 		JSONObject bufferJSONObject;
 		try{
 			String phoneNumber = (String) newJObject.get("phoneNumber");
@@ -106,13 +144,13 @@ public class ServiceControllerCustomer {
 				bufferJSONObject.put("status", "Successful.");
 				bufferJSONObject.put("statusCode", 200);
 				bufferJSONObject.put("otp", otp);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 				}
 				catch(InsufficientFundsException e) {
 					bufferJSONObject = new JSONObject();
 					bufferJSONObject.put("status", "Insufficient Funds.");
 					bufferJSONObject.put("statusCode", 403);
-					return bufferJSONObject.toJSONString();
+					return bufferJSONObject;
 				}
 
 			}
@@ -126,7 +164,7 @@ public class ServiceControllerCustomer {
 				bufferJSONObject.put("status", "Successful.");
 				bufferJSONObject.put("statusCode", 200);
 				bufferJSONObject.put("otp", otp);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 			}
 		}
 			catch(ParseException | NumberFormatException e){
@@ -134,28 +172,28 @@ public class ServiceControllerCustomer {
 				bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
 				bufferJSONObject.put("statusCode", 450);
 				//			logger.error(e);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 			}
 			catch(MongoException e){
 				bufferJSONObject = new JSONObject();
 				bufferJSONObject.put("status", "DataBase is down.");
 				bufferJSONObject.put("statusCode", 550);
 				//			logger.error(e);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 			}
 			catch(IOException e){
 				bufferJSONObject = new JSONObject();
 				bufferJSONObject.put("status", "Corrupted Data");
 				bufferJSONObject.put("statusCode", 551);
 				//			logger.error(e);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 			}
 			catch(Exception e){
 				bufferJSONObject = new JSONObject();
 				bufferJSONObject.put("status", "App Server has an Internal error.");
 				bufferJSONObject.put("statusCode", 500);
 				//			logger.error(e);
-				return bufferJSONObject.toJSONString();
+				return bufferJSONObject;
 			}
 		
 	}
@@ -236,7 +274,7 @@ public class ServiceControllerCustomer {
 	}
 
 	@RequestMapping(path="/getWallet",method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String getWallet(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
+	public @ResponseBody JSONObject getWallet(HttpServletRequest Request, HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject){
 		JSONObject bufferJSONObject;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
@@ -249,35 +287,35 @@ public class ServiceControllerCustomer {
 			bufferJSONObject.put("wallet", mapper.writeValueAsString(customer.getWallet()));
 			bufferJSONObject.put("status", "Successful.");
 			bufferJSONObject.put("statusCode", 200);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(ParseException | NumberFormatException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
 			bufferJSONObject.put("statusCode", 450);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(MongoException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "DataBase is down.");
 			bufferJSONObject.put("statusCode", 550);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(IOException e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "Corrupted Data");
 			bufferJSONObject.put("statusCode", 551);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 		catch(Exception e){
 			bufferJSONObject = new JSONObject();
 			bufferJSONObject.put("status", "App Server has an Internal error.");
 			bufferJSONObject.put("statusCode", 500);
 			//			logger.error(e);
-			return bufferJSONObject.toJSONString();
+			return bufferJSONObject;
 		}
 	}
 
