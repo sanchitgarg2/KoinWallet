@@ -11,6 +11,7 @@ import com.mongodb.client.MongoDatabase;
 
 import domain.Constants;
 import exceptions.DataBaseException;
+import exceptions.ObjectNotFoundException;
 
 public class MongoAccessClass implements MongoAccessInterface{
 	static MongoClient mongoClient;
@@ -18,7 +19,7 @@ public class MongoAccessClass implements MongoAccessInterface{
 	MongoDatabase database;
 
 	@SuppressWarnings("rawtypes")
-	public MongoCollection getCollection() {
+	public MongoCollection<Document> getCollection() {
 		return this.collection;
 	}
 
@@ -46,10 +47,16 @@ public class MongoAccessClass implements MongoAccessInterface{
 	}
 
 	@Override
-	public Document getObjectByKeyValuePair(String key, Object value) throws Exception {
+	public Document getObjectByKeyValuePair(String key, Object value) throws DataBaseException, ObjectNotFoundException {
 		if(MongoAccessClass.getDatabase()!= null)
-			if(this.getCollection() != null)
-				return (Document) this.getCollection().find(new Document(key,value)).first();
+			if(this.getCollection() != null){
+				Document document =  (Document) this.getCollection().find(new Document(key,value)).first();
+				if(document == null){
+					throw new ObjectNotFoundException();
+				}
+				else
+					return document;
+			}
 			else
 				throw new DataBaseException("Mongo Collection not found");
 		else
@@ -143,5 +150,18 @@ public class MongoAccessClass implements MongoAccessInterface{
 				//TODO:return info that the field value did not update, log it here.
 			}
 		}
+	}
+	
+	@Override
+	public Boolean insertObject(Document document){
+		try{
+			this.getCollection().insertOne(document);
+			return true;
+		}
+		catch(Exception e){
+			System.out.println(e.getMessage()+ " message:class " + e.getClass());
+		}
+		
+		return false;
 	}
 }

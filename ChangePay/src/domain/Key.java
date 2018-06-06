@@ -2,8 +2,8 @@ package domain;
 
 import com.fasterxml.uuid.Generators;
 
-public class SessionKey {
-	String key;
+public class Key {
+	String value;
 	String generationTS;
 	String expiryTS;
 	int usageCount;
@@ -11,19 +11,19 @@ public class SessionKey {
 	
 	
 	
-	public SessionKey() {
+	public Key() {
 		super();
-		this.key = Generators.randomBasedGenerator().generate().toString();
+		this.value = Generators.randomBasedGenerator().generate().toString();
 		this.generationTS = "" + System.currentTimeMillis();
 		this.expiryTS = ( Long.parseLong(this.generationTS) + Constants.SESSION_KEY_EXPIRY )+ ""; 
 		this.usageCount = 0;
 		this.usage_limit = Constants.SESSION_KEY_USAGE_LIMIT;
 	}
-	public String getKey() {
-		return key;
+	public String getValue() {
+		return value;
 	}
-	public void setKey(String key) {
-		this.key = key;
+	public void setValue(String key) {
+		this.value = key;
 	}
 	public String getGenerationTS() {
 		return generationTS;

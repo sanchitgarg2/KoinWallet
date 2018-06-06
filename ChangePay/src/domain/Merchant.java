@@ -3,6 +3,7 @@ package domain;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.uuid.Generators;
 
 import exceptions.AccessOverrideException;
@@ -10,7 +11,7 @@ import exceptions.InputMissingException;
 import exceptions.InsufficientPaymentException;
 import exceptions.MessageNotSentException;
 
-public class Merchant implements PersonInterface{
+public class Merchant implements Person{
 
 	private String phoneNumber;
 	float upperLimit;
@@ -29,14 +30,14 @@ public class Merchant implements PersonInterface{
 	Currency currency;
 	String status;
 	OTP loginOTP;
-	SessionKey authorizationKey;
-	SessionKey sessionKey;
+	Key authorizationKey;
+	Key sessionKey;
 
-	public SessionKey getSessionKey() {
+	public Key getSessionKey() {
 		return sessionKey;
 	}
 
-	public void setSessionKey(SessionKey sessionKey) {
+	public void setSessionKey(Key sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
@@ -49,12 +50,14 @@ public class Merchant implements PersonInterface{
 		this.name = "JOHN DOE";
 		this.address = "1402, Maple Heights";
 		ArrayList<String> currenciesAccepted = new ArrayList<>();
+		this.setPersonType(Constants.PERSON_TYPE_MERCHANT);
 		currenciesAccepted.add(Constants.CURRENCY_CODE_COMMON_CASH);
 		this.setCurrenciesAccepted(currenciesAccepted);
 	}
 
 	public Merchant(String phoneNumber, String govtAuthNumber, String govtAuthType, String name, String address) {
 		super();
+		this.setPersonType(Constants.PERSON_TYPE_MERCHANT);
 		this.merchantID = Generators.randomBasedGenerator().generate().toString();
 		this.phoneNumber = phoneNumber;
 		this.govtAuthNumber = govtAuthNumber;
@@ -65,7 +68,7 @@ public class Merchant implements PersonInterface{
 		this.setCurrenciesAccepted(currenciesAccepted);
 		this.address = address;
 		this.setProfileLastUpdatedTS(""+System.currentTimeMillis());
-		this.setSessionKey(new SessionKey());
+		this.setSessionKey(new Key());
 		this.status = Constants.STATUS_LOGGED_OUT;
 	}
 	
@@ -77,6 +80,7 @@ public class Merchant implements PersonInterface{
 		this.upperLimit = upperLimit;
 	}
 
+	@Override
 	public String login() throws AccessOverrideException, MessageNotSentException{
 		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus()))
 			throw new AccessOverrideException();
@@ -86,7 +90,7 @@ public class Merchant implements PersonInterface{
 			
 			try {
 				this.sendOTP(this.getLoginOTP());
-				this.authorizationKey = new SessionKey();
+				this.authorizationKey = new Key();
 			} catch (MessageNotSentException e) {
 				this.loginOTP = null;
 				throw new MessageNotSentException("Sending OTP failed.");
@@ -95,11 +99,12 @@ public class Merchant implements PersonInterface{
 		}
 		return null;
 	}
+	@Override
 	public Boolean login(String OTP){
 		if(this.getLoginOTP() != null){
 			if(this.getLoginOTP().isMatching(OTP)&&this.getLoginOTP().isValid()){
 				this.setStatus(Constants.STATUS_LOGGED_IN);
-				this.setSessionKey(new SessionKey());
+				this.setSessionKey(new Key());
 				this.setLoginOTP(null);
 				return true;
 			}
@@ -123,11 +128,11 @@ public class Merchant implements PersonInterface{
 		this.loginOTP = loginOTP;
 	}
 
-	public SessionKey getAuthorizationKey() {
+	public Key getAuthorizationKey() {
 		return authorizationKey;
 	}
 
-	public void setAuthorizationKey(SessionKey authorizationKey) {
+	public void setAuthorizationKey(Key authorizationKey) {
 		this.authorizationKey = authorizationKey;
 	}
 
@@ -261,13 +266,13 @@ public class Merchant implements PersonInterface{
 
 	@Override
 	public String getAccountBalance() {
-		// TODO Auto-generated method stub
+		this.getWallet().getNetWorth();
 		return null;
 	}
 
 	@Override
 	public Object[] getLastNTransactions(int numberOfTransactions) {
-		// TODO Auto-generated method stub
+		// TODO getLastNTransactions
 		return null;
 	}
 	@Override
@@ -283,7 +288,7 @@ public class Merchant implements PersonInterface{
 		SendSMS.sendSarvMessage(smsParameters, 1);
 	}
 
-	public void claimOTP(String OTP, float amount) throws Exception{
+	public Transaction claimOTP(String OTP, float amount) throws Exception{
 		Transaction partialTransactionFromTheMerchant = new Transaction();
 		OTP otp = new OTP();
 		otp.setOTP(OTP);
@@ -300,7 +305,7 @@ public class Merchant implements PersonInterface{
 		partialTransactionFromTheMerchant.setTransactionRefNo(null);
 		partialTransactionFromTheMerchant.setTransactionType(null);
 		partialTransactionFromTheMerchant.setCustomerID(null);
-		partialTransactionFromTheMerchant.processTransaction(partialTransactionFromTheMerchant);
+		return partialTransactionFromTheMerchant.processTransaction(partialTransactionFromTheMerchant);
 	}
 	public void collectPayment(Transaction transaction) throws InsufficientPaymentException{
 		float amountCollected = 0;
@@ -346,5 +351,26 @@ public class Merchant implements PersonInterface{
 		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus())){
 			this.setStatus(Constants.STATUS_LOGGED_OUT);
 		}	
+	}
+	
+	@JsonIgnore
+	@Override
+	public String getId() {
+		return this.getMerchantID();
+	}
+
+	@JsonIgnore
+	@Override
+	public ArrayList<Session> getloginSessions() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@JsonIgnore
+	@Override
+	public ArrayList<Key> getSessionKeys() {
+		ArrayList<Key> list = new ArrayList<>(1);
+		list.add(this.getSessionKey());
+		return list;
 	}
 }

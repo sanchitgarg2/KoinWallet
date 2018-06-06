@@ -60,7 +60,7 @@ public class CustomerDAO extends MongoAccessClass {
 		String jsonInString;
 		try {
 			jsonInString = mapper.writeValueAsString(customer);
-			this.getCollection().insertOne(Document.parse(jsonInString));
+			this.insertObject(Document.parse(jsonInString));
 		} catch (JsonProcessingException e) {
 			System.out.println(customer);
 			throw new Exception("Could not serialize the customer JSON.");

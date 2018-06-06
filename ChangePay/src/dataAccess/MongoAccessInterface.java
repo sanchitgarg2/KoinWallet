@@ -1,5 +1,6 @@
 package dataAccess;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,4 +22,5 @@ public interface MongoAccessInterface {
 	public Boolean deleteFieldOfObject(ObjectId objectIDKey, String fieldKey) throws Exception;
 	public Object getObjectsByKeyValuePair(String key, Object value) throws Exception;
 	void deleteObjectWithKey(String key, Object value) throws Exception;
+	Boolean insertObject(Document document);
 }

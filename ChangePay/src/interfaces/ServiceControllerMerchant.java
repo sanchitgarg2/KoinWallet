@@ -127,33 +127,8 @@ public class ServiceControllerMerchant {
 			}
 			return bufferJSONObject;
 		}
-		catch(ParseException | NumberFormatException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
-			bufferJSONObject.put("statusCode", 450);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(MongoException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "DataBase is down.");
-			bufferJSONObject.put("statusCode", 550);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(IOException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Corrupted Data");
-			bufferJSONObject.put("statusCode", 551);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
 		catch(Exception e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "App Server has an Internal error.");
-			bufferJSONObject.put("statusCode", 500);
-			//			logger.error(e);
-			return bufferJSONObject;
+			return Constants.handleCustomException(e);
 		}
 	}
 	
@@ -172,33 +147,8 @@ public class ServiceControllerMerchant {
 			bufferJSONObject.put("statusCode", 200);
 			return bufferJSONObject;
 		}
-		catch(ParseException | NumberFormatException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
-			bufferJSONObject.put("statusCode", 450);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(MongoException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "DataBase is down.");
-			bufferJSONObject.put("statusCode", 550);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(IOException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Corrupted Data");
-			bufferJSONObject.put("statusCode", 551);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
 		catch(Exception e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "App Server has an Internal error.");
-			bufferJSONObject.put("statusCode", 500);
-			//			logger.error(e);
-			return bufferJSONObject;
+			return Constants.handleCustomException(e);
 		}
 	}
 	
@@ -256,33 +206,8 @@ public class ServiceControllerMerchant {
 			
 			return responseData;
 		}
-		catch(ParseException | NumberFormatException e){
-			responseData = new JSONObject();
-			responseData.put("status", "Invalid Request Data " + e.getMessage());
-			responseData.put("statusCode", 450);
-			//			logger.error(e);
-			return responseData;
-		}
-		catch(MongoException e){
-			responseData = new JSONObject();
-			responseData.put("status", "DataBase is down.");
-			responseData.put("statusCode", 550);
-			//			logger.error(e);
-			return responseData;
-		}
-		catch(IOException e){
-			responseData = new JSONObject();
-			responseData.put("status", "Corrupted Data");
-			responseData.put("statusCode", 551);
-			//			logger.error(e);
-			return responseData;
-		}
 		catch(Exception e){
-			responseData = new JSONObject();
-			responseData.put("status", "App Server has an Internal error.");
-			responseData.put("statusCode", 500);
-			//			logger.error(e);
-			return responseData;
+			return Constants.handleCustomException(e);
 		}
 	}
 
@@ -297,39 +222,14 @@ public class ServiceControllerMerchant {
 			String otp = (String) newJObject.get("otp");
 			float amount = Float.parseFloat(""+newJObject.get("amount"));
 			Merchant merchant = mapper.readValue((new MerchantDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(),Merchant.class);
-			merchant.claimOTP(otp, amount);
+			bufferJSONObject.put("transaction" , mapper.writeValueAsString(merchant.claimOTP(otp, amount)));
 			bufferJSONObject.put("wallet", mapper.writeValueAsString(merchant.getWallet()));
 			bufferJSONObject.put("status", "Successful.");
 			bufferJSONObject.put("statusCode", 200);
 			return bufferJSONObject;
 		}
-		catch(ParseException | NumberFormatException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
-			bufferJSONObject.put("statusCode", 450);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(MongoException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "DataBase is down.");
-			bufferJSONObject.put("statusCode", 550);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(IOException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Corrupted Data");
-			bufferJSONObject.put("statusCode", 551);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
 		catch(Exception e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "App Server has an Internal error.");
-			bufferJSONObject.put("statusCode", 500);
-			//			logger.error(e);
-			return bufferJSONObject;
+			return Constants.handleCustomException(e);
 		}
 	}
 	@RequestMapping(path="/getWallet",method = RequestMethod.POST, consumes = "application/json")
@@ -346,33 +246,8 @@ public class ServiceControllerMerchant {
 			bufferJSONObject.put("statusCode", 200);
 			return bufferJSONObject;
 		}
-		catch(ParseException | NumberFormatException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Invalid Request Data " + e.getMessage());
-			bufferJSONObject.put("statusCode", 450);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(MongoException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "DataBase is down.");
-			bufferJSONObject.put("statusCode", 550);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
-		catch(IOException e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "Corrupted Data");
-			bufferJSONObject.put("statusCode", 551);
-			//			logger.error(e);
-			return bufferJSONObject;
-		}
 		catch(Exception e){
-			bufferJSONObject = new JSONObject();
-			bufferJSONObject.put("status", "App Server has an Internal error.");
-			bufferJSONObject.put("statusCode", 500);
-			//			logger.error(e);
-			return bufferJSONObject;
+			return Constants.handleCustomException(e);
 		}
 	}
 	//Recharge a customer

@@ -213,7 +213,7 @@ public class Transaction {
 		//TODO: Open a new transaction here. i.e insert the details of the new transaction into the DB. 
 		
 	}
-	public void processTransaction(Transaction partialTransactionFromTheMerchant) throws Exception {
+	public Transaction processTransaction(Transaction partialTransactionFromTheMerchant) throws Exception {
 		CustomerDAO customerDAO = new CustomerDAO();
 		MerchantDAO merchantDAO = new MerchantDAO();
 		TransactionDAO transactionDAO = new TransactionDAO();
@@ -231,6 +231,7 @@ public class Transaction {
 		merchantDAO.updateObjectWithKey("merchantID", merchantID, merchant);
 		customerDAO.updateObjectWithKey("customerID", customerID, customer);
 		transactionDAO.updateObjectWithKey("transactionRefNo", transactionRefNo, transaction);
+		return transaction;
 	}
 	
 }
