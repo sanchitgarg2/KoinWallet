@@ -5,7 +5,9 @@ import com.fasterxml.uuid.Generators;
 public class Key {
 	String value;
 	String generationTS;
+	String lastAccessedTS;
 	String expiryTS;
+	int maxInactiveInterval;
 	int usageCount;
 	int usage_limit;
 	
@@ -18,6 +20,22 @@ public class Key {
 		this.expiryTS = ( Long.parseLong(this.generationTS) + Constants.SESSION_KEY_EXPIRY )+ ""; 
 		this.usageCount = 0;
 		this.usage_limit = Constants.SESSION_KEY_USAGE_LIMIT;
+		this.lastAccessedTS = null;
+	}
+	
+	public int getMaxInactiveInterval() {
+		return maxInactiveInterval;
+	}
+
+	public void setMaxInactiveInterval(int maxInactiveInterval) {
+		this.maxInactiveInterval = maxInactiveInterval;
+	}
+
+	public String getLastAccessedTS() {
+		return lastAccessedTS;
+	}
+	public void setLastAccessedTS(String lastAccessedTS) {
+		this.lastAccessedTS = lastAccessedTS;
 	}
 	public String getValue() {
 		return value;

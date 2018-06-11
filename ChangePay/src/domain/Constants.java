@@ -59,6 +59,8 @@ public class Constants {
 	public final static boolean sendTransConfirmationtoMerchant = true;
 	public final static String SARV_TEMPLATE_MERCH_TRANS_FAILED = "Transaction+of+amount+XXXX+from+XXXX+failed";
 	public static final String CURRENCY_CODE_COMMON_CASH = "CC";
+	public static final boolean IS_HTTPS_ENABLED = false;
+	public static final String DOMAIN_IP_ADDRESS = "192.168.0.126";
 
 	@SuppressWarnings("unchecked")
 	public static JSONResponseBody handleCustomException(Exception e1) {

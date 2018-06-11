@@ -129,6 +129,7 @@ public class SessionManagerDAO extends MongoAccessClass {
 		String jsonInString;
 		try {
 			jsonInString = mapper.writeValueAsString(session);
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES ,false);
 			this.insertObject(Document.parse(jsonInString));
 		} catch (JsonProcessingException e) {
 			System.out.println(session);

@@ -1,12 +1,15 @@
 package interfaces;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,6 +21,7 @@ import dataAccess.CustomerDAO;
 import dataAccess.SessionManagerDAO;
 import domain.APIStatusCodes;
 import domain.Constants;
+import domain.CookieManager;
 import domain.Customer;
 import domain.SendSMS;
 import domain.Session;
@@ -61,7 +65,31 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/Logout", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody logout(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> newJObject) {
+			@RequestBody HashMap<Object, Object> newJObject , @CookieValue(value = "sessionID" ,required = true) String sessionID) {
+//		String sessionID = 
+		JSONResponseBody responseBody = new JSONResponseBody();
+		try {
+//			String phoneNumber = (String) newJObject.get("phoneNumber");
+			Session session = SessionManagerDAO.getSession(sessionID);
+			Customer customer = (Customer) Session.getUser(session);
+//			Customer customer = mapper.readValue(
+//					(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(), Customer.class);
+			customer.logout();
+			new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
+			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
+			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
+			response.addCookie(CookieManager.getBlankCookie("sessionID"));
+//			response.addHeader("Set-Cookie", cookie);
+			return responseBody;
+		} catch (Exception e) {
+			return Constants.handleCustomException(e);
+		}
+	}
+	
+	@RequestMapping(path = "/LogoutTest", method = RequestMethod.POST, consumes = "application/json")
+	public @ResponseBody JSONResponseBody logoutTest(HttpServletRequest Request, HttpServletResponse response,
+			@RequestBody HashMap<Object, Object> newJObject , @CookieValue(value = "sessionID" ,required = false) String sessionID) {
+//		String sessionID = 
 		JSONResponseBody responseBody = new JSONResponseBody();
 		try {
 			String phoneNumber = (String) newJObject.get("phoneNumber");
@@ -71,6 +99,8 @@ public class ServiceControllerCustomer {
 			new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
+			response.addCookie(CookieManager.getBlankCookie("sessionID"));
+//			response.addHeader("Set-Cookie", cookie);
 			return responseBody;
 		} catch (Exception e) {
 			return Constants.handleCustomException(e);
@@ -86,7 +116,7 @@ public class ServiceControllerCustomer {
 			Customer customer = null;
 			if (newJObject.keySet().contains("sessionKey")) {
 				String sessionKey = (String) newJObject.get("sessionKey");
-				Session session = (new SessionManagerDAO()).getSession(sessionKey);
+				Session session = SessionManagerDAO.getSession(sessionKey);
 				customer = (Customer) Session.getUser(session);
 				phoneNumber = customer.getPhoneNumber();
 			} else if (newJObject.keySet().contains("phoneNumber")) {
@@ -111,6 +141,12 @@ public class ServiceControllerCustomer {
 						APIStatusCodes.DESC_INTERNAL_ERROR + "Transaction is null");
 				responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_INTERNAL_ERROR);
 			}
+//			Cookie cookie = new Cookie("sessionID", "123");
+////			cookie.setPath("/");
+////			cookie.setMaxAge(1000);
+////			cookie.setSecure(false);
+////			cookie.setDomain("192.168.0.126");
+//			response.addCookie(cookie);
 			return responseBody;
 		} catch (Exception e) {
 			return Constants.handleCustomException(e);
@@ -173,6 +209,15 @@ public class ServiceControllerCustomer {
 					new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 					responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 					responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
+					if (Request.getSession(false) != null){
+						
+					}
+					Session mySession = new Session(customer.getId(),customer.getPersonType(),null);
+//					Session mySession = customer.getloginSessions().get(0) ;//new Session(customer.getId(),customer.getPersonType(),null);
+					new SessionManagerDAO().createSession(mySession);
+					Cookie cookie = new Cookie("sessionID", mySession.getId());
+					response.addCookie(cookie);
+					
 				} else {
 
 					responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_OTP_EXPIRED);
