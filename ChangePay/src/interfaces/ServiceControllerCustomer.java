@@ -209,9 +209,6 @@ public class ServiceControllerCustomer {
 					new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 					responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 					responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
-					if (Request.getSession(false) != null){
-						
-					}
 					Session mySession = new Session(customer.getId(),customer.getPersonType(),null);
 //					Session mySession = customer.getloginSessions().get(0) ;//new Session(customer.getId(),customer.getPersonType(),null);
 					new SessionManagerDAO().createSession(mySession);
