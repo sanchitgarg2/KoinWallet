@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/transaction_box"
+    android:background="@android:color/holo_green_light"
+    android:orientation="horizontal"
+    android:padding="5dip">
+
+    <!--
+
+    <LinearLayout
+        android:id="@+id/thumbnail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="5dip"
+        android:background="#099101"
+        android:padding="3dip">
+
+        <ImageView
+            android:id="@+id/list_image"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:src="@drawable/home" />
+
+    </LinearLayout>
+    -->
+
+    <!-- Title Of Song-->
+
+
+
+
+    <TextView
+        android:id="@+id/currencylist_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/thumbnail"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="BUY Price"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+
+    <TextView
+        android:id="@+id/currencylist_code"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/currencylist_name"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="2345"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+    <TextView
+        android:id="@+id/cost"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/currencylist_code"
+        android:layout_marginTop="4dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="Cost"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/costvalue"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cost"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="2345"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+
+    <!-- Rightend Duration -->
+    <TextView
+        android:id="@+id/Net"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/currencylist_name"
+        android:layout_marginRight="5dip"
+        android:gravity="right"
+        android:text="Quantity"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/currency_value"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Net"
+        android:layout_alignStart="@+id/Net"
+        android:layout_below="@+id/Net"
+        android:text="0.00235"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+
+    <TextView
+        android:id="@+id/net"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/cost"
+        android:layout_alignBottom="@+id/cost"
+        android:layout_alignLeft="@+id/currency_value"
+        android:layout_alignStart="@+id/currency_value"
+        android:text="Net"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/netvalue"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/net"
+        android:layout_alignStart="@+id/net"
+        android:layout_below="@+id/cost"
+        android:text="+100%"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+
+    <TextView
+        android:id="@+id/worth_value"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/netvalue"
+        android:layout_alignBottom="@+id/netvalue"
+        android:layout_alignLeft="@+id/worth"
+        android:layout_alignStart="@+id/worth"
+        android:text="0.00"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+
+    <TextView
+        android:id="@+id/worth"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/cost"
+        android:layout_alignBottom="@+id/cost"
+        android:layout_alignLeft="@+id/trading_pair_value"
+        android:layout_alignStart="@+id/trading_pair_value"
+        android:text="Worth"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/trading_pair_value"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/currency_value"
+        android:layout_alignBottom="@+id/currency_value"
+        android:layout_alignLeft="@+id/trading_pair"
+        android:layout_alignStart="@+id/trading_pair"
+        android:text="BTC/USD"
+        android:textColor="#343434"
+        android:textSize="10dip" />
+
+    <TextView
+        android:id="@+id/trading_pair"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Trading Pair"
+        android:textColor="#040404"
+        android:textSize="10dip"
+        android:textStyle="bold"
+        android:typeface="sans" />
+
+
+
+
+</RelativeLayout>

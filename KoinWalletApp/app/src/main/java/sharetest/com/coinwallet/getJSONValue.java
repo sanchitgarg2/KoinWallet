@@ -73,6 +73,7 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
 
         try {
 
+            String message=null;
             Response response = null;
 
             if(isNetworkConnected()&&isInternetAvailable()){
@@ -80,18 +81,23 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
             }
 
             if (response!=null && !response.isSuccessful()) {
-                return user;
+                return null;
             }
             if(response!=null&&response.body()!=null){
-                String message=response.body().string();
+                message=response.body().string();
+                Log.d("RESPONSE FROM NET", message);
+                return message;
+            }
+            else{
+                Log.d("RESPONSE NO NET", user);
             }
 
-            return user;
+            return null;
 
         } catch (Exception e) {
             e.printStackTrace();
             Log.d("Failed to  CONNECT","NET problem"+e.toString());
-            return user;
+            return null;
         }
     }
 
@@ -102,8 +108,6 @@ public class getJSONValue extends AsyncTask<String, Void, String> {
         }
         super.onPostExecute(s);
         if (s != null) {
-            Log.d("Response", s);
-
             try {
 
                 JSONObject json = new JSONObject(s);

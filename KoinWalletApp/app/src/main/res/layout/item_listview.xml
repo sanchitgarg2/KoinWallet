@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/holo_orange_light"
+    android:background="#7E57C2"
     android:orientation="horizontal"
     android:padding="5dip">
 
@@ -14,14 +14,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_marginRight="5dip"
-        android:background="#099101"
         android:padding="3dip">
 
         <ImageView
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="50dip"
-            android:src="@drawable/home" />
+            android:src="@drawable/bitcoin" />
 
     </LinearLayout>
 

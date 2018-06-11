@@ -71,6 +71,7 @@ public class CoinAdapter extends BaseAdapter {
         ImageView thumb_image=(ImageView)vi.findViewById(R.id.list_image); // thumb image
 
         WalletSection section = sections.get(position);
+
         title.setText(section.getCurrency().getCurrencyCode());
         cashinvested.setText(String.valueOf(section.getCashInvested()));
         try {
