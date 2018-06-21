@@ -16,6 +16,5 @@ public interface Person {
 	public String login() throws AccessOverrideException, MessageNotSentException;
 	public Boolean login(String otp) throws Exception;
 	public void logout();
-	public ArrayList<Session> getloginSessions();
-	public ArrayList<Key> getSessionKeys();
+	public ArrayList<Session> getLoginSessions();
 }

@@ -29,10 +29,13 @@ public class Session implements HttpSession {
 	ArrayList<String> permissionsGranted;
 	String source;
 	HashMap<String, Object> attributes;
+	
+	@JsonIgnore
 	private static ObjectMapper mapper = new ObjectMapper();
 
 	Session() {
 		super();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
 	public Session(String userID, String userType, String source) {
@@ -49,7 +52,7 @@ public class Session implements HttpSession {
 		this.source = source;
 		this.sessionKey = new Key();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		(new SessionManagerDAO()).createSession(this);
+//		(new SessionManagerDAO()).createSession(this);
 	}
 
 	public HashMap<String, Object> getAttributes() {
@@ -60,7 +63,8 @@ public class Session implements HttpSession {
 		this.attributes = attributes;
 	}
 
-	public void endSession() {
+	public void endSession() throws Exception {
+		SessionManagerDAO.deleteSession(this.getId());
 		// this.getPerson().logout();
 		// TODO:end Session Code.
 
@@ -136,6 +140,7 @@ public class Session implements HttpSession {
 	}
 
 	@Override
+	@JsonIgnore
 	public long getCreationTime() {
 		return Long.parseLong(this.getSessionKey().getGenerationTS());
 	}
@@ -243,7 +248,11 @@ public class Session implements HttpSession {
 
 	@Override
 	public void invalidate() {
-		this.endSession();
+		try {
+			this.endSession();
+		} catch (Exception e) {
+			System.out.println("Could not end the session because of " + e.getMessage() + " and therefore " + e.getLocalizedMessage());
+		}
 
 	}
 
@@ -252,6 +261,15 @@ public class Session implements HttpSession {
 		if (this.getSessionKey().getLastAccessedTS() == null)
 			return true;
 		return false;
+	}
+
+	@JsonIgnore
+	public boolean isValid() {
+		long currentTime = System.currentTimeMillis();
+		if(Long.parseLong(this.getSessionKey().getExpiryTS()) < currentTime)
+			return false;
+		else
+			return true;
 	}
 
 }

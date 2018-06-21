@@ -58,8 +58,11 @@ public class Key {
 	public int getUsageCount() {
 		return usageCount;
 	}
-	public void setUsageCount(int usageCount) {
-		this.usageCount = usageCount;
+	public void useSession(int usageCount) {
+		this.usageCount = usageCount + usageCount;
+	}
+	public void useSession() {
+		this.usageCount = usageCount + 1;
 	}
 	public int getUsage_limit() {
 		return usage_limit;

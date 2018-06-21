@@ -10,6 +10,7 @@ import org.json.simple.parser.ParseException;
 import com.mongodb.MongoException;
 
 import exceptions.AccessOverrideException;
+import exceptions.ExpiredOrMissingSessionException;
 import exceptions.InsufficientFundsException;
 import exceptions.InvalidRequestException;
 
@@ -61,6 +62,7 @@ public class Constants {
 	public static final String CURRENCY_CODE_COMMON_CASH = "CC";
 	public static final boolean IS_HTTPS_ENABLED = false;
 	public static final String DOMAIN_IP_ADDRESS = "192.168.0.126";
+	public static final String SESSION_COOKIE_KEY = "sessionID";
 
 	@SuppressWarnings("unchecked")
 	public static JSONResponseBody handleCustomException(Exception e1) {
@@ -69,7 +71,10 @@ public class Constants {
 		responseBody = new JSONResponseBody();
 		try {
 			throw e1;
-		} catch (InvalidRequestException e) {
+		} catch (ExpiredOrMissingSessionException e) {
+			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_INVALID_SESSION_DATA);
+			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_INVALID_REQUEST_DATA);
+		}catch (InvalidRequestException e) {
 			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_INVALID_REQUEST_DATA);
 			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_INVALID_REQUEST_DATA);
 		} catch (InsufficientFundsException e) {

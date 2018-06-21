@@ -8,6 +8,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import exceptions.DataBaseException;
+import exceptions.DuplicateObjectException;
+
 public interface MongoAccessInterface {
 		
 //	public MongoCollection getCollection();
@@ -22,5 +25,5 @@ public interface MongoAccessInterface {
 	public Boolean deleteFieldOfObject(ObjectId objectIDKey, String fieldKey) throws Exception;
 	public Object getObjectsByKeyValuePair(String key, Object value) throws Exception;
 	void deleteObjectWithKey(String key, Object value) throws Exception;
-	Boolean insertObject(Document document);
+	Boolean insertObject(Document document) throws DuplicateObjectException, DataBaseException;
 }

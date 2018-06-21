@@ -6,6 +6,7 @@ import java.util.HashMap;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.uuid.Generators;
 
+import dataAccess.SessionManagerDAO;
 import exceptions.AccessOverrideException;
 import exceptions.InputMissingException;
 import exceptions.InsufficientPaymentException;
@@ -31,16 +32,10 @@ public class Merchant implements Person{
 	String status;
 	OTP loginOTP;
 	Key authorizationKey;
-	Key sessionKey;
-
-	public Key getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(Key sessionKey) {
-		this.sessionKey = sessionKey;
-	}
-
+	ArrayList<Session> loginSessions;
+	String lastLoginAt;
+	
+	
 	public Merchant() throws InputMissingException {
 		super();
 		this.merchantID = Generators.randomBasedGenerator().generate().toString();
@@ -68,10 +63,27 @@ public class Merchant implements Person{
 		this.setCurrenciesAccepted(currenciesAccepted);
 		this.address = address;
 		this.setProfileLastUpdatedTS(""+System.currentTimeMillis());
-		this.setSessionKey(new Key());
 		this.status = Constants.STATUS_LOGGED_OUT;
 	}
 	
+	public String getLastLoginAt() {
+		return lastLoginAt;
+	}
+
+	public void setLastLoginAt(String lastLoginAt) {
+		this.lastLoginAt = lastLoginAt;
+	}
+
+	public void setLoginSessions(ArrayList<Session> loginSessions) {
+		this.loginSessions = loginSessions;
+	}
+	
+	@Override
+	public ArrayList<Session> getLoginSessions() {
+		if(this.loginSessions == null)
+			this.loginSessions = new ArrayList<Session>();
+		return this.loginSessions;
+	}
 	public float getUpperLimit() {
 		return upperLimit;
 	}
@@ -100,11 +112,14 @@ public class Merchant implements Person{
 		return null;
 	}
 	@Override
-	public Boolean login(String OTP){
+	public Boolean login(String OTP) throws Exception{
 		if(this.getLoginOTP() != null){
 			if(this.getLoginOTP().isMatching(OTP)&&this.getLoginOTP().isValid()){
+				Session session = new Session(this, null);
+				(new SessionManagerDAO()).createSession(session);
+				this.setLastLoginAt(System.currentTimeMillis() + "");
 				this.setStatus(Constants.STATUS_LOGGED_IN);
-				this.setSessionKey(new Key());
+				this.getLoginSessions().add(session);
 				this.setLoginOTP(null);
 				return true;
 			}
@@ -350,6 +365,13 @@ public class Merchant implements Person{
 	public void logout() {
 		if(Constants.STATUS_LOGGED_IN.equals(this.getStatus())){
 			this.setStatus(Constants.STATUS_LOGGED_OUT);
+			try{
+				this.getLoginSessions().remove(0);
+			}
+			catch(Exception e){
+				//TODO: Handle the case, of no sessions being available here.
+			}
+			//TODO:Delete the particular Session key here.
 		}	
 	}
 	
@@ -357,20 +379,5 @@ public class Merchant implements Person{
 	@Override
 	public String getId() {
 		return this.getMerchantID();
-	}
-
-	@JsonIgnore
-	@Override
-	public ArrayList<Session> getloginSessions() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@JsonIgnore
-	@Override
-	public ArrayList<Key> getSessionKeys() {
-		ArrayList<Key> list = new ArrayList<>(1);
-		list.add(this.getSessionKey());
-		return list;
 	}
 }

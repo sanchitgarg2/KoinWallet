@@ -4,7 +4,7 @@ import javax.servlet.http.Cookie;
 
 public class CookieManager {
 	
-	public static Cookie addCookie(String name, String value){
+	public static Cookie getCookie(String name, String value){
 		Cookie cookie = new Cookie(name, value);
 	cookie.setPath("/");
 	cookie.setMaxAge(1000);

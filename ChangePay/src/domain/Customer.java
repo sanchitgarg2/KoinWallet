@@ -30,7 +30,7 @@ public class Customer implements Person {
 	OTP loginOTP;
 	String status;
 	String lastLoginAt;
-	Key sessionKey;
+	ArrayList<Session> loginSessions;
 	Key authorizationKey;
 	@JsonIgnore
 	CustomerDAO dao = new CustomerDAO();
@@ -71,10 +71,17 @@ public class Customer implements Person {
 		if (this.getLoginOTP() != null) {
 			if (this.getLoginOTP().isMatching(OTP) && this.getLoginOTP().isValid()) {
 				Session session = new Session(this, null);
-//				(new SessionManagerDAO()).createSession(session);
+				(new SessionManagerDAO()).createSession(session);
 				this.setLastLoginAt(System.currentTimeMillis() + "");
 				this.setStatus(Constants.STATUS_LOGGED_IN);
-				this.setSessionKey(session.getSessionKey());
+//				this.setSessionKey(session.getSessionKey());
+				if(this.loginSessions != null)
+					this.loginSessions.add(session);
+				else
+				{
+					this.loginSessions = new ArrayList<Session>();
+					this.loginSessions.add(session);
+				}
 				this.setLoginOTP(null);
 				return true;
 				//TODO:Have proper Exception Handling in this method
@@ -107,13 +114,13 @@ public class Customer implements Person {
 		this.lastLoginAt = lastLoginAt;
 	}
 
-	public Key getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(Key sessionKey) {
-		this.sessionKey = sessionKey;
-	}
+//	public Key getSessionKey() {
+//		return sessionKey;
+//	}
+//
+//	public void setSessionKey(Key sessionKey) {
+//		this.sessionKey = sessionKey;
+//	}
 
 	public Key getAuthorizationKey() {
 		return authorizationKey;
@@ -367,6 +374,8 @@ public class Customer implements Person {
 	public void logout() {
 		if (Constants.STATUS_LOGGED_IN.equals(this.getStatus())) {
 			this.setStatus(Constants.STATUS_LOGGED_OUT);
+			this.getLoginSessions().remove(0);
+			//TODO:Delete the particular Session key here.
 		}
 	}
 
@@ -384,20 +393,10 @@ public class Customer implements Person {
 	public String getId() {
 		return this.getCustomerID();
 	}
-
-	@JsonIgnore
+	
 	@Override
-	public ArrayList<Session> getloginSessions() {
-		// TODO getloginSessions
-		return null;
-	}
-
-	@JsonIgnore
-	@Override
-	public ArrayList<Key> getSessionKeys() {
-		ArrayList<Key> list = new ArrayList<>(1);
-		list.add(this.getSessionKey());
-		return list;
+	public ArrayList<Session> getLoginSessions() {
+		return this.loginSessions;
 	}
 
 }

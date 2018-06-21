@@ -1,10 +1,8 @@
 package interfaces;
 
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,7 +25,7 @@ import domain.SendSMS;
 import domain.Session;
 import domain.Transaction;
 import domain.JSONResponseBody;
-import exceptions.InvalidRequestException;
+import exceptions.ExpiredOrMissingSessionException;
 
 @Controller
 @SuppressWarnings("unchecked")
@@ -65,31 +63,35 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/Logout", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody logout(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> newJObject , @CookieValue(value = "sessionID" ,required = true) String sessionID) {
-//		String sessionID = 
+			@RequestBody HashMap<Object, Object> newJObject,
+			@CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
+
+		// String sessionID =
 		JSONResponseBody responseBody = new JSONResponseBody();
 		try {
-//			String phoneNumber = (String) newJObject.get("phoneNumber");
+			if(sessionID==null){
+				throw new ExpiredOrMissingSessionException();
+				}
+			// String phoneNumber = (String) newJObject.get("phoneNumber");
 			Session session = SessionManagerDAO.getSession(sessionID);
 			Customer customer = (Customer) Session.getUser(session);
-//			Customer customer = mapper.readValue(
-//					(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(), Customer.class);
 			customer.logout();
+			session.endSession();
 			new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
-			response.addCookie(CookieManager.getBlankCookie("sessionID"));
-//			response.addHeader("Set-Cookie", cookie);
+			response.addCookie(CookieManager.getBlankCookie(Constants.SESSION_COOKIE_KEY));
 			return responseBody;
 		} catch (Exception e) {
 			return Constants.handleCustomException(e);
 		}
 	}
-	
+
 	@RequestMapping(path = "/LogoutTest", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody logoutTest(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> newJObject , @CookieValue(value = "sessionID" ,required = false) String sessionID) {
-//		String sessionID = 
+			@RequestBody HashMap<Object, Object> newJObject,
+			@CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
+		// String sessionID =
 		JSONResponseBody responseBody = new JSONResponseBody();
 		try {
 			String phoneNumber = (String) newJObject.get("phoneNumber");
@@ -99,8 +101,8 @@ public class ServiceControllerCustomer {
 			new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
-			response.addCookie(CookieManager.getBlankCookie("sessionID"));
-//			response.addHeader("Set-Cookie", cookie);
+			response.addCookie(CookieManager.getBlankCookie(Constants.SESSION_COOKIE_KEY));
+			// response.addHeader("Set-Cookie", cookie);
 			return responseBody;
 		} catch (Exception e) {
 			return Constants.handleCustomException(e);
@@ -109,30 +111,21 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/getHotTransactionStatus", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody getHotTransactionStatus(HttpServletRequest Request,
-			HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject) {
+			HttpServletResponse response, @RequestBody HashMap<Object, Object> newJObject,
+			@CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
+
 		JSONResponseBody responseBody = new JSONResponseBody();
 		try {
-			String phoneNumber;
+			if(sessionID==null){
+				throw new ExpiredOrMissingSessionException();
+				}
 			Customer customer = null;
-			if (newJObject.keySet().contains("sessionKey")) {
-				String sessionKey = (String) newJObject.get("sessionKey");
-				Session session = SessionManagerDAO.getSession(sessionKey);
-				customer = (Customer) Session.getUser(session);
-				phoneNumber = customer.getPhoneNumber();
-			} else if (newJObject.keySet().contains("phoneNumber")) {
-				phoneNumber = (String) newJObject.get("phoneNumber");
-				customer = mapper.readValue(
-						(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(),
-						Customer.class);
-			} else {
-				throw new InvalidRequestException();
-			}
-
-			// ;
+			Session session = SessionManagerDAO.getSession(sessionID);
+			customer = (Customer) Session.getUser(session);
+			customer = (Customer) Session.getUser(session);
 			String otp = (String) newJObject.get("otp");
 			Transaction transaction = customer.getHotTransactionStatus(otp);
 			if (transaction != null) {
-
 				responseBody.put("transaction", mapper.writeValueAsString(transaction));
 				responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 				responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
@@ -141,12 +134,6 @@ public class ServiceControllerCustomer {
 						APIStatusCodes.DESC_INTERNAL_ERROR + "Transaction is null");
 				responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_INTERNAL_ERROR);
 			}
-//			Cookie cookie = new Cookie("sessionID", "123");
-////			cookie.setPath("/");
-////			cookie.setMaxAge(1000);
-////			cookie.setSecure(false);
-////			cookie.setDomain("192.168.0.126");
-//			response.addCookie(cookie);
 			return responseBody;
 		} catch (Exception e) {
 			return Constants.handleCustomException(e);
@@ -155,15 +142,19 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/getOTP", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody getOTP(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> newJObject) {
+			@RequestBody HashMap<Object, Object> newJObject,
+			@CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
+
 		JSONResponseBody responseBody;
 		try {
-			String phoneNumber = (String) newJObject.get("phoneNumber");
+			if(sessionID==null){
+				throw new ExpiredOrMissingSessionException();
+				}
+			// String phoneNumber = (String) newJObject.get("phoneNumber");
+			Session session = SessionManagerDAO.getSession(sessionID);
+			Customer customer = (Customer) Session.getUser(session);
 			if (newJObject.containsKey("amount")) {
 				float amount = Float.parseFloat("" + newJObject.get("amount"));
-				Customer customer = mapper.readValue(
-						(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(),
-						Customer.class);
 				String otp = customer.openTransaction(amount);
 				new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
 				responseBody = new JSONResponseBody();
@@ -174,11 +165,6 @@ public class ServiceControllerCustomer {
 			} else {
 				// The OTP is for collecting money or basically for auth
 				// purposes.
-				ObjectMapper mapper = new ObjectMapper();
-				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				Customer customer = mapper.readValue(
-						(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(),
-						Customer.class);
 				String otp = customer.startAuthTransaction();
 				responseBody = new JSONResponseBody();
 				responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
@@ -194,29 +180,35 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/Login", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody Login(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> requestData) {
+			@RequestBody HashMap<Object, Object> requestData ,
+			@CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
 		JSONResponseBody responseBody;
 		try {
 			responseBody = new JSONResponseBody();
 			String phoneNumber = (String) requestData.get("phoneNumber");
+			if(sessionID != null){
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				responseBody = new JSONResponseBody();
+				Session session = SessionManagerDAO.getSession(sessionID);
+				Customer customer = (Customer) Session.getUser(session);
+				responseBody.put("customer", mapper.writeValueAsString(customer));
+				responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
+				responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
+			}
 			if (requestData.keySet().contains("otp")) {
 				String otp = (String) requestData.get("otp");
 				Customer customer = mapper.readValue(
 						(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(),
 						Customer.class);
 				if (customer.login(otp)) {
-					responseBody.put("customer", mapper.writeValueAsString(customer));
 					new CustomerDAO().updateObjectWithKey("customerID", customer.getCustomerID(), customer);
+					responseBody.put("customer", mapper.writeValueAsString(customer));
+					response.addCookie(CookieManager.getCookie(Constants.SESSION_COOKIE_KEY,
+							customer.getLoginSessions().get(0).getId()));
 					responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 					responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);
-					Session mySession = new Session(customer.getId(),customer.getPersonType(),null);
-//					Session mySession = customer.getloginSessions().get(0) ;//new Session(customer.getId(),customer.getPersonType(),null);
-					new SessionManagerDAO().createSession(mySession);
-					Cookie cookie = new Cookie("sessionID", mySession.getId());
-					response.addCookie(cookie);
-					
 				} else {
-
 					responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_OTP_EXPIRED);
 					responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_OTP_EXPIRED);
 				}
@@ -242,18 +234,17 @@ public class ServiceControllerCustomer {
 
 	@RequestMapping(path = "/getWallet", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody JSONResponseBody getWallet(HttpServletRequest Request, HttpServletResponse response,
-			@RequestBody HashMap<Object, Object> newJObject) {
+			@RequestBody HashMap<Object, Object> newJObject , @CookieValue(value = Constants.SESSION_COOKIE_KEY, required = false) String sessionID) {
 		JSONResponseBody responseBody;
 		try {
+			if(sessionID==null){
+				throw new ExpiredOrMissingSessionException();
+				}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			responseBody = new JSONResponseBody();
-			// JSONParser parser = new JSONParser();
-			// JSONResponseBody newJObject = (JSONResponseBody)
-			// parser.parse(jsonString);
-			String phoneNumber = (String) newJObject.get("phoneNumber");
-			Customer customer = mapper.readValue(
-					(new CustomerDAO().getObjectByKeyValuePair("phoneNumber", phoneNumber)).toJson(), Customer.class);
+			Session session = SessionManagerDAO.getSession(sessionID);
+			Customer customer = (Customer) Session.getUser(session);
 			responseBody.put("wallet", mapper.writeValueAsString(customer.getWallet()));
 			responseBody.put(APIStatusCodes.STATUS_DESC_KEY, APIStatusCodes.DESC_SUCCESS);
 			responseBody.put(APIStatusCodes.STATUS_CODE_KEY, APIStatusCodes.CODE_SUCCESS);

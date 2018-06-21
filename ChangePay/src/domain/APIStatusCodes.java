@@ -27,6 +27,8 @@ public class APIStatusCodes {
 	public static final String DESC_USER_ALREADY_LOGGED_IN = "USER ALREADY LOGGED IN" ;
 	public static final String DESC_CURRENCY_NOT_SUPPORTED = "CURRENCY NOT SUPPORTED" ;
 	public static final String DESC_INVALID_REQUEST_DATA = "INVALID REQUEST DATA" ;
+	public static final String DESC_INVALID_SESSION_DATA = "INVALID SESSION DATA" ;
+	
 
 	public static final String DESC_INTERNAL_ERROR = "INTERNAL ERROR" ;
 	public static final String DESC_DATABASE_ERROR = "DATABASE ERROR" ;
