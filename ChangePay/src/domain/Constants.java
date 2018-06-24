@@ -17,7 +17,7 @@ import exceptions.InvalidRequestException;
 public class Constants {
 	public static final String STATUS_LOGGED_IN = "LOGGED_IN";
 	public static final String STATUS_LOGGED_OUT = "LOGGED_OUT";
-	public static final long SESSION_KEY_EXPIRY = 3 * 24 * 60 * 60 * 1000;
+	public static final long SESSION_KEY_EXPIRY = 24 * 60 * 60 * 1000;
 	public static final int SESSION_KEY_USAGE_LIMIT = 15;
 	public static final String PHONE_NUMBER = "PHONE_NUMBER";
 	public static final int OTP_Length = 6;
@@ -61,8 +61,9 @@ public class Constants {
 	public final static String SARV_TEMPLATE_MERCH_TRANS_FAILED = "Transaction+of+amount+XXXX+from+XXXX+failed";
 	public static final String CURRENCY_CODE_COMMON_CASH = "CC";
 	public static final boolean IS_HTTPS_ENABLED = false;
-	public static final String DOMAIN_IP_ADDRESS = "192.168.0.126";
+	public static final String DOMAIN_IP_ADDRESS = "35.224.245.253";
 	public static final String SESSION_COOKIE_KEY = "sessionID";
+	public static final int COOKIE_AGE = (int)Constants.SESSION_KEY_EXPIRY / 1000 ;
 
 	@SuppressWarnings("unchecked")
 	public static JSONResponseBody handleCustomException(Exception e1) {

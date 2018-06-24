@@ -19,7 +19,9 @@ public class CookieManager {
 		cookie.setPath("/");
 		cookie.setMaxAge(0);
 		cookie.setSecure(false);
-		cookie.setDomain(Constants.DOMAIN_IP_ADDRESS);
+//		cookie.setMaxAge(Constants.COOKIE_AGE);
+//		cookie.setDomain(Constants.DOMAIN_IP_ADDRESS);
+		cookie.setDomain("http://changepay.in");		
 		return cookie;
 	}
 
