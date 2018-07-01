@@ -2,12 +2,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:background="#7E57C2"
+    android:layout_height="200dp"
+    android:background="@color/watchlist_bg"
     android:orientation="horizontal"
     android:padding="5dip">
 
     <!--  ListRow Left sied Thumbnail image -->
+
+    <com.github.mikephil.charting.charts.CandleStickChart
+        android:id="@+id/chart1"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_below="@+id/title"
+        android:layout_toRightOf="@id/thumbnail" />
+
     <LinearLayout
         android:id="@+id/thumbnail"
         android:layout_width="wrap_content"
@@ -20,7 +28,8 @@
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="50dip"
-            android:src="@drawable/bitcoin" />
+             />
+
 
     </LinearLayout>
 
@@ -42,20 +51,25 @@
         android:id="@+id/artist"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/title"
-        android:layout_marginTop="1dip"
-        android:layout_toRightOf="@+id/thumbnail"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/chart1"
+        android:textStyle="bold"
+        android:typeface="sans"
         android:text="Just gona stand there and ..."
         android:textColor="#343434"
         android:textSize="10dip" />
+
     <TextView
         android:id="@+id/CashInvested"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/artist"
-        android:layout_marginTop="1dip"
-        android:layout_toRightOf="@+id/thumbnail"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/artist"
         android:text="15k"
+        android:textStyle="bold"
+        android:typeface="sans"
         android:textColor="#343434"
         android:textSize="10dip" />
 
@@ -64,21 +78,16 @@
         android:id="@+id/duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/title"
-        android:layout_marginRight="5dip"
+        android:layout_alignBottom="@+id/CashInvested"
+        android:layout_alignEnd="@+id/chart1"
+        android:layout_alignRight="@+id/chart1"
         android:gravity="right"
         android:text="5:45"
         android:textColor="#10bcc9"
         android:textSize="10dip"
+        android:typeface="sans"
         android:textStyle="bold" />
 
     <!-- Rightend Arrow -->
-    <ImageView
-        android:layout_width="10dip"
-        android:layout_height="10dip"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/uparrow" />
 
 </RelativeLayout>

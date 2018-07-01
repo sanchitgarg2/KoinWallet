@@ -13,6 +13,7 @@
         android:id="@+id/main.appbar"
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:background="@color/bg_register"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:fitsSystemWindows="true"
         >
@@ -29,16 +30,67 @@
             app:title="@string/app_name"
             >
 
-            <TextView
-                android:id="@+id/CurrentValue"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#111111"
-                android:gravity="center"
-                android:padding="10dp"
-                android:text="CURRENT VALUE"
-                android:textColor="@android:color/white"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="35dp"
+                    android:src="@drawable/house" />
+
+                <TextView
+                    android:id="@+id/MainPortFolioBalance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/imageView2"
+                    android:layout_centerHorizontal="true"
+                    android:layout_gravity="center"
+                    android:text="MAIN PORTFOLIO BALANCE"
+                    android:layout_marginTop="22dp"
+                     />
+
+                <TextView
+                    android:id="@+id/currency_code_section"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@+id/MainPortFolioBalance"
+                    android:layout_alignRight="@+id/MainPortFolioBalance"
+                    android:layout_gravity="center"
+                    android:layout_below="@+id/MainPortFolioBalance"
+                    android:gravity="center"
+                    android:text="CURRENT VALUE"
+                    android:layout_marginTop="22dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="14dip"
+                    android:textStyle="bold" />
+
+
+
+                <TextView
+                    android:id="@+id/totalportfolioValue"
+                    android:layout_width="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/currency_code_section"
+                    android:layout_centerHorizontal="true"
+                    android:background="@color/bg_register"
+                    android:layout_marginTop="14dp"
+                    android:drawableLeft="@drawable/img"
+                    android:text="-$22.35"
+                    android:textColor="#E53935"
+                    android:textStyle="bold"
+                    android:typeface="sans" />
+
+
+            </LinearLayout>
+
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -51,15 +103,17 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
 
-        <ListView
+
+
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:divider="#b5b5b5"
-            android:dividerHeight="1dp"
-            android:scrollbars="none" />
+            android:scrollbars="vertical" />
 
     </android.support.v4.widget.NestedScrollView>
+
+
 
 
     <android.support.design.widget.FloatingActionButton
@@ -68,13 +122,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:src="@drawable/add"
-        app:backgroundTint="#68EFAD"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:layout_anchor="@id/main.appbar"
         app:layout_anchorGravity="bottom|right|end" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="wrap_content" />
 </android.support.design.widget.CoordinatorLayout>

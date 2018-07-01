@@ -17,6 +17,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,8 @@ import sharetest.com.coinwallet.getJSONValue;
 
 import static SupportingClasses.Helper.AppURL;
 import static SupportingClasses.Helper.AppuserID;
+import static SupportingClasses.Helper.NET_COST_VALUE;
+import static SupportingClasses.Helper.PORTFOLIO_VALUE;
 import static SupportingClasses.Helper.USER;
 import static SupportingClasses.Helper.UserURL;
 import static SupportingClasses.Helper.WALLETSECTION;
@@ -49,6 +54,8 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
     private ListView listView;
     public Context rootContext;
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.transaction_detail, container, false);
@@ -57,9 +64,11 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
         listView = (ListView) v.findViewById(R.id.transaction_list_view);
         rootContext=v.getContext();
 
+
+
          getUser();
 
-            setListViewData();
+         setListViewData();
 
         return v;
     }
@@ -79,6 +88,9 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
     private void setListViewData() {
 
 
+         float portfolio_value=0f;
+         float net_cost_value=0f;
+         float market_value=0f;
 
         List<Transaction> transactions = USER.getWallet().getTransactionList();
 
@@ -90,9 +102,22 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
                 if (transaction.getIncomingCurrency().getCurrencyCode().equals(WALLETSECTION.getCurrency().getCurrencyCode())
                         || transaction.getOutgoingCurrency().getCurrencyCode().equals(WALLETSECTION.getCurrency().getCurrencyCode())) {
                     currencyspecifictransactions.add(transaction);
+
+                    if(transaction.getPurchaseQuantity()>=0) {
+                        net_cost_value += Float.valueOf(transaction.getRate()) * Float.valueOf(transaction.getPurchaseQuantity());
+                    }
+                    else {
+                        net_cost_value += (Float.valueOf(transaction.getRate()) * Float.valueOf(transaction.getPurchaseQuantity())*-1);
+                    }
+                    portfolio_value+=transaction.getPurchaseQuantity();
+
                 }
             }
         }
+
+
+        NET_COST_VALUE=net_cost_value;
+        PORTFOLIO_VALUE=portfolio_value;
 
         if(currencyspecifictransactions!=null) {
 
@@ -104,6 +129,7 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
                 }
             });
         }
+
 
     }
 
@@ -123,9 +149,19 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
         String user=null;
         try {
             user =new getJSONValue(rootContext).execute(AppURL+UserURL+Integer.toString(AppuserID)).get();
+
             if(user!=null) {
-                USER = mapper.readValue(user, User.class);
+
+                JSONParser parser = new JSONParser();
+                org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(user);
+
+                String reasonCode = json.get("statusCode").toString();
+
+                if (reasonCode.equals("200")) {
+                    USER = mapper.readValue(json.get("user").toString(), User.class);
+                }
             }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -136,7 +172,10 @@ public class NewInvestment extends Fragment implements View.OnClickListener{
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
     }
+
 }

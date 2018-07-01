@@ -4,11 +4,14 @@
     <string name="sell">SELL</string>
     <string name="buy">BUY</string>
     <string name="add">ADD</string>
+    <string name="notification">SET NOTIFICATION</string>
     <string name="exchnage">EXCHANGE</string>
     <string name="settings">SETTINGS</string>
     <string name="home">HOME</string>
     <string name="wallet">WALLET</string>
     <string name="watchlist">WATCHLIST</string>
+    <string name="sellprice">SELL PRICE     :</string>
+    <string name="buyprice">BUY PRICE      :</string>
     <string name="action_search">Search</string>
     <string name="model_clicked_pattern">You clicked on the rank %1$d word: %2$s!</string>
     <string name="bitcoin">Bitcoin</string>

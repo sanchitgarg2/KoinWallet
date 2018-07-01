@@ -1,38 +1,19 @@
 package sharetest.com.coinwallet;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import AdapterClasses.*;
-import Coinclasses.User;
-import Coinclasses.WalletSection;
-import SupportingClasses.Sensor;
 
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-
+import static SupportingClasses.Helper.NET_COST_VALUE;
+import static SupportingClasses.Helper.PORTFOLIO_VALUE;
 import static SupportingClasses.Helper.WALLETSECTION;
 
 /**
@@ -44,6 +25,12 @@ public class SectionDisplay extends AppCompatActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private ImageView currency_icon;
+    private TextView currency_name;
+
+    private TextView portfolio_value_text;
+    private TextView market_value_text;
+    private TextView net_cost_text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,13 +43,22 @@ public class SectionDisplay extends AppCompatActivity {
         setContentView(R.layout.section_display);
 
 
-        Toast.makeText(getBaseContext(), String.valueOf(WALLETSECTION.getCashInvested()), Toast.LENGTH_SHORT).show();
+
+
+        //Toast.makeText(getBaseContext(), String.valueOf(WALLETSECTION.getCashInvested()), Toast.LENGTH_SHORT).show();
 
 
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(WALLETSECTION.getCurrency().getName());
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
+        currency_icon=(ImageView)findViewById(R.id.currency_icon_section);
+        currency_name=(TextView)findViewById(R.id.currency_code_section);
+        portfolio_value_text=(TextView)findViewById(R.id.portfolio_value);
+        market_value_text=(TextView) findViewById(R.id.market_value_body);
+        net_cost_text=(TextView) findViewById(R.id.net_value_body);
+
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         /*adapter.setWalletsectionJSONString(walletsectionJSONString);
@@ -70,7 +66,12 @@ public class SectionDisplay extends AppCompatActivity {
         adapter.setWalletJSONString(walletJSONString);
         */
         viewPager.setAdapter(adapter);
-
+        currency_name.setText(WALLETSECTION.getCurrency().getCurrencyCode());
+        String currencyName= WALLETSECTION.getCurrency().getCurrencyCode().toLowerCase();
+        Integer x=getResources().getIdentifier(currencyName, "drawable", getPackageName());
+        currency_icon.setImageResource(x);
+        portfolio_value_text.setText(Float.toString(PORTFOLIO_VALUE));
+        net_cost_text.setText(Float.toString(NET_COST_VALUE));
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
     }

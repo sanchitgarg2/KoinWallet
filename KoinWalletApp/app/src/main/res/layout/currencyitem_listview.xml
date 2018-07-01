@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/transaction_box"
-    android:background="@android:color/holo_blue_dark"
+    android:background="@color/watchlist_bg"
     android:orientation="horizontal"
     android:padding="5dip">
 
@@ -32,21 +32,23 @@
 
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/WatchlistCurrencyImage"
         android:layout_width="20dip"
         android:layout_height="20dip"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:background="@drawable/bitcoin" />
+         />
 
     <TextView
-        android:id="@+id/currencylist_name"
+        android:id="@+id/currencyName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/imageView"
-        android:layout_toEndOf="@+id/imageView"
-        android:layout_toRightOf="@+id/imageView"
+        android:layout_alignBottom="@+id/WatchlistCurrencyImage"
+        android:layout_marginLeft="19dp"
+        android:layout_marginStart="19dp"
+        android:layout_toEndOf="@+id/WatchlistCurrencyImage"
+        android:layout_toRightOf="@+id/WatchlistCurrencyImage"
         android:text="BitCoin"
         android:textColor="#040404"
         android:textSize="15dip"
@@ -55,12 +57,12 @@
 
 
     <TextView
-        android:id="@+id/currencylist_code"
+        android:id="@+id/global_average"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/imageView"
-        android:layout_alignStart="@+id/imageView"
-        android:layout_below="@+id/currencylist_name"
+        android:layout_alignLeft="@+id/SearchCurrencyIcon"
+        android:layout_alignStart="@+id/SearchCurrencyIcon"
+        android:layout_below="@+id/currencyName"
         android:layout_marginEnd="19dp"
         android:layout_marginRight="19dp"
         android:text="Global average BTC/USD"
@@ -85,7 +87,7 @@
         android:typeface="sans" />
 
     <TextView
-        android:id="@+id/currency_value"
+        android:id="@+id/net_value_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/Net"

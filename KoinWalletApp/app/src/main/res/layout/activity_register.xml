@@ -2,24 +2,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/bg_register"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="10dp" >
 
+
     <TextView
         android:id="@+id/koinwallet"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/linearLayout2"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="37dp"
-        android:layout_marginLeft="74dp"
-        android:layout_marginStart="74dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="29dp"
         android:fontFamily="@font/automani"
-        android:text="KOIN WALLET"
-        android:textColor="#ffffff"
+        android:text=" KOIN WALLET"
+        android:textColor="#040404"
         android:textSize="25dip"
         android:textStyle="bold" />
 
@@ -45,20 +44,36 @@
             android:textColor="@color/input_register"
             android:textColorHint="@color/input_register_hint" />
 
-        <EditText
-            android:id="@+id/MobileRegister"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:background="@color/input_register_bg"
-            android:hint="@string/hint_mobile"
-            android:inputType="textEmailAddress"
-            android:padding="10dp"
-            android:singleLine="true"
-            android:textColor="@color/input_register"
-            android:textColorHint="@color/input_register_hint" />
+            android:layout_height="wrap_content">
+
+            <com.rilixtech.CountryCodePicker
+                android:id="@+id/ccp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:ccp_textSize="26sp"
+                app:ccp_hidePhoneCode="true"
+                />
+
+            <EditText
+                android:id="@+id/MobileRegister"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_toRightOf="@+id/ccp"
+                android:background="@color/input_register_bg"
+                android:hint="@string/hint_mobile"
+                android:inputType="phone"
+                android:padding="10dp"
+                android:singleLine="true"
+                android:textColor="@color/input_register"
+                android:textColorHint="@color/input_register_hint" />
+        </LinearLayout>
 
         <!-- Login Button -->
+
+
 
         <TextView
             android:id="@+id/error2"

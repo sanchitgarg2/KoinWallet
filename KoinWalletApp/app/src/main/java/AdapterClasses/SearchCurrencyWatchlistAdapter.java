@@ -1,20 +1,17 @@
 package AdapterClasses;
 
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
-import Coinclasses.Currency;
 import Coinclasses.CurrencyCode;
-import Coinclasses.Transaction;
 import sharetest.com.coinwallet.R;
 
 /**
@@ -66,14 +63,20 @@ public class SearchCurrencyWatchlistAdapter extends BaseAdapter {
         RelativeLayout currency_box;
         TextView currency_name;
         TextView currency_code;
+        ImageView Currency_image;
 
 
-        currency_name=(TextView)vi.findViewById(R.id.currencylist_name);
-        currency_code=(TextView)vi.findViewById(R.id.currencylist_code);
+        currency_name=(TextView)vi.findViewById(R.id.coinName);
+        currency_code=(TextView)vi.findViewById(R.id.coinCode);
+        Currency_image=(ImageView) vi.findViewById(R.id.SearchCurrencyIcon);
 
         CurrencyCode code= getItem(position);
         currency_name.setText( code.getCurrencyName());
         currency_code.setText(code.getCurrencyCode());
+
+        String currencyName= code.getCurrencyCode().toLowerCase();
+        Integer x=mcontext.getResources().getIdentifier(currencyName, "drawable", mcontext.getPackageName());
+        Currency_image.setImageResource(x);
 
         return vi;
     }

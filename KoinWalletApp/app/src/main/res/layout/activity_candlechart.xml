@@ -1,23 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:background="#FFFFFF"
     android:layout_height="match_parent" >
+
+
+    <LinearLayout
+        android:id="@+id/graphtimeselector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/button9"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button8"
+            android:layout_alignBottom="@+id/button8"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button8"
+            android:layout_toRightOf="@+id/button8"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="1H"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button8"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button7"
+            android:layout_alignBottom="@+id/button7"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button7"
+            android:layout_toRightOf="@+id/button7"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="3H"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button7"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button6"
+            android:layout_alignBottom="@+id/button6"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button6"
+            android:layout_toRightOf="@+id/button6"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="1D"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button6"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_above="@+id/seekBar2"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button5"
+            android:layout_toRightOf="@+id/button5"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="1W"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button4"
+            android:layout_alignBottom="@+id/button4"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button4"
+            android:layout_toRightOf="@+id/button4"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="1M"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button3"
+            android:layout_alignBottom="@+id/button3"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button3"
+            android:layout_toRightOf="@+id/button3"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="3M"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button2"
+            android:layout_alignBottom="@+id/button2"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button2"
+            android:layout_toRightOf="@+id/button2"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="6M"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="45dp"
+            android:layout_height="30dp"
+            android:layout_alignBaseline="@+id/button1"
+            android:layout_alignBottom="@+id/button1"
+            android:layout_marginRight="-8dip"
+            android:layout_toEndOf="@+id/button1"
+            android:layout_toRightOf="@+id/button1"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="1Y"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:layout_above="@+id/seekBar2"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:text="LIFETIME"
+            android:textSize="8dp" />
+    </LinearLayout>
+
 
     <com.github.mikephil.charting.charts.CandleStickChart
         android:id="@+id/chart1"
+        android:layout_below="@+id/graphtimeselector"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/seekBar1" />
-    
+
     <SeekBar
         android:id="@+id/seekBar2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_margin="8dp"
-        android:layout_toLeftOf="@+id/tvYMax"
-        android:layout_marginRight="5dp"
         android:max="200"
         android:paddingBottom="12dp" />
 
@@ -26,11 +155,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/seekBar2"
-        android:layout_margin="8dp"
-        android:layout_marginBottom="35dp"
-        android:layout_toLeftOf="@+id/tvXMax"
-        android:layout_marginRight="5dp"
-        android:max="3000"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:max="90"
         android:paddingBottom="12dp" />
 
     <TextView
@@ -39,7 +166,7 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/seekBar1"
         android:layout_alignParentRight="true"
-        android:text="500"
+        android:text="90"
         android:layout_marginBottom="15dp"
         android:layout_marginRight="10dp"
         android:gravity="right"

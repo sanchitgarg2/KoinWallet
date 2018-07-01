@@ -57,10 +57,10 @@ public class WatchlistAdapter extends BaseAdapter {
             vi = inflater.inflate(R.layout.currencyitem_listview,parent,false);
         }
 
-        TextView currency_name = (TextView)vi.findViewById(R.id.currencylist_name);
-        TextView currency_exchange = (TextView)vi.findViewById(R.id.currencylist_code);
+        TextView currency_name = (TextView)vi.findViewById(R.id.currencyName);
+        TextView currency_exchange = (TextView)vi.findViewById(R.id.global_average);
         TextView net=(TextView)vi.findViewById(R.id.Net);
-        TextView currency_value = (TextView)vi.findViewById(R.id.currency_value);
+        TextView currency_value = (TextView)vi.findViewById(R.id.net_value_body);
 
         String key = mKeys[position];
         CurrencySnapShot value= watchlists.get(key);

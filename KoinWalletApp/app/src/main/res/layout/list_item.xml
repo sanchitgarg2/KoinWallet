@@ -2,9 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/currency_box"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
+    android:background="@color/white"
     android:orientation="horizontal"
     android:padding="5dip">
 
@@ -32,23 +32,23 @@
 
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/SearchCurrencyIcon"
         android:layout_width="40dip"
         android:layout_height="40dip"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:background="@drawable/bitcoin" />
+         />
 
     <TextView
-        android:id="@+id/currencylist_name"
+        android:id="@+id/coinName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="11dp"
         android:layout_marginStart="11dp"
-        android:layout_toEndOf="@+id/imageView"
-        android:layout_toRightOf="@+id/imageView"
+        android:layout_toEndOf="@+id/SearchCurrencyIcon"
+        android:layout_toRightOf="@+id/SearchCurrencyIcon"
         android:text="BitCoin"
         android:textColor="#040404"
         android:textSize="15dip"
@@ -57,12 +57,12 @@
 
 
     <TextView
-        android:id="@+id/currencylist_code"
+        android:id="@+id/coinCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/currencylist_name"
-        android:layout_alignStart="@+id/currencylist_name"
-        android:layout_below="@+id/currencylist_name"
+        android:layout_alignLeft="@+id/coinName"
+        android:layout_alignStart="@+id/coinName"
+        android:layout_below="@+id/coinName"
         android:text="BTC"
         android:textColor="#343434"
         android:textSize="15dip" />

@@ -14,7 +14,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.provider.Settings.Secure;
+import android.widget.Toast;
 
+
+import com.rilixtech.Country;
+import com.rilixtech.CountryCodePicker;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,6 +53,7 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
     private Button login;
     private Button register;
     private EditText mobile;
+    CountryCodePicker ccp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +72,15 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
 
         login.setOnClickListener(this);
         register.setOnClickListener(this);
+        ccp = (CountryCodePicker) findViewById(R.id.ccp);
+        ccp.setDefaultCountryUsingNameCode("US");
 
-
+        ccp.setOnCountryChangeListener(new CountryCodePicker.OnCountryChangeListener() {
+            @Override
+            public void onCountrySelected(Country selectedCountry) {
+                //Toast.makeText(getApplicationContext(), "Updated " + selectedCountry.getPhoneCode()+ "    "+ selectedCountry.getName(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fullscreenView() {
@@ -81,6 +93,7 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
         actionBar.hide();
 
     }
+
 
 
     public boolean validateEmail(final String hex) {
@@ -117,7 +130,7 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
                     JSONObject obj = new JSONObject();
                     obj.put("email", Email);
                     obj.put("phoneNumber",Mobile);
-                    obj.put("countryCode","91");
+                    obj.put("countryCode",ccp.getSelectedCountryCode());
                     obj.put("deviceID",device_id);
 
                     Intent intent = new Intent(this, OTPActivity.class);

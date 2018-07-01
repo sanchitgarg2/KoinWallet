@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/transaction_box"
-    android:background="@android:color/holo_green_light"
+    android:background="@color/primary_color"
     android:orientation="horizontal"
     android:padding="5dip">
 
@@ -34,7 +34,7 @@
 
 
     <TextView
-        android:id="@+id/currencylist_name"
+        android:id="@+id/buyprice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
@@ -47,10 +47,10 @@
 
 
     <TextView
-        android:id="@+id/currencylist_code"
+        android:id="@+id/buyprice_value"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/currencylist_name"
+        android:layout_below="@id/buyprice"
         android:layout_marginTop="1dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="2345"
@@ -60,7 +60,7 @@
         android:id="@+id/cost"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/currencylist_code"
+        android:layout_below="@id/buyprice_value"
         android:layout_marginTop="4dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="Cost"
@@ -86,7 +86,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/currencylist_name"
+        android:layout_alignTop="@id/buyprice"
         android:layout_marginRight="5dip"
         android:gravity="right"
         android:text="Quantity"
@@ -96,7 +96,7 @@
         android:typeface="sans" />
 
     <TextView
-        android:id="@+id/currency_value"
+        android:id="@+id/net_value_body"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/Net"
@@ -112,8 +112,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/cost"
         android:layout_alignBottom="@+id/cost"
-        android:layout_alignLeft="@+id/currency_value"
-        android:layout_alignStart="@+id/currency_value"
+        android:layout_alignLeft="@+id/net_value_body"
+        android:layout_alignStart="@+id/net_value_body"
         android:text="Net"
         android:textColor="#040404"
         android:textSize="10dip"
@@ -149,8 +149,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/cost"
         android:layout_alignBottom="@+id/cost"
-        android:layout_alignLeft="@+id/trading_pair_value"
-        android:layout_alignStart="@+id/trading_pair_value"
+        android:layout_alignLeft="@+id/market_value_body"
+        android:layout_alignStart="@+id/market_value_body"
         android:text="Worth"
         android:textColor="#040404"
         android:textSize="10dip"
@@ -158,19 +158,19 @@
         android:typeface="sans" />
 
     <TextView
-        android:id="@+id/trading_pair_value"
+        android:id="@+id/market_value_body"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/currency_value"
-        android:layout_alignBottom="@+id/currency_value"
-        android:layout_alignLeft="@+id/trading_pair"
-        android:layout_alignStart="@+id/trading_pair"
+        android:layout_alignBaseline="@+id/net_value_body"
+        android:layout_alignBottom="@+id/net_value_body"
+        android:layout_alignLeft="@+id/market_value"
+        android:layout_alignStart="@+id/market_value"
         android:text="BTC/USD"
         android:textColor="#343434"
         android:textSize="10dip" />
 
     <TextView
-        android:id="@+id/trading_pair"
+        android:id="@+id/market_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"

@@ -1,44 +1,44 @@
 package sharetest.com.coinwallet;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import AdapterClasses.CoinAdapter;
+import AdapterClasses.RecyclerViewClickListener;
+import AdapterClasses.WalletListAdapter;
 import Coinclasses.CoinWallet;
-import Coinclasses.Currency;
 import Coinclasses.User;
 import Coinclasses.WalletSection;
-import sharetest.com.coinwallet.R;
-import sharetest.com.coinwallet.SectionDisplay;
-import sharetest.com.coinwallet.getJSONValue;
 
 import static SupportingClasses.Helper.AppURL;
 import static SupportingClasses.Helper.USER;
 import static SupportingClasses.Helper.UserURL;
 import static SupportingClasses.Helper.AppuserID;
 import static SupportingClasses.Helper.WALLETSECTION;
+import static SupportingClasses.Helper.SCREEN_PAGE;
 
 public class WalletList extends Fragment {
 
@@ -47,7 +47,7 @@ public class WalletList extends Fragment {
     }
 
     private TextView headerText;
-    private ListView listView;
+    private RecyclerView listView;
     private View headerView;
     private View headerSpace;
     private Context rootContext;
@@ -62,9 +62,10 @@ public class WalletList extends Fragment {
             View v;
 
             v = inflater.inflate(R.layout.fragment_wallet_list, container, false);
+            //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
             rootContext = v.getContext();
             rootView = v;
-            listView = (ListView) v.findViewById(R.id.list_view);
+            listView = (RecyclerView) v.findViewById(R.id.list_view);
             getUser(rootContext);
 
         FloatingActionButton myFab = (FloatingActionButton)v.findViewById(R.id.addCurrency4);
@@ -92,9 +93,22 @@ public class WalletList extends Fragment {
         String user=null;
         try {
             user =new getJSONValue(context).execute(AppURL+UserURL+Integer.toString(AppuserID)).get();
+
             if(user!=null) {
-                USER = mapper.readValue(user, User.class);
+
+                JSONParser parser = new JSONParser();
+                org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(user);
+
+                String reasonCode = json.get("statusCode").toString();
+
+                if (reasonCode.equals("200")) {
+                    USER = mapper.readValue(json.get("user").toString(), User.class);
+                    TextView currentValue = (TextView)rootView.findViewById(R.id.currency_code_section);
+                    currentValue.setText("$" + String.valueOf(USER.getLiquidCashInWallet()));
+                    setListViewData(USER.getWallet(), USER.getUSERID());
+                }
             }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -105,92 +119,45 @@ public class WalletList extends Fragment {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
-
-        if(user!=null) {
-
-            TextView currentValue = (TextView)rootView.findViewById(R.id.CurrentValue);
-            currentValue.setText("WALLET :" + String.valueOf(USER.getLiquidCashInWallet()));
-            setListViewData(USER.getWallet(), USER.getUSERID());
-        }
     }
-    /*
-    private void setListViewHeader() {
-        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        @SuppressLint("InflateParams") View listHeader = inflater.inflate(R.layout.listview_header, null, false);
-        headerSpace = listHeader.findViewById(R.id.header_space);
 
-        listView.addHeaderView(listHeader);
-    }
-    */
 
     private void setListViewData(final CoinWallet coinWallet, final int userid) {
 
         if(coinWallet.getSections()!=null) {
-            HashMap<String, WalletSection> sections = coinWallet.getSections();
 
-            CoinAdapter adapter = new CoinAdapter(rootContext, new ArrayList<WalletSection>(sections.values()));
-            //ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_listview, R.id.item, modelList);
-            listView.setAdapter(adapter);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            final HashMap<String, WalletSection> sections = coinWallet.getSections();
+
+            final List<WalletSection> walletSections=new ArrayList<WalletSection>(sections.values());
+
+            listView.setHasFixedSize(true);
+            listView.setLayoutManager(new LinearLayoutManager(rootContext));
+            listView.addItemDecoration(new DividerItemDecoration(rootContext,LinearLayoutManager.VERTICAL));
+            listView.setNestedScrollingEnabled(false);
+
+            RecyclerViewClickListener listener= new RecyclerViewClickListener() {
                 @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    WalletSection walletSection = (WalletSection) parent.getItemAtPosition(position);
+                public void onClick(View view, int position) {
 
-                    ObjectMapper mapper = new ObjectMapper();
-                    String walletsectionJSONString=null;
-                    String walletJSONString = null;
-                    try {
-                        walletsectionJSONString = mapper.writeValueAsString(walletSection);
-                        walletJSONString=mapper.writeValueAsString(coinWallet);
+                    //Toast.makeText(rootContext,"currencycliked  "+ walletSections.get(position),Toast.LENGTH_SHORT).show();
 
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
+                    WalletSection walletSection = walletSections.get(position);
                     WALLETSECTION =walletSection;
-
+                    SCREEN_PAGE=0;
                     Intent intent = new Intent(rootContext, SectionDisplay.class);
                     startActivity(intent);
-
                 }
-            });
+            };
 
 
-
-
+            WalletListAdapter adapter = new WalletListAdapter(rootContext, walletSections,listener);
+            listView.setAdapter(adapter);
         }
 
     }
 
-
-
-    private AbsListView.OnScrollListener onScrollListener () {
-        return new AbsListView.OnScrollListener() {
-
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-                // Check if the first item is already reached to top
-                if (listView.getFirstVisiblePosition() == 0) {
-                    View firstChild = listView.getChildAt(0);
-                    int topY = 0;
-                    if (firstChild != null) {
-                        topY = firstChild.getTop();
-                    }
-
-                    int headerTopY = headerSpace.getTop();
-                    headerText.setY(Math.max(0, headerTopY + topY));
-
-                    // Set the image to scroll half of the amount that of ListView
-                    headerView.setY(topY * 0.5f);
-                }
-            }
-        };
-
-    }
 }

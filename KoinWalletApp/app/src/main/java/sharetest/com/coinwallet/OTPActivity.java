@@ -217,21 +217,24 @@ public class OTPActivity  extends AppCompatActivity implements View.OnClickListe
         return user;
 
     }
-    public HashMap<String,CurrencySnapShot> getCurrency(String jsoncurrency) throws JSONException {
+    public HashMap<String,CurrencySnapShot> getCurrency(String jsoncurrency) throws JSONException, IOException {
 
         HashMap<String, CurrencySnapShot> currencylistmap = new HashMap<String, CurrencySnapShot>();
         if(jsoncurrency!=null) {
             org.json.JSONObject jObject = new org.json.JSONObject(jsoncurrency);
             Iterator<?> keys = jObject.keys();
 
+            ObjectMapper mapper = new ObjectMapper();
 
             while (keys.hasNext()) {
                 String key = (String) keys.next();
                 String value = jObject.getString(key);
                 org.json.JSONObject newJObject = new org.json.JSONObject(value);
-                Currency.CurrencySnapShot snapshot = new Currency.CurrencySnapShot(Float.parseFloat(newJObject.get("valueInUSD").toString()),
-                        Float.parseFloat(newJObject.get("valueInINR").toString()), newJObject.get("refreshTime").toString()
-                ,newJObject.get("currencyCode").toString(),newJObject.get("currencyName").toString());
+               // Currency.CurrencySnapShot snapshot =mapper.readValue(value, CurrencySnapShot.class);
+                Currency.CurrencySnapShot snapshot = new Currency.CurrencySnapShot(Float.parseFloat(newJObject.get("valueInINR").toString()),Float.parseFloat(newJObject.get("valueInUSD").toString())
+                        , newJObject.get("refreshTime").toString()
+                        ,newJObject.get("currencyCode").toString(),newJObject.get("currencyName").toString());
+
 
                 currencylistmap.put(key, snapshot);
 

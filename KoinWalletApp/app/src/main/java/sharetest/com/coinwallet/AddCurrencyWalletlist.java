@@ -107,6 +107,7 @@ public class AddCurrencyWalletlist extends AppCompatActivity implements SearchVi
                 WalletSection walletSection= new WalletSection();
                 walletSection.setCurrency(new Currency());
                 walletSection.getCurrency().setCurrencyCode(code.getCurrencyCode());
+                walletSection.getCurrency().setName(code.getCurrencyName());
                 WALLETSECTION= walletSection;
 
                 Intent intent= new Intent(AddCurrencyWalletlist.this, AddTransaction.class);

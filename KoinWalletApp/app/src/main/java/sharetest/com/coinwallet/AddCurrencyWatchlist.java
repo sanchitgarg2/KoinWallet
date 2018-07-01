@@ -9,8 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import AdapterClasses.SearchCurrencyAdapter;
+import AdapterClasses.SearchCurrencyWatchlistAdapter;
 import AdapterClasses.WatchlistAdapter;
 import Coinclasses.Currency;
 import Coinclasses.Currency.*;
@@ -44,18 +49,21 @@ import static SupportingClasses.Helper.AppuserID;
 import static SupportingClasses.Helper.CURRENCYLIST;
 import static SupportingClasses.Helper.CurrencyListURL;
 import static SupportingClasses.Helper.UserURL;
+import static SupportingClasses.Helper.WALLETSECTION;
 import static SupportingClasses.Helper.updatewatchlistURL;
 
 
-public class AddCurrencyWatchlist extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class AddCurrencyWatchlist extends AppCompatActivity implements SearchView.OnQueryTextListener, View.OnClickListener{
 
     private RecyclerView mRecyclerView;
     public EditText search;
     private List<CurrencyCode> list = new ArrayList<CurrencyCode>();
     public SearchCurrencyAdapter mAdapter;
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /*
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_currency_watchlist);
 
@@ -75,6 +83,23 @@ public class AddCurrencyWatchlist extends AppCompatActivity implements SearchVie
         mRecyclerView.setAdapter(mAdapter);
 
         addTextListener();
+        */
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.search_walletlist);
+
+        try {
+            getCurrencyList();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        search = (EditText) findViewById( R.id.search2);
+        listView = (ListView) findViewById(R.id.listview_wallet_coinSearch);
+
+        final SearchCurrencyWatchlistAdapter adapter= new SearchCurrencyWatchlistAdapter(AddCurrencyWatchlist.this,list);
+        listView.setAdapter((ListAdapter) adapter);
+
+        addTextListener();
+        addItemListener();
     }
 
 
@@ -134,11 +159,49 @@ public class AddCurrencyWatchlist extends AppCompatActivity implements SearchVie
                     }
                 }
 
-                mRecyclerView.setLayoutManager(new LinearLayoutManager(AddCurrencyWatchlist.this));
-                mAdapter = new SearchCurrencyAdapter(filteredList, AddCurrencyWatchlist.this);
-                mRecyclerView.setAdapter(mAdapter);
-                mAdapter.notifyDataSetChanged();  // data set changed
+                SearchCurrencyWatchlistAdapter madapter= new SearchCurrencyWatchlistAdapter(AddCurrencyWatchlist.this,filteredList);
+                listView.setAdapter( madapter);
+               // mRecyclerView.setLayoutManager(new LinearLayoutManager(AddCurrencyWatchlist.this));
+               // mAdapter = new SearchCurrencyAdapter(filteredList, AddCurrencyWatchlist.this);
+                //mRecyclerView.setAdapter(mAdapter);
+                //mAdapter.notifyDataSetChanged();  // data set changed
             }
         });
+    }
+    public void addItemListener() {
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                CurrencyCode code = (CurrencyCode) parent.getItemAtPosition(position);
+                try {
+                    org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+                    obj.put("userID", Integer.toString(AppuserID));
+                    obj.put("currencyCode",code);
+
+                    String response =new postJSONValue(AddCurrencyWatchlist.this).execute(AppURL+updatewatchlistURL,obj.toJSONString()).get();
+                    if(response.equals("true")){
+                        Intent intent = new Intent(AddCurrencyWatchlist.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                    else {
+                        Toast.makeText(AddCurrencyWatchlist.this, "OOPS! SOMETHING WENT MISSING :(", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+
+
     }
 }

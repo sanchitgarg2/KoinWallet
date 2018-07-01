@@ -1,17 +1,29 @@
 
-package com.xxmassdeveloper.mpchartexample;
+package FragmentClasses;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mikephil.charting.charts.CandleStickChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.XAxis.XAxisPosition;
@@ -22,40 +34,163 @@ import com.github.mikephil.charting.data.CandleDataSet;
 import com.github.mikephil.charting.data.CandleEntry;
 import com.github.mikephil.charting.interfaces.datasets.ICandleDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
 
+import org.json.JSONException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-public class CandleStickChartActivity extends DemoBase implements OnSeekBarChangeListener {
+import Coinclasses.CandleStickDataPoint;
+import sharetest.com.coinwallet.LoginActivity;
+import sharetest.com.coinwallet.R;
+import sharetest.com.coinwallet.postJSONValue;
+
+import static SupportingClasses.Helper.AppURL;
+import static SupportingClasses.Helper.CANDLESTICKURL;
+import static SupportingClasses.Helper.LOGINURL;
+import static SupportingClasses.Helper.WALLETSECTION;
+
+public class CandleStickChartActivity extends Fragment implements OnSeekBarChangeListener {
 
     private CandleStickChart mChart;
     private SeekBar mSeekBarX, mSeekBarY;
     private TextView tvX, tvY;
+    private Context mcontext;
+    List<CandleStickDataPoint> data = new ArrayList<CandleStickDataPoint>();
+    Button buttons[] = new Button[9];
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_candlechart);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.activity_candlechart, container, false);
 
-        tvX = (TextView) findViewById(R.id.tvXMax);
-        tvY = (TextView) findViewById(R.id.tvYMax);
 
-        mSeekBarX = (SeekBar) findViewById(R.id.seekBar1);
+        mcontext = v.getContext();
+        tvX = (TextView) v.findViewById(R.id.tvXMax);
+        tvY = (TextView) v.findViewById(R.id.tvYMax);
+
+        mSeekBarX = (SeekBar) v.findViewById(R.id.seekBar1);
         mSeekBarX.setOnSeekBarChangeListener(this);
 
-        mSeekBarY = (SeekBar) findViewById(R.id.seekBar2);
+        mSeekBarY = (SeekBar) v.findViewById(R.id.seekBar2);
         mSeekBarY.setOnSeekBarChangeListener(this);
 
-        mChart = (CandleStickChart) findViewById(R.id.chart1);
-        mChart.setBackgroundColor(Color.WHITE);
+        mChart = (CandleStickChart) v.findViewById(R.id.chart1);
+
+        getGraphdata("THREE_HOURS");
+        InitializeGraph(mChart);
+
+        // setting data
+
+        Resources res = getResources();
+        for(int i=0;i<9;i++) {
+            int j=i+1;
+            String b = "button" + j;
+            buttons[i] = (Button)v.findViewById(res.getIdentifier(b, "id", getActivity().getPackageName()));
+            buttons[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    callgraphforTimelines(getResources().getResourceEntryName(((Button) v).getId()));
+                }
+            });
+        }
+        mSeekBarX.setProgress(40);
+        mSeekBarY.setProgress(100);
+
+        mChart.getLegend().setEnabled(false);
+
+        return v;
+    }
+
+
+    ArrayList<String > timeLines = new ArrayList<String >(
+            Arrays.asList("ALL_TIME", "ONE_YEAR", "SIX_MONTHS","THREE_MONTHS","ONE_MONTH","ONE_WEEK","ONE_DAY","THREE_HOURS","ONE_HOUR"));
+
+    private void callgraphforTimelines(String s) {
+
+            char a_char = s.charAt(6);
+            int a=Character.getNumericValue(a_char);
+            getGraphdata(timeLines.get(a-1));
+            mSeekBarX.setProgress(40);
+            mSeekBarY.setProgress(100);
+            setGraphValue();
+
+
+    }
+
+    private void getGraphdata(String TimeLine) {
+
+        String response = null;
+        JSONObject obj = new JSONObject();
+        //"currencyCode":"XRP",
+
+        obj.put("timeLine",TimeLine);
+        obj.put("currencyCode",WALLETSECTION.getCurrency().getCurrencyCode());
+        try {
+            response = new postJSONValue(mcontext).execute(AppURL + CANDLESTICKURL, obj.toJSONString()).get();
+
+            if (response != null) {
+
+                JSONParser parser = new JSONParser();
+                JSONObject json = (JSONObject) parser.parse(response);
+
+                String reasonCode = json.get("statusCode").toString();
+
+                if (reasonCode.equals("200")) {
+
+                    //mChart.clear();
+                    if(json.containsKey("graphData"))
+                    processGraphpoints(json.get("graphData").toString());
+                    else
+                        data= new ArrayList<CandleStickDataPoint>();
+
+                }
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void processGraphpoints(String graphData) throws IOException {
+
+
+        ObjectMapper mapper= new ObjectMapper();
+        data = mapper.readValue(graphData, new TypeReference<List<CandleStickDataPoint>>(){});
+        Collections.sort(data);
+
+
+    }
+
+
+    private void InitializeGraph(CandleStickChart mChart) {
+
+        //mChart.setBackgroundColor(Color.WHITE);
 
         mChart.getDescription().setEnabled(false);
 
         // if more than 60 entries are displayed in the chart, no values will be
         // drawn
-        mChart.setMaxVisibleValueCount(60);
+        mChart.setMaxVisibleValueCount(0);
 
         // scaling can now only be done on x- and y-axis separately
         mChart.setPinchZoom(false);
@@ -64,155 +199,136 @@ public class CandleStickChartActivity extends DemoBase implements OnSeekBarChang
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
+        xAxis.setDrawGridLines(true);
+        xAxis.setAxisLineWidth(1.2f);
+        xAxis.setAxisLineColor(Color.BLACK);
+        //xAxis.setGranularity(1f);
 
-        YAxis leftAxis = mChart.getAxisLeft();  
-//        leftAxis.setEnabled(false);
+
+
+
+        YAxis leftAxis = mChart.getAxisLeft();
+        leftAxis.setEnabled(true);
         leftAxis.setLabelCount(7, false);
-        leftAxis.setDrawGridLines(false);
-        leftAxis.setDrawAxisLine(false);
-        
-        YAxis rightAxis = mChart.getAxisRight();
-        rightAxis.setEnabled(false);
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setDrawAxisLine(true);
+        leftAxis.setAxisLineWidth(1.2f);
+        leftAxis.setAxisLineColor(Color.BLACK);
+       // leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        mChart.getAxisRight().setEnabled(false); // no right axis
+
+       // YAxis rightAxis = mChart.getAxisRight();
+        //rightAxis.setEnabled(true);
 //        rightAxis.setStartAtZero(false);
 
-        // setting data
-        mSeekBarX.setProgress(40);
-        mSeekBarY.setProgress(100);
-        
-        mChart.getLegend().setEnabled(false);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.candle, menu);
-        return true;
-    }
+    public static CandleStickChartActivity newInstance() {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+        CandleStickChartActivity f = new CandleStickChartActivity();
+        Bundle b = new Bundle();
+        f.setArguments(b);
 
-        switch (item.getItemId()) {
-            case R.id.actionToggleValues: {
-                for (IDataSet set : mChart.getData().getDataSets())
-                    set.setDrawValues(!set.isDrawValuesEnabled());
-
-                mChart.invalidate();
-                break;
-            }
-            case R.id.actionToggleIcons: {
-                for (IDataSet set : mChart.getData().getDataSets())
-                    set.setDrawIcons(!set.isDrawIconsEnabled());
-
-                mChart.invalidate();
-                break;
-            }
-            case R.id.actionToggleHighlight: {
-                if(mChart.getData() != null) {
-                    mChart.getData().setHighlightEnabled(!mChart.getData().isHighlightEnabled());
-                    mChart.invalidate();
-                }
-                break;
-            }
-            case R.id.actionTogglePinch: {
-                if (mChart.isPinchZoomEnabled())
-                    mChart.setPinchZoom(false);
-                else
-                    mChart.setPinchZoom(true);
-
-                mChart.invalidate();
-                break;
-            }
-            case R.id.actionToggleAutoScaleMinMax: {
-                mChart.setAutoScaleMinMaxEnabled(!mChart.isAutoScaleMinMaxEnabled());
-                mChart.notifyDataSetChanged();
-                break;
-            }
-            case R.id.actionToggleMakeShadowSameColorAsCandle: {
-                for (ICandleDataSet set : mChart.getData().getDataSets()) {
-                   //TODO: set.setShadowColorSameAsCandle(!set.getShadowColorSameAsCandle());
-                }
-
-                mChart.invalidate();
-                break;
-            }
-            case R.id.animateX: {
-                mChart.animateX(3000);
-                break;
-            }
-            case R.id.animateY: {
-                mChart.animateY(3000);
-                break;
-            }
-            case R.id.animateXY: {
-
-                mChart.animateXY(3000, 3000);
-                break;
-            }
-            case R.id.actionSave: {
-                if (mChart.saveToGallery("title" + System.currentTimeMillis(), 50)) {
-                    Toast.makeText(getApplicationContext(), "Saving SUCCESSFUL!",
-                            Toast.LENGTH_SHORT).show();
-                } else
-                    Toast.makeText(getApplicationContext(), "Saving FAILED!", Toast.LENGTH_SHORT)
-                            .show();
-                break;
-            }
-        }
-        return true;
+        return f;
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         
-        int prog = (mSeekBarX.getProgress() + 1);
+        int prog = (mSeekBarX.getProgress()+1);
 
         tvX.setText("" + prog);
         tvY.setText("" + (mSeekBarY.getProgress()));
         
         mChart.resetTracking();
 
+        Log.d("checking the x seekbar", ""+prog);
+        Log.d("checking the y seekbar" , "" +seekBar);
         ArrayList<CandleEntry> yVals1 = new ArrayList<CandleEntry>();
 
-        for (int i = 0; i < prog; i++) {
-            float mult = (mSeekBarY.getProgress() + 1);
-            float val = (float) (Math.random() * 40) + mult;
-            
-            float high = (float) (Math.random() * 9) + 8f;
-            float low = (float) (Math.random() * 9) + 8f;
-            
-            float open = (float) (Math.random() * 6) + 1f;
-            float close = (float) (Math.random() * 6) + 1f;
+        if(data.size()>0) {
 
-            boolean even = i % 2 == 0;
+            for (int i = 0; i < data.size(); i++) {
 
-            yVals1.add(new CandleEntry(
-                    i, val + high,
-                    val - low,
-                    even ? val + open : val - open,
-                    even ? val - close : val + close,
-                    getResources().getDrawable(R.drawable.star)
-            ));
+                float mult = (mSeekBarY.getProgress() + 1);
+
+                float high = data.get(i).getHigh();
+                float low = data.get(i).getLow();
+
+                float open = data.get(i).getOpen();
+                float close = data.get(i).getClose();
+
+                long minutes = TimeUnit.MILLISECONDS.toMinutes((data.get(i).getOpenTimeStamp() + data.get(i).getCloseTimeStamp()) / 2);
+                yVals1.add(new CandleEntry(i, high, low, open, close, getResources().getDrawable(R.drawable.add)));
+                //mChart.getAxis().setValueFormatter();
+            }
+
+
+            CandleDataSet set1 = new CandleDataSet(yVals1, "Data Set");
+
+            set1.setDrawIcons(false);
+            set1.setAxisDependency(AxisDependency.LEFT);
+            set1.setShadowColor(Color.DKGRAY);
+            set1.setShadowWidth(0.9f);
+            // set1.setColor(Color.rgb(80, 80, 80));
+            set1.setDecreasingColor(Color.RED);
+            set1.setDecreasingPaintStyle(Paint.Style.FILL);
+            set1.setIncreasingColor(Color.GREEN);
+            set1.setIncreasingPaintStyle(Paint.Style.FILL);
+            set1.setNeutralColor(Color.BLUE);
+            set1.setHighlightLineWidth(1.2f);
+
+            CandleData data = new CandleData(set1);
+
+            mChart.setData(data);
+            mChart.invalidate();
         }
+    }
 
-        CandleDataSet set1 = new CandleDataSet(yVals1, "Data Set");
+    public void setGraphValue(){
 
-        set1.setDrawIcons(false);
-        set1.setAxisDependency(AxisDependency.LEFT);
-//        set1.setColor(Color.rgb(80, 80, 80));
-        set1.setShadowColor(Color.DKGRAY);
-        set1.setShadowWidth(0.7f);
-        set1.setDecreasingColor(Color.RED);
-        set1.setDecreasingPaintStyle(Paint.Style.FILL);
-        set1.setIncreasingColor(Color.rgb(122, 242, 84));
-        set1.setIncreasingPaintStyle(Paint.Style.STROKE);
-        set1.setNeutralColor(Color.BLUE);
-        //set1.setHighlightLineWidth(1f);
+        mChart.resetTracking();
 
-        CandleData data = new CandleData(set1);
-        
-        mChart.setData(data);
-        mChart.invalidate();
+
+        ArrayList<CandleEntry> yVals1 = new ArrayList<CandleEntry>();
+
+        if(data.size()>0) {
+
+            for (int i = 0; i < data.size(); i++) {
+
+                //float mult = (mSeekBarY.getProgress() + 1);
+
+                float high = data.get(i).getHigh();
+                float low = data.get(i).getLow();
+
+                float open = data.get(i).getOpen();
+                float close = data.get(i).getClose();
+
+                long minutes = TimeUnit.MILLISECONDS.toMinutes((data.get(i).getOpenTimeStamp() + data.get(i).getCloseTimeStamp()) / 2);
+                yVals1.add(new CandleEntry(i, high, low, open, close, getResources().getDrawable(R.drawable.add)));
+                //mChart.getAxis().setValueFormatter();
+            }
+
+
+            CandleDataSet set1 = new CandleDataSet(yVals1, "Data Set");
+
+            set1.setDrawIcons(false);
+            set1.setAxisDependency(AxisDependency.LEFT);
+            set1.setShadowColor(Color.DKGRAY);
+            set1.setShadowWidth(0.9f);
+            // set1.setColor(Color.rgb(80, 80, 80));
+            set1.setDecreasingColor(Color.RED);
+            set1.setDecreasingPaintStyle(Paint.Style.FILL);
+            set1.setIncreasingColor(Color.GREEN);
+            set1.setIncreasingPaintStyle(Paint.Style.FILL);
+            set1.setNeutralColor(Color.BLUE);
+            set1.setHighlightLineWidth(1.2f);
+
+            CandleData data = new CandleData(set1);
+
+            mChart.setData(data);
+            mChart.invalidate();
+        }
     }
 
     @Override

@@ -66,10 +66,10 @@ public class TransactionAdapter extends BaseAdapter {
             vi = inflater.inflate(R.layout.transactionitem_listview,parent,false);
         }
 
-        TextView price_type = (TextView)vi.findViewById(R.id.currencylist_name);
-        TextView price_per_value = (TextView)vi.findViewById(R.id.currencylist_code);
-        TextView trading_pair_value=(TextView)vi.findViewById(R.id.trading_pair_value);
-        TextView quantity_value = (TextView)vi.findViewById(R.id.currency_value);
+        TextView price_type = (TextView)vi.findViewById(R.id.buyprice);
+        TextView price_per_value = (TextView)vi.findViewById(R.id.buyprice_value);
+        TextView trading_pair_value=(TextView)vi.findViewById(R.id.market_value_body);
+        TextView quantity_value = (TextView)vi.findViewById(R.id.net_value_body);
         TextView cost_value = (TextView)vi.findViewById(R.id.costvalue);
         TextView worth_value = (TextView)vi.findViewById(R.id.worth_value);
         TextView net_value = (TextView)vi.findViewById(R.id.netvalue);
@@ -83,12 +83,12 @@ public class TransactionAdapter extends BaseAdapter {
 
 
         if(transaction.getPurchaseQuantity()>=0){
-            transactionbox.setBackgroundColor(Color.GREEN);
+            transactionbox.setBackgroundColor(mContext.getResources().getColor(R.color.primary_color));
             quantity_value.setText(Float.toString(transaction.getPurchaseQuantity()));
             cost_value.setText(Float.toString(Float.valueOf(transaction.getRate())*Float.valueOf(transaction.getPurchaseQuantity())));
         }
         else {
-            transactionbox.setBackgroundColor(Color.RED);
+            transactionbox.setBackgroundColor(mContext.getResources().getColor(R.color.accent_color));
             price_type.setText("SELL Price");
             quantity_value.setText(Float.toString(transaction.getPurchaseQuantity()*-1));
             cost_value.setText(Float.toString(Float.valueOf(transaction.getRate())*Float.valueOf(transaction.getPurchaseQuantity())*-1));

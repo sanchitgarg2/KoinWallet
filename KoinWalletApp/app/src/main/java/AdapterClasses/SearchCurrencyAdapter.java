@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -85,6 +86,10 @@ public class SearchCurrencyAdapter extends
             }
         });
 
+        String currencyName= list_item.get(position).getCurrencyCode().toLowerCase();
+        Integer x=mcontext.getResources().getIdentifier(currencyName, "drawable", mcontext.getPackageName());
+        viewHolder.Currency_image.setImageResource(x);
+
     }
 
     // initializes textview in this class
@@ -93,14 +98,16 @@ public class SearchCurrencyAdapter extends
         public RelativeLayout currency_box;
         public TextView currency_name;
         public  TextView currency_code;
+        public ImageView Currency_image;
 
 
         public MyViewHolder(View itemLayoutView) {
             super(itemLayoutView);
 
             currency_box = (RelativeLayout) itemLayoutView.findViewById(R.id.currency_box);
-            currency_name=(TextView)itemLayoutView.findViewById(R.id.currencylist_name);
-            currency_code=(TextView)itemLayoutView.findViewById(R.id.currencylist_code);
+            Currency_image=(ImageView)itemLayoutView.findViewById(R.id.SearchCurrencyIcon);
+            currency_name=(TextView)itemLayoutView.findViewById(R.id.coinName);
+            currency_code=(TextView)itemLayoutView.findViewById(R.id.exchange_name);
         }
     }
 

@@ -1,18 +1,24 @@
-package CoinMonitor.APIService;
+package Coinclasses;
 
-import org.bson.Document;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CandleStickDataPoint {
+public class CandleStickDataPoint implements Comparable<CandleStickDataPoint>{
+	@Override
+	public String toString() {
+		return String.format(
+				"CandleStickDataPoint [currencyCode=%s, low=%s, high=%s, open=%s, close=%s, openTimeStamp=%s, closeTimeStamp=%s, timeLine=%s]",
+				currencyCode, low, high, open, close, openTimeStamp, closeTimeStamp, timeLine);
+	}
 	String currencyCode;
 	float low;
 	float high;
 	float open;
 	float close;
-	String openTimeStamp;
-	String closeTimeStamp;
+	long openTimeStamp;
+	long closeTimeStamp;
 	String timeLine;
 
 	public String getCurrencyCode() {
@@ -20,18 +26,28 @@ public class CandleStickDataPoint {
 	}
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
-	}	
-	public String getOpenTimeStamp() {
+	}
+	public long getOpenTimeStamp() {
 		return openTimeStamp;
 	}
-	public void setOpenTimeStamp(String openTimeStamp) {
-		this.openTimeStamp = openTimeStamp;
+	public void setOpenTimeStamp(Long openTimeStamp) {
+		try{
+			this.openTimeStamp = openTimeStamp;
+		}
+		catch(Exception e){
+			this.openTimeStamp = -1;
+		}
 	}
-	public String getCloseTimeStamp() {
+	public long getCloseTimeStamp() {
 		return closeTimeStamp;
 	}
-	public void setCloseTimeStamp(String closeTimeStamp) {
-		this.closeTimeStamp = closeTimeStamp;
+	public void setCloseTimeStamp(Long closeTimeStamp) {
+		try{
+			this.closeTimeStamp = closeTimeStamp;
+		}
+		catch(Exception e){
+			this.closeTimeStamp = -1;
+		}
 	}
 	public String getTimeLine() {
 		return timeLine;
@@ -65,27 +81,43 @@ public class CandleStickDataPoint {
 	}
 	public void merge(CandleStickDataPoint inputPoint) {
 		if(this.getClose() == 0 && this.getOpen() == 0 && this.getHigh() == 0 && this.getLow() == 0){
+			this.setCurrencyCode(inputPoint.getCurrencyCode());
+			this.setTimeLine(inputPoint.getTimeLine());
 			this.setHigh(inputPoint.getHigh());
 			this.setClose(inputPoint.getClose());
 			this.setLow(inputPoint.getLow());
 			this.setOpen(inputPoint.getOpen());
+			this.setCloseTimeStamp(inputPoint.getCloseTimeStamp());
+			this.setOpenTimeStamp(inputPoint.getOpenTimeStamp());
 		}
 		else{
-			if(Long.parseLong(inputPoint.getOpenTimeStamp()) < Long.parseLong(this.getOpenTimeStamp())){
+			if(inputPoint.getOpenTimeStamp() < this.getOpenTimeStamp()){
 				this.setOpen(inputPoint.getOpen());
 				this.setOpenTimeStamp(inputPoint.getOpenTimeStamp());}
-			else if (Long.parseLong(inputPoint.getCloseTimeStamp()) > Long.parseLong(this.getCloseTimeStamp())){
+			else if (inputPoint.getCloseTimeStamp() > this.getCloseTimeStamp()){
 				this.setClose(inputPoint.getClose());
 				this.setCloseTimeStamp(inputPoint.getCloseTimeStamp());
 			}
 			this.setHigh(this.getHigh()<inputPoint.getHigh()?inputPoint.getHigh():this.getHigh());
 			this.setLow(this.getLow()<inputPoint.getLow()?inputPoint.getLow():this.getLow());
 		}
-		
+
 	}
-	public Document toBSONDocument() throws JsonProcessingException {
+	public int compareTo(CandleStickDataPoint otherPoint) {
+
+		long otherTimeStamp = ((CandleStickDataPoint) otherPoint).getOpenTimeStamp();
+
+		//ascending order
+		return (int) (this.getOpenTimeStamp() - otherTimeStamp);
+
+		//descending order
+		//return compareQuantity - this.quantity;
+
+	}
+	/*public Document toBSONDocument() throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = mapper.writeValueAsString(this);
 		return Document.parse(jsonInString);
 	}
+	*/
 }

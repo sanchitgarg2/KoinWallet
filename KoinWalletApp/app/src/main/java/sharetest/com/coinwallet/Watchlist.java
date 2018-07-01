@@ -5,11 +5,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,14 +28,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
+import AdapterClasses.RecyclerViewClickListener;
 import AdapterClasses.WatchlistAdapter;
+import AdapterClasses.WatchlistRecyclerAdapter;
 import Coinclasses.Currency;
 import Coinclasses.Currency.*;
+import Coinclasses.WalletSection;
 
 import static SupportingClasses.Helper.AppURL;
 import static SupportingClasses.Helper.USER;
 import static SupportingClasses.Helper.AppuserID;
+import static SupportingClasses.Helper.WALLETSECTION;
 import static SupportingClasses.Helper.watchlistURL;
+import static SupportingClasses.Helper.SCREEN_PAGE;
 
 public class Watchlist extends Fragment {
 
@@ -37,7 +49,7 @@ public class Watchlist extends Fragment {
     }
 
 
-    private ListView listView;
+    private RecyclerView listView;
     private Context rootContext;
     private View rootView;
     HashMap<String, CurrencySnapShot> watchlistmap = new HashMap<String, CurrencySnapShot>();
@@ -45,10 +57,14 @@ public class Watchlist extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        // Inflate the layout for this fragmen
         View v=inflater.inflate(R.layout.watchlist, container, false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
-        listView = (ListView)v.findViewById(R.id.list_view_watchlist);
+
+
+
+        listView = (RecyclerView) v.findViewById(R.id.list_view_watchlist);
 
         rootContext=v.getContext();
         rootView=v;
@@ -70,16 +86,39 @@ public class Watchlist extends Fragment {
         return v;
     }
 
-    private void setListViewData(HashMap<String, CurrencySnapShot> watchlists) {
+    private void setListViewData(final HashMap<String, CurrencySnapShot> watchlists) {
 
-        WatchlistAdapter adapter = new WatchlistAdapter(rootContext,watchlists);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        final String mKeys[] = watchlists.keySet().toArray(new String[watchlists.size()]);
+        listView.setHasFixedSize(true);
+        listView.setLayoutManager(new LinearLayoutManager(rootContext));
+        listView.addItemDecoration(new DividerItemDecoration(rootContext,LinearLayoutManager.VERTICAL));
+        listView.setNestedScrollingEnabled(false);
+
+        RecyclerViewClickListener listener= new RecyclerViewClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onClick(View view, int position) {
 
+
+                CurrencySnapShot snapshot = (CurrencySnapShot) watchlists.get(mKeys[position]);
+                Toast.makeText(rootContext,"currencycliked  "+ snapshot.getCurrencyName(),Toast.LENGTH_SHORT);
+                WalletSection walletSection = new WalletSection();
+                Currency currency= new Currency();
+                currency.setCurrencyCode(snapshot.getCurrencyCode());
+                currency.setName(snapshot.getCurrencyName());
+                walletSection.setCurrency(currency);
+                WALLETSECTION =walletSection;
+                SCREEN_PAGE=1;
+                Intent intent = new Intent(rootContext, SectionDisplay.class);
+                startActivity(intent);
             }
-        });
+        };
+
+
+        WatchlistRecyclerAdapter adapter = new WatchlistRecyclerAdapter(rootContext,watchlists,listener);
+        listView.setAdapter(adapter);
+
+
     }
     public  void getWatchlist(){
 
