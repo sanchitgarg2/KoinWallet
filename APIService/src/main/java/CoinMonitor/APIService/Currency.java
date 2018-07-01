@@ -1,26 +1,30 @@
 package CoinMonitor.APIService;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import org.apache.logging.log4j.Level;
 
-import org.springframework.cglib.core.Local;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
+import CoinMonitor.APIService.CurrencySnapshot;
+import CoinMonitor.APIService.Exceptions.CurrencyExchangeRateInvalidException;
 import java.util.HashMap;
 
 @Scope("prototype")
+@SuppressWarnings("unchecked")
 public class Currency{
-	
-	String name;
-	String currencyCode;
-	public CurrencySnapShot value;
-	public HashMap<LocalDateTime,CurrencySnapShot> history; 
-	public static HashMap<String,Currency> CURRENCYSTATE;
-	
-	
+
+	private String name;
+	private String currencyCode;
+	private CurrencySnapshot value;
+	private HashMap<String, CurrencySnapshot> history; 
+	private static HashMap<String,Currency> CURRENCYSTATE;
+	private static Logger logger = LogManager.getLogger(Currency.class);
+
+
 	//Define Supporting classes.
 	class ConversionRate{
 		Currency currency1;
@@ -46,68 +50,12 @@ public class Currency{
 			this.buyCurrency2At = 1/buyCurrency1At;
 		}
 	}
-	
-	static class CurrencySnapShot{
-		@Override
-		public String toString() {
-			return "valueInINR=" + valueInINR + ", valueInUSD=" + valueInUSD + ", refreshTime="
-					+ refreshTime+" ";
-		}
-		float valueInINR;
-		float valueInUSD;
-		LocalDateTime refreshTime;
-		
-		public CurrencySnapShot(float valueInINR, float valueInUSD, LocalDateTime refreshTime) {
-			super();
-			this.valueInINR = valueInINR;
-			this.valueInUSD = valueInUSD;
-			this.refreshTime = refreshTime;
-		}
 
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((refreshTime == null) ? 0 : refreshTime.hashCode());
-			result = prime * result + Float.floatToIntBits(valueInINR);
-			result = prime * result + Float.floatToIntBits(valueInUSD);
-			return result;
-		}
 
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CurrencySnapShot other = (CurrencySnapShot) obj;
-			if (refreshTime == null) {
-				if (other.refreshTime != null)
-					return false;
-			} else if (!refreshTime.equals(other.refreshTime))
-				return false;
-			if (Float.floatToIntBits(valueInINR) != Float.floatToIntBits(other.valueInINR))
-				return false;
-			if (Float.floatToIntBits(valueInUSD) != Float.floatToIntBits(other.valueInUSD))
-				return false;
-			return true;
-		}
-		public float getvalueInINR() {
-			if(this.valueInINR == 0)
-				return this.valueInUSD * Currency.CURRENCYSTATE.get("USD").value.getvalueInINR();
-			return this.valueInINR;
-		}
-	}
-	
-	
-	
 	@Override
 	public String toString() {
-		return " Currency [name=" + name + ", currencyCode=" + currencyCode + ", value=" + value + "]";
+		return "[name=" + name + " , currencyCode=" + currencyCode + ", value=" + value + "]\n";
 	}
 
 
@@ -115,19 +63,19 @@ public class Currency{
 	public Currency getCurrencyState(){
 		return CURRENCYSTATE.get(this.currencyCode);
 	}
-	
+
 
 	@JsonIgnore
-	public void updateHistory(CurrencySnapShot s){
-		
+	public void updateHistory(CurrencySnapshot s){
+
 		if(Currency.CURRENCYSTATE != null){
 			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.getCurrencyCode());
 			if(thisCurrency.history != null){
-				thisCurrency.history.put(LocalDateTime.now(),s);
-				}
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
+			}
 			else{
-				thisCurrency.history = new HashMap<LocalDateTime,CurrencySnapShot>();
-				thisCurrency.history.put(LocalDateTime.now(),s);
+				thisCurrency.history = new HashMap<String,CurrencySnapshot>();
+				thisCurrency.history.put(LocalDateTime.now().toString(),s);
 			}
 			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
 		}
@@ -152,7 +100,7 @@ public class Currency{
 			return false;
 		Currency other = (Currency) obj;
 		if (!currencyCode.equals(other.currencyCode))
-				return false;
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -161,12 +109,14 @@ public class Currency{
 		return true;
 	}
 	public static void makeNewCurrency(Currency newCurrency){
-		if(CURRENCYSTATE == null )
-			CURRENCYSTATE = new HashMap<String,Currency>();
-		CURRENCYSTATE.put(newCurrency.currencyCode, newCurrency);
+		if(!Currency.getStaticCurrencyState().keySet().contains(newCurrency.currencyCode))
+			Currency.getStaticCurrencyState().put(newCurrency.currencyCode, newCurrency);
+		else{
+			logger.log(Level.WARN,"Currency Already Exists");
+		}
 	}
 	public static void deleteCurrency(Currency currency){
-		CURRENCYSTATE.remove(currency.currencyCode);
+		Currency.getStaticCurrencyState().remove(currency.currencyCode);
 	}
 	public String getName() {
 		return name;
@@ -180,78 +130,94 @@ public class Currency{
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
-	
+
 	@JsonIgnore
-	public CurrencySnapShot getValue() throws Exception {
-		if(Currency.CURRENCYSTATE != null){
-			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
+	public CurrencySnapshot getValue() {
+		if(Currency.getStaticCurrencyState() != null){
+			if(!Currency.getStaticCurrencyState().keySet().contains(this.currencyCode)){
+				Currency.setCURRENCYSTATE(new HashMap<String, Currency>());
+				Currency.getStaticCurrencyState().put(this.currencyCode,this);
+			}
+			Currency thisCurrency = Currency.getCurrency(this.currencyCode);
 			if(thisCurrency != null) {
 				return thisCurrency.value;
-			} else
-				throw new Exception("Stated Currency does not have a value");
-		}
-		else{
-			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
-			Currency.CURRENCYSTATE.put(this.currencyCode,this);
-			throw new Exception("Stated Currency does not have a value");
-		}
-	}
-	
-	@JsonIgnore
-	public void setValue(CurrencySnapShot value) throws Exception {
-		if(Currency.CURRENCYSTATE != null){
-			if(Currency.CURRENCYSTATE.containsKey(this.currencyCode)) {
-				Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
-				thisCurrency.value = value;
-				Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
-			} else
-			{
-				Currency.CURRENCYSTATE.put(this.currencyCode, this);
-				Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
-				thisCurrency.value = value;
-				Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
+			} else{
+				logger.log(Level.FATAL,"Currency Value being asked for is not defined." , thisCurrency);
+				return new CurrencySnapshot();
 			}
-				
 		}
 		else{
-			Currency.CURRENCYSTATE = new HashMap<String,Currency>();
-			Currency.CURRENCYSTATE.put(this.currencyCode, this);
-			Currency thisCurrency = Currency.CURRENCYSTATE.get(this.currencyCode);
-			thisCurrency.value = value;
-			Currency.CURRENCYSTATE.put(this.currencyCode, thisCurrency);
+			logger.log(Level.FATAL,"Currency Value being asked for is not defined." , this);
+			return (new CurrencySnapshot());
+			//			throw new Exception("Stated Currency does not have a value : " + this.getCurrencyCode());
 		}
 	}
-	
+
 	@JsonIgnore
-	public HashMap<LocalDateTime,CurrencySnapShot> getHistory() {
+	public void setValue(CurrencySnapshot value) throws Exception {
+		if(Currency.getStaticCurrencyState().containsKey(this.currencyCode)) {
+			Currency thisCurrency = Currency.getStaticCurrencyState().get(this.currencyCode);
+			thisCurrency.value = value;
+			Currency.getStaticCurrencyState().put(this.currencyCode, thisCurrency);
+		} else
+		{
+			this.value = value;
+			Currency.getStaticCurrencyState().put(this.currencyCode, this);
+		}
+	}
+
+	@JsonIgnore
+	public HashMap<String,CurrencySnapshot> getHistory() {
 		return history;
 	}
-	
+
 	@JsonIgnore
-	public void setHistory(HashMap<LocalDateTime,CurrencySnapShot> history) {
-		Currency.CURRENCYSTATE.get(this.currencyCode).history = history;
+	public void setHistory(HashMap<String,CurrencySnapshot> history) {
+		Currency.getStaticCurrencyState().get(this.currencyCode).history = history;
 	}
-	
+
 	@JsonIgnore
-	public static void updateCurrencyValue(String currencyCode, CurrencySnapShot newValue) throws Exception
+	public static void updateCurrencyValue(String currencyCode, CurrencySnapshot newValue) throws Exception
 	{
-		if(CURRENCYSTATE == null)
+		if(Currency.getStaticCurrencyState() == null)
 			throw new Exception("Currency Map null, define a new currency first");
-		else if (!CURRENCYSTATE.containsKey(currencyCode)){
+		else if (!Currency.getStaticCurrencyState().containsKey(currencyCode)){
 			throw new Exception("Currency not found. Create the currency first");
 		}
-			else{
-				Currency c = CURRENCYSTATE.get(currencyCode);
-				c.setValue(newValue);
-				Currency.CURRENCYSTATE.get(currencyCode).history.put(LocalDateTime.now(),newValue);
-			}
+		else{
+			Currency c = Currency.getStaticCurrencyState().get(currencyCode);
+			c.setValue(newValue);
+			c.history.put(LocalDateTime.now().toString(),newValue);
+			Currency.getStaticCurrencyState().put(currencyCode,c);
+		}
 	}
-	
+
 	@JsonIgnore
-	public static HashMap<String, Currency> getCURRENCYSTATE() {
+	public static Currency getCurrency(String currencyCode){
+		if(!Currency.getStaticCurrencyState().keySet().contains(currencyCode))
+		{
+			Currency newCurrency = new Currency();
+			newCurrency.setCurrencyCode(currencyCode);
+			Currency.makeNewCurrency(newCurrency);
+		}
+		return Currency.getStaticCurrencyState().get(currencyCode);
+
+	}
+
+	public static boolean doesCurrencyExist(String currencyCode){
+		if (Currency.getStaticCurrencyState().keySet().contains(currencyCode)){
+			return true;
+		}
+		else return false;
+	}
+
+	@JsonIgnore
+	public static HashMap<String, Currency> getStaticCurrencyState() {
+		if(Currency.CURRENCYSTATE == null)
+			Currency.CURRENCYSTATE = new HashMap<String, Currency>();
 		return CURRENCYSTATE;
 	}
-	
+
 	@JsonIgnore
 	public static void setCURRENCYSTATE(HashMap<String, Currency> cURRENCYSTATE) {
 		CURRENCYSTATE = cURRENCYSTATE;
